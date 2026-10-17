@@ -391,27 +391,6 @@ function rewardPetForCorrectAnswer(streak,masteredNow=false){
   if(streak===5)queuePlayerPetCelebration("streak5");
   if(streak===10)queuePlayerPetCelebration("streak10");
 }
-function petCafeLayout(p=P(),context="stage"){
-  const base=PET_CAFE_LAYOUTS[p&&p.settings&&p.settings.theme]||PET_CAFE_LAYOUTS.sunny;
-  const preview=context!=="stage";
-  const furnitureId=p&&p.placed&&p.placed.cafe&&p.placed.cafe.petbed;
-  /* Build 79: the old positive lift raised the pet away from its cushion,
-     producing the visible floating gap. Drop only furniture-equipped pets
-     by a small, context-aware amount; the pet and furniture still share the
-     exact same horizontal anchor. */
-  const furnitureDrop=furnitureId==="petbasket"?(preview?2.1:.9):furnitureId==="petbed_cloud"?(preview?2.6:1.2):0;
-  const bottom=(preview?(base.previewBottom??base.bottom??12.5):(base.stageBottom??base.bottom??8.4))-furnitureDrop;
-  return {...base,bottom,activeSvgX:preview?(base.previewSvgX||302):base.svgX};
-}
-function petFurnitureSVG(it,x,y,small){
-  if(!it)return "";
-  /* A low mattress replaces the old three-cloud-ball silhouette. The
-     wide, shallow top gives every pet a believable place to lie down. */
-  if(it.id==="petbed_cloud")return `<g class="pet-furniture cloud-bed"><ellipse cx="${x}" cy="${y+7}" rx="31" ry="5.5" fill="#463A54" opacity=".16"/><path d="M${x-30} ${y-1} Q${x-22} ${y-8} ${x} ${y-8} Q${x+22} ${y-8} ${x+30} ${y-1} L${x+27} ${y+7} Q${x} ${y+13} ${x-27} ${y+7} Z" fill="${it.c}" stroke="#463A54" stroke-width="2.4"/><ellipse cx="${x}" cy="${y}" rx="24" ry="6" fill="#FFF" opacity=".58"/><path d="M${x-21} ${y+5} Q${x} ${y+9} ${x+21} ${y+5}" fill="none" stroke="#C9BFD0" stroke-width="1.5" opacity=".9"/></g>`;
-  /* The basket is also deliberately shallow: a woven rim around a
-     visible cushion, not a deep bowl that swallows the pet's feet. */
-  return `<g class="pet-furniture cosy-basket"><ellipse cx="${x}" cy="${y+7}" rx="31" ry="5.5" fill="#4A3427" opacity=".2"/><path d="M${x-30} ${y-1} Q${x} ${y-8} ${x+30} ${y-1} L${x+26} ${y+8} Q${x} ${y+14} ${x-26} ${y+8} Z" fill="${it.c}" stroke="#463A54" stroke-width="2.5"/><ellipse cx="${x}" cy="${y}" rx="24" ry="6" fill="#F1D5A8" stroke="#463A54" stroke-width="1.5"/><path d="M${x-24} ${y+4} Q${x} ${y+10} ${x+24} ${y+4} M${x-16} ${y+1} L${x-12} ${y+10} M${x-5} ${y} L${x-3} ${y+12} M${x+5} ${y} L${x+3} ${y+12} M${x+16} ${y+1} L${x+12} ${y+10}" fill="none" stroke="#F1D5A8" stroke-width="1.35" opacity=".78"/></g>`;
-}
 
 /* One-time save migration: the old single "extra" wearable slot moves
    into its item's position slot, so previously-owned pieces keep
@@ -511,71 +490,6 @@ function showSaveMigrationFailure(error){
   $("#exportLegacySave").onclick=()=>exportSaveBlob(legacy!==null?legacy:JSON.stringify(SAVE,null,1),"wordbar-existing-save.json");
 }
 
-function foodTruckSceneSVG(small,cH,T,L,counterC){
-  /* Build 46: the truck is deliberately smaller and sits in the upper
-     part of the park. A broad grass foreground gives customers a clear
-     ground plane, while both wheels remain under the chassis. */
-  const groundY=small?86:116;
-  const bodyTop=small?19:26, bodyBottom=small?94:127;
-  const serviceY=small?31:43, serviceH=small?43:58;
-  const ledgeY=small?71:96, wheelY=small?102:139;
-  const rearX=small?76:77, frontX=small?286:288;
-  const wheelR=small?12.5:15;
-  const signY=small?10:14;
-  return `<g class="foodtruck-scene">
-    <!-- Sky, distant park and a larger foreground lawn. -->
-    <rect class="cafe-window-day" width="360" height="${groundY}" fill="${L.daySky}"/>
-    <rect class="cafe-window-night" width="360" height="${groundY}" fill="${L.nightSky}"/>
-    <g class="cafe-day-detail">
-      <circle cx="326" cy="22" r="10" fill="#FFE27A"/>
-      <path d="M0 ${groundY-18} Q38 ${groundY-43} 82 ${groundY-20} T174 ${groundY-22} T266 ${groundY-23} T360 ${groundY-18} L360 ${groundY} L0 ${groundY}Z" fill="#6F985C" opacity=".72"/>
-      <path d="M0 ${groundY-8} Q65 ${groundY-22} 132 ${groundY-8} T264 ${groundY-10} T360 ${groundY-7} L360 ${groundY} L0 ${groundY}Z" fill="#87B56D" opacity=".78"/>
-    </g>
-    <g class="cafe-night-detail">
-      <circle cx="326" cy="22" r="9" fill="#F2E8C8"/>
-      <circle cx="25" cy="20" r="1.2" fill="#FFF4D5"/><circle cx="74" cy="34" r="1" fill="#FFF4D5"/><circle cx="270" cy="17" r="1.3" fill="#FFF4D5"/>
-      <path d="M0 ${groundY-18} Q38 ${groundY-43} 82 ${groundY-20} T174 ${groundY-22} T266 ${groundY-23} T360 ${groundY-18} L360 ${groundY} L0 ${groundY}Z" fill="#315941" opacity=".86"/>
-    </g>
-    <rect y="${groundY}" width="360" height="${cH-groundY}" fill="#83AD67"/>
-    <path d="M0 ${groundY+19} Q90 ${groundY+8} 180 ${groundY+20} T360 ${groundY+17}" fill="none" stroke="#A8C77E" stroke-width="${small?8:11}" opacity=".65"/>
-    <path d="M0 ${cH-12} Q85 ${cH-19} 176 ${cH-11} T360 ${cH-13}" fill="none" stroke="#6E9858" stroke-width="2" opacity=".65"/>
-
-    <!-- Compact truck: body and cab sit above the lawn, and each wheel
-         is centred beneath the chassis rather than inside the cab. -->
-    <g class="foodtruck-body" filter="url(#wob)">
-      <rect x="24" y="${bodyTop}" width="226" height="${bodyBottom-bodyTop}" rx="12" fill="${counterC}" stroke="#463A54" stroke-width="3.2"/>
-      <path d="M250 ${bodyTop+19} L300 ${bodyTop+19} Q316 ${bodyTop+21} 326 ${bodyTop+43} L333 ${bodyBottom-8} Q334 ${bodyBottom} 325 ${bodyBottom} L250 ${bodyBottom}Z" fill="#F2B33D" stroke="#463A54" stroke-width="3.2"/>
-
-      <rect x="34" y="${serviceY}" width="105" height="${serviceH}" rx="6" fill="#FFF4DD" stroke="#463A54" stroke-width="3"/>
-      <rect x="40" y="${serviceY+6}" width="93" height="${serviceH-12}" rx="3" fill="#6E5636" opacity=".25"/>
-      <path d="M30 ${serviceY-5} H143" stroke="#463A54" stroke-width="3"/>
-      ${[0,1,2,3,4].map(i=>`<path d="M${31+i*23} ${serviceY-5} h23 l-5 ${small?9:12} h-13 z" fill="${i%2?'#FFF6E3':'#F2B33D'}" stroke="#463A54" stroke-width="1.2"/>`).join('')}
-      <rect x="27" y="${ledgeY}" width="119" height="9" rx="4" fill="#8A5A2E" stroke="#463A54" stroke-width="2.6"/>
-
-      <rect x="151" y="${serviceY+4}" width="70" height="${small?42:54}" rx="6" fill="#3E3A4A" stroke="#463A54" stroke-width="2.7"/>
-      <text x="186" y="${serviceY+(small?16:20)}" text-anchor="middle" font-size="${small?7.5:9}" font-weight="800" fill="#FFF6E3" font-family="'Baloo 2',cursive">TODAY'S TREATS</text>
-      <line x1="160" y1="${serviceY+(small?24:29)}" x2="211" y2="${serviceY+(small?24:29)}" stroke="#FFF6E3" stroke-width="1.4" opacity=".8"/>
-      <line x1="160" y1="${serviceY+(small?32:39)}" x2="205" y2="${serviceY+(small?32:39)}" stroke="#FFF6E3" stroke-width="1.4" opacity=".7"/>
-      <line x1="160" y1="${serviceY+(small?39:48)}" x2="209" y2="${serviceY+(small?39:48)}" stroke="#FFF6E3" stroke-width="1.4" opacity=".7"/>
-
-      <rect x="62" y="${signY}" width="145" height="18" rx="8" fill="#FFF6E3" stroke="#463A54" stroke-width="2.5"/>
-      <text x="134.5" y="${signY+12.5}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#D8547A" font-family="'Baloo 2',cursive">WORD BAR • PARK TRUCK</text>
-
-      <rect class="cafe-window-day" x="271" y="${bodyTop+31}" width="38" height="${small?26:34}" rx="5" fill="#BEE3F0" stroke="#463A54" stroke-width="2.5"/>
-      <rect class="cafe-window-night" x="271" y="${bodyTop+31}" width="38" height="${small?26:34}" rx="5" fill="#253651" stroke="#463A54" stroke-width="2.5"/>
-      <line x1="290" y1="${bodyTop+32}" x2="290" y2="${bodyTop+(small?56:65)}" stroke="#463A54" stroke-width="2"/>
-      <path d="M255 ${bodyTop+21} L300 ${bodyTop+21} Q313 ${bodyTop+23} 321 ${bodyTop+42}" fill="none" stroke="#FFF6E3" stroke-width="2" opacity=".55"/>
-      <rect x="268" y="${bodyBottom-14}" width="53" height="8" rx="3" fill="#FFF6E3" stroke="#463A54" stroke-width="2"/>
-      <circle cx="327" cy="${bodyTop+70}" r="4.5" fill="#FFF4A3" stroke="#463A54" stroke-width="2"/>
-
-      <path d="M39 ${bodyBottom} H315" stroke="#463A54" stroke-width="3.2" stroke-linecap="round"/>
-      <circle cx="${rearX}" cy="${wheelY}" r="${wheelR}" fill="#37323A" stroke="#463A54" stroke-width="3"/><circle cx="${rearX}" cy="${wheelY}" r="${small?5:6}" fill="#B9AEC6"/>
-      <circle cx="${frontX}" cy="${wheelY}" r="${wheelR}" fill="#37323A" stroke="#463A54" stroke-width="3"/><circle cx="${frontX}" cy="${wheelY}" r="${small?5:6}" fill="#B9AEC6"/>
-      <path d="M151 ${bodyBottom-5} h76" stroke="#FFF6E3" stroke-width="3" opacity=".7"/>
-      <circle cx="237" cy="${bodyBottom-18}" r="8" fill="#FFF6E3" opacity=".92"/><text x="237" y="${bodyBottom-14}" text-anchor="middle" font-size="10">🍹</text>
-    </g>
-  </g>`;
-}
 
 /* ---------- Café scene ----------
    Now includes a proper bar counter + coffee machine (theme-aware
@@ -585,149 +499,6 @@ function foodTruckSceneSVG(small,cH,T,L,counterC){
    the barista stands (.barista is anchored at left:12% in CSS)
    so the two visually belong together; customers queue along the
    counter to the right of it. */
-function cafeScene(small,context="stage"){
-  const p=P(),T=THEMES[p.settings.theme]||THEMES.sunny,pl=p.placed.cafe;
-  const item=slot=>pl[slot]?SHOP.find(s=>s.id===pl[slot]):null;
-  const petLayout=petCafeLayout(p,context),petState=petSystemOf(p),activePet=activePlayerPet(p);
-  /* Build 43 compatibility fix: pet beds/baskets existed as ordinary café
-     decor before the Pet Licence system. Render any placed furniture even
-     without a licence or active pet so upgrading players do not see an
-     existing decoration silently disappear. Shop purchase/placement guards
-     still enforce the licence for new pet-item actions. */
-  const petFurniture=item("petbed");
-  const wallC=item("wallpaper")?item("wallpaper").c:T.wall;
-  const floorC=item("floor")?item("floor").c:T.floor;
-  const counterC=item("counter")?item("counter").c:T.counter;
-  const counterI=item("counter"),windowI=item("window"),lightsI=item("lights"),lampI=item("lamp"),rugI=item("rug"),shelfI=item("shelf");
-  const L=T.lighting||{daySky:"#BEE3F0",nightSky:"#172640",nightWash:"#25324A",nightOpacity:.15,lamp:"#FFD58A"};
-  const cH = small?150:200, counterY = small?96:132, machineY = small? counterY-38 : counterY-58;
-  const isFoodTruck=p.settings.theme==="foodtruck";
-  return `<svg viewBox="0 0 360 ${cH}" class="cafesvg" preserveAspectRatio="xMidYMax slice" aria-hidden="true" style="--night-opacity:${L.nightOpacity}">
-  <defs>${FELT_FILTER}
-    <radialGradient id="warmwash" cx="12%" cy="10%" r="70%"><stop offset="0%" stop-color="#FFD68C" stop-opacity=".5"/><stop offset="60%" stop-color="#FFD68C" stop-opacity="0"/></radialGradient>
-    <radialGradient id="nightglow"><stop offset="0%" stop-color="${L.lamp}" stop-opacity=".34"/><stop offset="100%" stop-color="${L.lamp}" stop-opacity="0"/></radialGradient>
-  </defs>
-  <rect width="360" height="${cH}" fill="${wallC}"/>
-  <rect y="${counterY+18}" width="360" height="${cH-counterY-18}" fill="${floorC}"/>
-  <g filter="url(#wob)">
-  ${isFoodTruck?foodTruckSceneSVG(small,cH,T,L,counterC):""}
-  <g class="standard-cafe-scene" style="${isFoodTruck?"display:none":""}">
-  <rect class="cafe-window-day" x="130" y="24" width="70" height="58" rx="8" fill="${L.daySky}" stroke="#463A54" stroke-width="3"/>
-  <rect class="cafe-window-night" x="130" y="24" width="70" height="58" rx="8" fill="${L.nightSky}" stroke="#463A54" stroke-width="3"/>
-  <g class="cafe-day-detail"><circle cx="181" cy="39" r="8" fill="#FFE27A"/><path d="M138 55 q8 -9 16 0 q8 -8 16 0" fill="none" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity=".75"/></g>
-  <g class="cafe-night-detail"><circle cx="181" cy="39" r="8" fill="#F2E8C8"/><circle cx="150" cy="50" r="1.6" fill="#F2E8C8"/><circle cx="164" cy="32" r="1.4" fill="#F2E8C8"/><circle cx="190" cy="61" r="1.2" fill="#F2E8C8"/></g>
-  ${T.window==="snow"?`<circle cx="146" cy="36" r="2" fill="#FFF"/><circle cx="166" cy="48" r="2" fill="#FFF"/><circle cx="184" cy="34" r="2" fill="#FFF"/><circle cx="156" cy="64" r="2" fill="#FFF"/>`:""}
-  ${T.window==="blossom"?`<circle cx="148" cy="40" r="3" fill="#F0A8C0"/><circle cx="172" cy="34" r="2.6" fill="#F0A8C0"/><circle cx="162" cy="58" r="2.6" fill="#F0A8C0"/>`:""}
-  ${T.window==="lantern"?`<rect x="148" y="34" width="14" height="20" rx="4" fill="#E86A4A" class="lanternglow"/><rect x="172" y="40" width="12" height="17" rx="4" fill="#E8A84A" class="lanternglow"/>`:""}
-  ${windowI&&windowI.id==="window_awning"?`<path d="M124 24 L206 24 L200 12 L130 12 Z" fill="${windowI.c}" stroke="#463A54" stroke-width="2.6"/>`:""}
-  ${windowI&&windowI.id==="flowerbox"?`<rect x="128" y="82" width="74" height="11" rx="3" fill="#8A5A2E" stroke="#463A54" stroke-width="2.2"/>${[140,157,174,191].map((x,i)=>`<circle cx="${x}" cy="79" r="4.6" fill="${["#D8547A","#F2B33D","#E86A4A","#8E6BAE"][i]}" stroke="#463A54" stroke-width="1.4"/><circle cx="${x}" cy="79" r="1.6" fill="#FFF6E3"/><path d="M${x-4} 84 q4 -3 8 0" stroke="#7FA65A" stroke-width="1.8" fill="none"/>`).join("")}`:""}
-  ${windowI&&windowI.id==="window_stained"?`<line x1="165" y1="24" x2="165" y2="82" stroke="#463A54" stroke-width="2.6"/><rect x="130" y="24" width="35" height="29" fill="#8E6BAE" opacity=".5"/><rect x="165" y="53" width="35" height="29" fill="#D8547A" opacity=".5"/>`:""}
-  ${item("wallart")?wallartSVG(item("wallart")):""}
-  ${item("menu")?`<g><rect x="296" y="26" width="52" height="60" rx="4" fill="#3E3A4A" stroke="#463A54" stroke-width="3"/><rect x="301" y="31" width="42" height="50" rx="2" fill="#2E2A36"/><text x="322" y="44" text-anchor="middle" font-size="9" fill="#FFF6E3" font-family="'Baloo 2',cursive">MENU</text><line x1="306" y1="52" x2="338" y2="52" stroke="#FFF6E3" stroke-width="1.6" opacity=".75"/><line x1="306" y1="60" x2="332" y2="60" stroke="#FFF6E3" stroke-width="1.6" opacity=".6"/><line x1="306" y1="68" x2="336" y2="68" stroke="#FFF6E3" stroke-width="1.6" opacity=".6"/><circle cx="341" cy="74" r="3.4" fill="#D8547A"/></g>`:""}
-  ${item("bunting")?`<path d="M220 16 Q290 34 356 16" fill="none" stroke="#463A54" stroke-width="2"/>${[232,254,276,298,320,340].map((x,i)=>`<path d="M${x} ${20+Math.sin(i)*4} l7 14 l7 -14 z" fill="${["#D8547A","#F2B33D","#7FA65A","#5B8FB5","#8E6BAE","#E8891D"][i]}" stroke="#463A54" stroke-width="1.6"/>`).join("")}`:""}
-  ${item("shelf")&&item("shelf").id==="shelf_trophies"?`<rect x="196" y="26" width="60" height="6" rx="2" fill="${item("shelf").c}" stroke="#463A54" stroke-width="2"/>${[206,224,242].map((x,i)=>`<path d="M${x-5} ${12+i%2} l10 0 l-1.4 8 q-3.6 2.4 -7.2 0 z" fill="#D8A521" stroke="#463A54" stroke-width="1.6"/><path d="M${x-5} ${14+i%2} q-4 0 -3 4 M${x+5} ${14+i%2} q4 0 3 4" stroke="#D8A521" stroke-width="1.4" fill="none"/><rect x="${x-3}" y="${20+i%2}" width="6" height="3" fill="#8A5A2E"/>`).join("")}`:item("shelf")?`<rect x="196" y="26" width="60" height="6" rx="2" fill="${item("shelf").c}" stroke="#463A54" stroke-width="2"/><rect x="202" y="10" width="10" height="16" fill="#8E6BAE" opacity=".8"/><rect x="216" y="8" width="10" height="18" fill="#D8547A" opacity=".8"/><rect x="230" y="12" width="10" height="14" fill="#7FA65A" opacity=".8"/>`:""}
-  ${lightsI?lightsSVG(lightsI):""}
-  ${lampI&&lampI.id==="lantern_paper"?`<g class="lanternglow"><path d="M212 14 Q265 30 320 12" fill="none" stroke="#8A5A2E" stroke-width="1.8"/>${[224,254,284,310].map((x,i)=>`<rect x="${x-7}" y="${20+(i%2)*5}" width="14" height="19" rx="5" fill="${["#E8891D","#D8547A","#F2B33D","#E86A4A"][i]}" stroke="#463A54" stroke-width="1.8"/><line x1="${x}" y1="${39+(i%2)*5}" x2="${x}" y2="${43+(i%2)*5}" stroke="#463A54" stroke-width="1.4"/>`).join("")}</g>`
-    : lampI?`<rect x="346" y="${machineY-30}" width="4" height="30" fill="#8A5A2E"/><ellipse cx="348" cy="${machineY-32}" rx="13" ry="8" fill="${lampI.c}" stroke="#463A54" stroke-width="2" class="${lampI.anim?'lanternglow':''}"/>`:""}
-
-  <!-- Bar counter (full width, front panel with wood-grain lines) -->
-  <rect x="0" y="${counterY}" width="360" height="26" rx="6" fill="${counterC}" stroke="#463A54" stroke-width="3"/>
-  <rect x="0" y="${counterY+22}" width="360" height="10" fill="#463A54" opacity=".14"/>
-  <line x1="0" y1="${counterY+8}" x2="360" y2="${counterY+8}" stroke="#463A54" stroke-width="1.2" opacity=".18"/>
-  <line x1="0" y1="${counterY+15}" x2="360" y2="${counterY+15}" stroke="#463A54" stroke-width="1.2" opacity=".14"/>
-
-  <!-- Barista's back-bar station: mounted high on the left wall so
-       it's always clearly visible above the characters — espresso
-       machine (with steam), grinder, and a stack of cups. -->
-  <g class="machinebox">
-    <!-- back-bar shelf -->
-    <rect x="4" y="${machineY-6}" width="112" height="7" rx="3" fill="#8A5A2E" stroke="#463A54" stroke-width="2.2"/>
-    <rect x="10" y="${machineY+1}" width="6" height="${counterY-machineY-1}" fill="#8A5A2E" opacity=".55"/>
-    <rect x="102" y="${machineY+1}" width="6" height="${counterY-machineY-1}" fill="#8A5A2E" opacity=".55"/>
-    <!-- espresso machine body -->
-    <rect x="12" y="${machineY-52}" width="58" height="46" rx="9" fill="#C0392B" stroke="#463A54" stroke-width="2.8"/>
-    <rect x="12" y="${machineY-52}" width="58" height="12" rx="6" fill="#fff" opacity=".3"/>
-    <rect x="18" y="${machineY-44}" width="34" height="11" rx="3" fill="#FFF6E3" stroke="#463A54" stroke-width="1.6"/>
-    <circle cx="60" cy="${machineY-38}" r="4.4" fill="#F2B33D" stroke="#463A54" stroke-width="1.6"/>
-    <circle cx="26" cy="${machineY-27}" r="3.4" fill="#7FA65A" stroke="#463A54" stroke-width="1.4"/>
-    <circle cx="37" cy="${machineY-27}" r="3.4" fill="#F2B33D" stroke="#463A54" stroke-width="1.4"/>
-    <circle cx="48" cy="${machineY-27}" r="3.4" fill="#D8547A" stroke="#463A54" stroke-width="1.4"/>
-    <!-- group head + portafilter handle -->
-    <rect x="28" y="${machineY-18}" width="16" height="7" rx="2" fill="#463A54"/>
-    <rect x="44" y="${machineY-16}" width="16" height="4" rx="2" fill="#26211E"/>
-    <!-- little cup catching the pour -->
-    <path d="M31 ${machineY-9} l12 0 l-1.6 8 q-4.4 2.4 -8.8 0 z" fill="#FFF" stroke="#463A54" stroke-width="1.8"/>
-    <line x1="36.5" y1="${machineY-17}" x2="36.5" y2="${machineY-10}" stroke="#8A5A44" stroke-width="2" opacity=".8"/>
-    <!-- steam wand + animated steam -->
-    <line x1="66" y1="${machineY-24}" x2="72" y2="${machineY-12}" stroke="#463A54" stroke-width="3" stroke-linecap="round"/>
-    <path class="steam" d="M70 ${machineY-30} q3 -5 0 -10 q-3 -5 1 -9" fill="none" stroke="#FFF" stroke-width="2.4" stroke-linecap="round"/>
-    <path class="steam s2" d="M78 ${machineY-28} q3 -5 0 -9 q-2 -4 1 -8" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
-    <!-- grinder -->
-    <rect x="78" y="${machineY-34}" width="16" height="28" rx="4" fill="#5C6B73" stroke="#463A54" stroke-width="2.2"/>
-    <path d="M80 ${machineY-42} l12 0 l-2 8 l-8 0 z" fill="#9CCBDB" opacity=".85" stroke="#463A54" stroke-width="1.8"/>
-    <!-- stacked cups on the shelf end -->
-    <g stroke="#463A54" stroke-width="1.6">
-      <rect x="97" y="${machineY-15}" width="13" height="8" rx="2" fill="#FFF"/>
-      <rect x="98.5" y="${machineY-23}" width="10" height="8" rx="2" fill="#F2B33D"/>
-      <rect x="99.5" y="${machineY-31}" width="8" height="8" rx="2" fill="#D8547A"/>
-    </g>
-  </g>
-  ${counterI&&counterI.id==="fountain_gold"?`<g class="shimmer">
-    <rect x="292" y="${counterY-5}" width="30" height="7" rx="3" fill="#D8A521" stroke="#463A54" stroke-width="2"/>
-    <path d="M298.5 ${counterY-5} L298.5 ${counterY-20} Q298.5 ${counterY-28} 307 ${counterY-28} Q315.5 ${counterY-28} 315.5 ${counterY-20} L315.5 ${counterY-15}" fill="none" stroke="#D8A521" stroke-width="4.4" stroke-linecap="round"/>
-    <path d="M298.5 ${counterY-5} L298.5 ${counterY-20} Q298.5 ${counterY-28} 307 ${counterY-28}" fill="none" stroke="#F2CE6B" stroke-width="1.4" opacity=".8"/>
-    <circle cx="315.5" cy="${counterY-11}" r="1.7" fill="#9CCBDB"/>
-    <path d="M309 ${counterY-8} l13 0 l-1.8 7 q-4.8 2.4 -9.4 0 z" fill="#FFF" stroke="#463A54" stroke-width="1.8"/>
-    <path d="M288 ${counterY-16} l1.6 3 3 0.4 -2.2 2 0.6 3 -3 -1.6 -2.8 1.6 0.5 -3 -2.2 -2 3 -0.4 Z" fill="#F2CE6B" opacity=".9"/>
-  </g>`:""}
-  ${item("display")?displaySVG(item("display"),small):""}
-  ${rugI?(rugI.id==="rug_stripe"?`<g><ellipse cx="200" cy="${cH-14}" rx="70" ry="10" fill="${rugI.c}" opacity=".9" stroke="#463A54" stroke-width="1.6"/><path d="M155 ${cH-20} Q158 ${cH-14} 155 ${cH-8} M174 ${cH-22} Q177 ${cH-14} 174 ${cH-6} M193 ${cH-23} Q196 ${cH-14} 193 ${cH-5} M212 ${cH-23} Q215 ${cH-14} 212 ${cH-5} M231 ${cH-22} Q234 ${cH-14} 231 ${cH-6} M250 ${cH-20} Q253 ${cH-14} 250 ${cH-8}" fill="none" stroke="${shade(rugI.c,-.28)}" stroke-width="6" opacity=".72" stroke-linecap="round"/></g>`:`<ellipse cx="200" cy="${cH-14}" rx="70" ry="10" fill="${rugI.c}" opacity=".8" stroke="#463A54" stroke-width="1.6"/>`):""}
-  ${item("stool")?`<g><rect x="250" y="${counterY+30}" width="34" height="8" rx="4" fill="${item("stool").c}" stroke="#463A54" stroke-width="2.4"/><rect x="256" y="${counterY+38}" width="5" height="${small?16:24}" fill="#463A54"/><rect x="273" y="${counterY+38}" width="5" height="${small?16:24}" fill="#463A54"/></g>`:""}
-  ${item("mug")?`<rect x="200" y="${counterY-6}" width="20" height="14" rx="2" fill="${item("mug").c}" stroke="#463A54" stroke-width="2"/>`:""}
-  ${item("plant")?`<g><path d="M330 ${counterY-10} q-8 -16 4 -24 q-2 12 4 16 q0 -16 12 -18 q-6 10 -2 18 q8 -8 14 -4 q-8 4 -8 12 z" fill="${item("plant").c||"#7FA65A"}" stroke="#463A54" stroke-width="2"/><path d="M332 ${counterY-10} l14 0 l-2 9 q-5 2.6 -10 0 z" fill="#C86B4A" stroke="#463A54" stroke-width="1.8"/></g>`:""}
-  </g>
-  ${petFurniture?petFurnitureSVG(petFurniture,petLayout.activeSvgX,context==="stage"?cH-17:cH-(small?17:22),small):""}
-  </g>
-  <rect class="cafe-night-wash" width="360" height="${cH}" fill="${L.nightWash}" pointer-events="none"/>
-  <g class="cafe-night-lights" pointer-events="none">
-    <ellipse cx="72" cy="48" rx="60" ry="46" fill="url(#nightglow)"/>
-    <ellipse cx="294" cy="42" rx="56" ry="38" fill="url(#nightglow)" opacity=".78"/>
-    <circle cx="165" cy="74" r="26" fill="url(#nightglow)" opacity=".65"/>
-  </g>
-  <rect class="warmwash" width="360" height="${cH}" fill="url(#warmwash)" opacity=".62" pointer-events="none"/>
-  </svg>`;
-}
-function wallartSVG(it){
-  if(it.id==="poster_fruit") return `<rect x="228" y="26" width="44" height="54" rx="4" fill="#FFF6E8" stroke="#463A54" stroke-width="2.6"/><circle cx="250" cy="46" r="9" fill="#E8891D"/><path d="M250 37 q4 -6 8 -4" stroke="#7FA65A" stroke-width="2.4" fill="none"/><text x="250" y="70" text-anchor="middle" font-size="8" fill="#463A54" font-family="'Baloo 2',cursive">FRESH!</text>`;
-  if(it.id==="print_seaside") return `<rect x="224" y="24" width="54" height="42" rx="3" fill="#E8E4DC" stroke="#463A54" stroke-width="3"/><rect x="230" y="30" width="42" height="30" fill="#9CCBDB"/><path d="M230 48 q6 -4 10 0 q6 -4 10 0 q6 -4 10 0 q6 -4 12 0 l0 12 l-42 0 z" fill="#5B8FB5"/><circle cx="262" cy="38" r="4" fill="#F2B33D"/>`;
-  if(it.id==="mural_market") return `<rect x="216" y="22" width="70" height="52" rx="4" fill="#3E3A4A" stroke="#463A54" stroke-width="2.6"/><circle cx="234" cy="42" r="7" fill="none" stroke="#F6E3C2" stroke-width="2"/><path d="M250 36 q5 -8 10 0 q-5 8 -10 0" fill="none" stroke="#F6E3C2" stroke-width="2"/><circle cx="270" cy="44" r="6" fill="none" stroke="#F6E3C2" stroke-width="2"/>`;
-  if(it.id==="poster_abc") return `<rect x="228" y="24" width="46" height="56" rx="4" fill="#FDFBF5" stroke="#463A54" stroke-width="2.6"/><text x="240" y="46" font-size="16" font-weight="800" fill="#D8547A" font-family="'Baloo 2',cursive">A</text><text x="248" y="60" font-size="16" font-weight="800" fill="#5B8FB5" font-family="'Baloo 2',cursive">B</text><text x="256" y="74" font-size="16" font-weight="800" fill="#7FA65A" font-family="'Baloo 2',cursive">C</text><circle cx="264" cy="34" r="3.4" fill="#F2B33D"/>`;
-  if(it.id==="clock_station") return `<circle cx="250" cy="46" r="20" fill="#FDFBF5" stroke="#463A54" stroke-width="3"/><circle cx="250" cy="46" r="16.5" fill="none" stroke="#8A5A2E" stroke-width="1.4"/><line x1="250" y1="46" x2="250" y2="34" stroke="#463A54" stroke-width="2.2" stroke-linecap="round"/><line x1="250" y1="46" x2="259" y2="50" stroke="#463A54" stroke-width="2.2" stroke-linecap="round"/><circle cx="250" cy="46" r="1.8" fill="#C0392B"/><path d="M250 31 l0 2 M250 59 l0 2 M236 46 l2 0 M262 46 l2 0" stroke="#463A54" stroke-width="1.6"/><path d="M244 24 l12 0 l-2 -5 l-8 0 z" fill="#8A5A2E" stroke="#463A54" stroke-width="1.6"/>`;
-  if(it.id==="portrait_fox") return `<rect x="222" y="20" width="58" height="60" rx="4" fill="#5C4033" stroke="#463A54" stroke-width="3"/><rect x="228" y="26" width="46" height="48" fill="#F4E8D0"/><circle cx="251" cy="46" r="12" fill="#D07B3A"/><path d="M242 38 l-4 -9 l9 5 z" fill="#D07B3A"/><path d="M260 38 l4 -9 l-9 5 z" fill="#D07B3A"/><ellipse cx="251" cy="51" rx="5" ry="4" fill="#F4E3D0"/><ellipse cx="246.5" cy="45" rx="2.6" ry="3.1" fill="#FFF" stroke="#463A54" stroke-width=".8"/><ellipse cx="255.5" cy="45" rx="2.6" ry="3.1" fill="#FFF" stroke="#463A54" stroke-width=".8"/><circle cx="247" cy="45.4" r="1.3" fill="#2E2A36"/><circle cx="255" cy="45.4" r="1.3" fill="#2E2A36"/><circle cx="246.5" cy="44.8" r=".45" fill="#FFF"/><circle cx="254.5" cy="44.8" r=".45" fill="#FFF"/><ellipse cx="251" cy="50" rx="1.8" ry="1.4" fill="#2E2A36"/>`;
-  return "";
-}
-function lightsSVG(it){
-  if(it.id==="stars_paper") return `<path d="M120 14 Q240 34 350 14" fill="none" stroke="#8A5A2E" stroke-width="1.8"/>${[140,180,220,260,300,334].map((x,i)=>`<path d="M${x} ${22+(i%2)*5} l3 6 l7 1 l-5 5 l1 7 l-6 -3 l-6 3 l1 -7 l-5 -5 l7 -1 z" fill="${it.c}" stroke="#463A54" stroke-width="1.4"/>`).join("")}`;
-  if(it.id==="fairylights") return `<path d="M110 12 Q235 32 352 12" fill="none" stroke="#8A5A2E" stroke-width="1.6"/>${[128,160,192,224,256,288,320,344].map((x,i)=>`<circle cx="${x}" cy="${20+(i%2)*5}" r="4" fill="${["#F2B33D","#D8547A","#9CCBDB","#7FA65A"][i%4]}" class="twinkle" style="animation-delay:${i*.3}s"/>`).join("")}`;
-  if(it.id==="neon_open") return `<g class="lanternglow"><rect x="134" y="10" width="62" height="22" rx="9" fill="none" stroke="#F26BA8" stroke-width="3"/><text x="165" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#F26BA8" font-family="'Baloo 2',cursive">OPEN</text><rect x="138" y="14" width="54" height="14" rx="6" fill="#F26BA8" opacity=".12"/></g>`;
-  if(it.id==="aurora") return `<g class="shimmer">
-    <path d="M116 24 Q168 8 220 22 Q282 38 352 16 L352 27 Q282 50 214 34 Q166 22 116 36 Z" fill="#6BC5B8" opacity=".42"/>
-    <path d="M116 32 Q170 18 224 30 Q284 44 352 26 L352 35 Q284 55 218 42 Q168 30 116 43 Z" fill="#8E6BAE" opacity=".34"/>
-    <path d="M120 15 Q176 4 232 14 Q290 24 352 9 L352 16 Q290 32 228 22 Q174 12 120 22 Z" fill="#7FA65A" opacity=".3"/>
-    <circle cx="140" cy="12" r="1.2" fill="#FFF" opacity=".8"/><circle cx="250" cy="10" r="1" fill="#FFF" opacity=".7"/><circle cx="330" cy="12" r="1.3" fill="#FFF" opacity=".8"/>
-  </g>`;
-  return "";
-}
-function displaySVG(it,small){
-  const y=small?96:132;
-  if(it.id==="mug_rack") return `<rect x="122" y="${y-34}" width="56" height="6" rx="3" fill="${it.c}" stroke="#463A54" stroke-width="2"/>${[132,150,168].map((x,i)=>`<line x1="${x}" y1="${y-28}" x2="${x}" y2="${y-24}" stroke="#463A54" stroke-width="2"/><path d="M${x-6} ${y-24} l12 0 l-1.4 10 q-4.6 2.6 -9.2 0 z" fill="${["#D8547A","#7FA65A","#F2B33D"][i]}" stroke="#463A54" stroke-width="1.8"/><path d="M${x+6} ${y-21} q5 0 4 5 q-1 3 -4 2" fill="none" stroke="#463A54" stroke-width="1.6"/>`).join("")}`;
-  if(it.id==="cakedome") return `<ellipse cx="120" cy="${y-2}" rx="17" ry="5" fill="#E8E4DC" stroke="#463A54" stroke-width="2"/><path d="M105 ${y-2} q0 -22 15 -22 q15 0 15 22 z" fill="${it.c}" opacity=".55" stroke="#463A54" stroke-width="2"/><rect x="112" y="${y-14}" width="16" height="9" rx="2" fill="#E07A9B"/>`;
-  if(it.id==="shelf_kegs") return `<rect x="104" y="${y-40}" width="86" height="6" rx="3" fill="#8A5A2E" stroke="#463A54" stroke-width="2"/>${[112,140,168].map(x=>`<rect x="${x}" y="${y-36}" width="18" height="24" rx="5" fill="${["#D8547A","#F2B33D","#7FA65A"][(x-112)/28]}" stroke="#463A54" stroke-width="2.2"/>`).join("")}`;
-  if(it.id==="gumball") return `<rect x="108" y="${y-16}" width="18" height="16" rx="3" fill="#C0392B" stroke="#463A54" stroke-width="2.2"/><circle cx="117" cy="${y-24}" r="11" fill="#D6EDF5" opacity=".75" stroke="#463A54" stroke-width="2.2"/>${[[113,y-27,"#D8547A"],[121,y-26,"#7FA65A"],[117,y-22,"#F2B33D"],[112,y-21,"#5B8FB5"],[121,y-20,"#8E6BAE"]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="${p[2]}"/>`).join("")}<rect x="113.5" y="${y-9}" width="7" height="5" rx="1" fill="#463A54"/>`;
-  if(it.id==="radio_retro") return `<rect x="104" y="${y-20}" width="34" height="19" rx="7" fill="${it.c}" stroke="#463A54" stroke-width="2.2"/><circle cx="114" cy="${y-10.5}" r="4.6" fill="#FDFBF5" stroke="#463A54" stroke-width="1.4"/><line x1="114" y1="${y-10.5}" x2="117" y2="${y-13}" stroke="#463A54" stroke-width="1.2"/><rect x="122" y="${y-15}" width="12" height="4" rx="2" fill="#FDFBF5" stroke="#463A54" stroke-width="1.2"/><path d="M124 ${y-17} q2 -6 6 -8" stroke="#463A54" stroke-width="1.6" fill="none"/><path d="M140 ${y-26} q3 -1 3 2 q0 2 -2.6 2 l0 -6 q0 4 0 4" stroke="#463A54" stroke-width="1.4" fill="none" class="floatnote"/>`;
-  if(it.id==="jukebox") return `<g class="${it.anim?'shimmer':''}"><path d="M100 ${y} l0 -34 q0 -14 17 -14 q17 0 17 14 l0 34 z" fill="${it.c}" stroke="#463A54" stroke-width="2.6"/><circle cx="117" cy="${y-18}" r="6" fill="#F2B33D" stroke="#463A54" stroke-width="1.6"/></g>`;
-  return "";
-}
 function ambientSVG(kind){
   if(kind==="dust") return Array.from({length:8},(_,i)=>`<div class="mote" style="left:${8+i*11}%;animation-delay:${i*1.1}s"></div>`).join("");
   if(kind==="petals") return Array.from({length:7},(_,i)=>`<div class="petal" style="left:${6+i*13}%;animation-delay:${i*0.9}s"></div>`).join("");
@@ -793,13 +564,6 @@ function playerSVG(expr="happy",w=96){
   return characterSVG(playerLookFor(p,opts),expr,{w,...opts});
 }
 
-function playerCafePetHTML(context="stage"){
-  const p=P(),pet=activePlayerPet(p);if(!pet)return "";
-  const preview=context!=="stage",layout=petCafeLayout(p,preview?"preview":"stage"),left=(layout.activeSvgX/3.6).toFixed(2);
-  const scale=(layout.scale*(preview ? .82 : 1)).toFixed(3);
-  const w=preview?50:56;
-  return `<div class="playerpetspot ${preview?"pet-preview":"pet-stage"}" data-player-pet="${pet.id}" role="button" tabindex="0" aria-label="${esc(pet.name.replace(/^a /,"Your "))} — tap for a reaction" style="--pet-left:${left}%;--pet-bottom:${layout.bottom}%;--pet-scale:${scale}"><div class="playerpetbody">${petSVG(pet,"normal",w,petWearables(p))}<span class="playerpettag" aria-hidden="true">♥</span></div><span class="playerpetemote" aria-hidden="true"></span></div>`;
-}
 let playerPetIdleTimer=null,playerPetTapAt=0,lastPlayerPetIdleAction=null;
 /* Build 86: the shared motion timings match the approved three-pet
    movement sample. Because every active café pet renders through the same
@@ -816,34 +580,6 @@ function showRandomPlayerPetMood(el,pet){
   const moods=["good","excited","normal","bad"],mood=moods[rnd(moods.length)];
   showPlayerPetMood(el,pet,mood);
 }
-function showPlayerPetMood(el,pet,mood="normal",duration=1600){
-  if(!el||!pet)return;
-  const body=el.querySelector(".playerpetbody");if(!body)return;
-  const w=el.classList.contains("pet-preview")?50:56;
-  body.innerHTML=`${petSVG(pet,mood,w,petWearables())}<span class="playerpettag" aria-hidden="true">♥</span>`;
-  clearTimeout(el._petMoodTimer);
-  el._petMoodTimer=setTimeout(()=>{if(body.isConnected)body.innerHTML=`${petSVG(pet,"normal",w,petWearables())}<span class="playerpettag" aria-hidden="true">♥</span>`;},duration);
-}
-function reactActivePlayerPetToAnswer(correct){
-  const pet=activePlayerPet(P()),el=document.querySelector(".stage [data-player-pet]");
-  if(!pet||!el)return;
-  clearPlayerPetIdle();
-  showPlayerPetMood(el,pet,correct?"good":"bad",1450);
-  animatePlayerPet(el,correct?"wiggle":"look");
-  playerPetEmote(el,correct?"😊":"💭");
-}
-function animatePlayerPet(el,action,options={}){
-  if(!el)return;
-  const repeats=Math.max(1,Math.min(3,Math.round(Number(options.repeats)||1)));
-  const actionMs=PLAYER_PET_ACTION_MS[action]||1500;
-  const cls=`pet-${action}`;el.classList.remove("pet-hop","pet-wiggle","pet-look","pet-stretch","pet-sleep","pet-roll","pet-wave","pet-yawn");
-  el.style.setProperty("--pet-action-count",String(repeats));void el.offsetWidth;el.classList.add(cls);
-  let finished=false;
-  const done=()=>{if(finished)return;finished=true;el.classList.remove(cls);el.style.removeProperty("--pet-action-count");if(options.reschedule!==false&&el.closest(".stage"))schedulePlayerPetIdle();};
-  const body=el.querySelector(".playerpetbody")||el;
-  body.addEventListener("animationend",done,{once:true});
-  setTimeout(done,actionMs*repeats+350);
-}
 function reactPlayerPet(el){
   const now=Date.now();if(now-playerPetTapAt<950)return;playerPetTapAt=now;
   const pet=PETS.find(x=>x.id===el.dataset.playerPet);if(!pet)return;
@@ -855,13 +591,13 @@ function reactPlayerPet(el){
   toast(`${pet.name.replace(/^a /,"Your ")} ${petReactionText(pet,"tap")}`);
 }
 function weightedPlayerPetIdleAction(){
-  const weights={look:4,stretch:3,sleep:2,hop:3,roll:2,wave:2,yawn:2};
+  const weights={look:4,stretch:3,sleep:2,hop:3,wave:2,yawn:2};   /* S13: no rolling — the café pets are flat drawings */
   const night=document.body.dataset.cafePeriod==="night";
   const late=!!SHIFT&&(Number(SHIFT.served||0)>=8||shiftDurationMs(SHIFT)>=5*60*1000);
   const streak=SHIFT?Math.max(0,Number(SHIFT.streak)||0):0;
   if(night){weights.sleep+=5;weights.yawn+=5;weights.stretch+=2;weights.hop=Math.max(1,weights.hop-1);}
   if(late){weights.sleep+=4;weights.yawn+=3;weights.stretch+=2;}
-  if(streak>=3){weights.hop+=6;weights.roll+=5;weights.wave+=3;weights.sleep=Math.max(1,weights.sleep-1);weights.yawn=Math.max(1,weights.yawn-1);}
+  if(streak>=3){weights.hop+=6;weights.wave+=3;weights.sleep=Math.max(1,weights.sleep-1);weights.yawn=Math.max(1,weights.yawn-1);}
   const entries=Object.entries(weights).filter(([action,weight])=>action!==lastPlayerPetIdleAction&&weight>0);
   let pick=Math.random()*entries.reduce((sum,[,weight])=>sum+weight,0);
   for(const [action,weight] of entries){pick-=weight;if(pick<=0)return action;}
@@ -1635,7 +1371,7 @@ function screenMenu(){
     <div class="topbar"><span class="tipbadge">🪙 ${p.tips}</span><b class="bartitle">${esc(p.name)}'s WordBar</b>
       <span class="menutopactions"><button class="iconb" id="shareGame" aria-label="Share WordBar" title="Share WordBar">↗</button><button class="iconb" id="switch" aria-label="Switch shopkeeper" title="Switch shopkeeper">👥</button></span></div>
     <div class="menucourse">${courseBadgeHTML(p.courseId)}<span class="menulang">${window.WBI18N?WBI18N.pillHTML():""}</span></div>
-    <div class="scenewrap theme-${p.settings.theme}">${cafeScene(false,"preview")}<div class="ambientlayer">${ambientSVG(THEMES[p.settings.theme].ambient)}</div><div class="standhere editable" id="editLookBarista" role="button" tabindex="0" aria-label="Change my shopkeeper’s look">${playerSVG("happy",88)}</div>${playerCafePetHTML("preview")}${daily?`<button class="dailywordchip" id="dailyWord" aria-label="Today's word: ${esc(daily.w)}"><span aria-hidden="true">💬</span><b lang="en-GB">${esc(daily.w)}</b></button>`:""}${resumeShift?`<div class="resumecard" role="group" aria-label="Carry on your shift"><div class="resumetext"><b>☕ Carry on your shift</b><small>${esc(shiftResumeLabel(resumeShift))}</small></div><div class="resumebtns"><button type="button" class="felt mini primary" id="resumeGo">Carry on</button><button type="button" class="linky" id="resumeEnd">End shift</button></div></div>`:""}</div>
+    <div class="scenewrap theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:cafeBaristaPreview(),baristaAttrs:`id="editLookBarista" data-refreshable role="button" tabindex="0" aria-label="Change my shopkeeper’s look"`,pet:playerCafePetHTML("preview")})}<div class="ambientlayer">${ambientSVG(THEMES[p.settings.theme].ambient)}</div>${daily?`<button class="dailywordchip" id="dailyWord" aria-label="Today's word: ${esc(daily.w)}"><span aria-hidden="true">💬</span><b lang="en-GB">${esc(daily.w)}</b></button>`:""}${resumeShift?`<div class="resumecard" role="group" aria-label="Carry on your shift"><div class="resumetext"><b>☕ Carry on your shift</b><small>${esc(shiftResumeLabel(resumeShift))}</small></div><div class="resumebtns"><button type="button" class="felt mini primary" id="resumeGo">Carry on</button><button type="button" class="linky" id="resumeEnd">End shift</button></div></div>`:""}</div>
     ${playerPet&&reviewStreak?`<div class="petmoodbadge"><span class="reviewstreakbadge">🔥 ${reviewStreak}-day review streak</span></div>`:""}
     ${kt.current?`<div class="krakenbadge">${kt.current.emoji} <b>${kt.current.title}</b>${kt.next?` <small>· ${kt.mastered}/${kt.next.count} to ${kt.next.secret?"???":kt.next.title}</small>`:""}</div>`:""}
     ${playerPet&&reviewCount>=15?`<div class="note reviewpetnudge">🐾 ${esc(playerPet.name.replace(/^(a|an) /i,"Your "))} would love a Review session — ${reviewCount} words are waiting!</div>`:""}
@@ -2764,29 +2500,6 @@ window.addEventListener("pageshow",()=>{ if(!document.hidden){resumeSession("bac
 function isWeekend(){const d=new Date().getDay();return d===0||d===6;}
 const rnd=n=>Math.floor(Math.random()*n);
 function dur(ms){return P().settings.motion==="reduced"?0:ms;}
-/* Build 86f: lane spacing does the layering work, because pets paint
-   BEHIND the customers ahead of them (see layoutQueue).
-
-   Stage maths (stage ~470px, actor 84px = 17.9% wide, a pet spans about
-   centre+4.5% to centre+13.9%):
-     serving 44%  body 35.1-52.9   pet 48.3-57.7
-     wait0   68%  body 59.1-76.9   pet 72.5-81.9
-     wait1   78%  body 69.1-86.9   pet 82.5-91.9
-     wait2   87%  body 78.1-95.9   pet 91.5-100.9
-
-   wait0 moved 63->68% so its body starts at 59.1%, clearing the served
-   customer's pet (ends 57.7%) instead of cutting across it. wait1/wait2
-   shift right and tighten to 10/9% spacing so wait1's pet at 82.5-91.9%
-   stays fully visible - that is the third character on stage in the
-   common one-serving-plus-two-waiting case. */
-const POS={spawn:"110%",serve:"44%",wait:["68%","78%","87%"],stash:"106%",exit:"-30%"};
-/* Food Truck keeps its distinct vertical grounding, but now shares the
-   same horizontal actor lanes as every other café. */
-const FOODTRUCK_POS=POS;
-function stagePos(kind,index){
-  const map=P().settings.theme==="foodtruck"?FOODTRUCK_POS:POS;
-  return kind==="wait"?map.wait[index]:map[kind];
-}
 const PERSONALITY_CLASS={bouncy:"pers-bouncy",shy:"pers-shy",cool:"pers-cool",brisk:"pers-brisk",formal:"pers-formal",mysterious:"pers-mysterious"};
 
 function startShift(mode, timeSeconds, resume){
@@ -2829,25 +2542,6 @@ function startShift(mode, timeSeconds, resume){
     scheduleRushSpawn(1200);
   }
   pump();
-}
-function mountStage(){
-  const T=THEMES[P().settings.theme]||THEMES.sunny;
-  show(`<section class="screen shiftscreen">
-    <div class="topbar" id="stopbar" style="position:relative"></div>
-    <div class="stage theme-${P().settings.theme}" id="stage">
-      <div class="bg">${cafeScene(false,"stage")}</div>
-      <div class="warmwash"></div>
-      <div class="ambientlayer">${ambientSVG(T.ambient)}</div>
-      <div class="barista" id="barista">${playerSVG("happy",80)}</div>
-      ${playerCafePetHTML("stage")}
-      <div id="lane"></div>
-      <div id="cup"></div>
-    </div>
-    <div class="panel felt" id="panel"><div class="waitmsg">Wiping the counter…</div></div>
-  </section>`);
-  initTopbar();
-  updateTopbar();
-  schedulePlayerPetIdle();
 }
 /* The gameplay top bar is a persistent shell. Routine queue, timer,
    score and customer changes update text/classes only; the More menu
@@ -2907,28 +2601,8 @@ function updateTopbar(){
   }
 }
 document.addEventListener("click", e=>{ const m=$("#moreMenu"); if(m&&!e.target.closest("#moreBtn")&&!e.target.closest("#moreMenu")){ m.classList.remove("open"); const b=$("#moreBtn"); if(b)b.setAttribute("aria-expanded","false"); } });
-function setBarista(expr){const b=$("#barista");if(b)b.innerHTML=playerSVG(expr,80);}
 
 /* ---- actor (customer) nodes ---- */
-function makeActor(cust,expr){
-  const node=document.createElement("div");
-  node.className="actor "+(PERSONALITY_CLASS[cust.personality]||"");
-  node.style.left=stagePos("spawn"); node.style.bottom="0px";
-  /* character SVG lives in its own .charsvg sub-div so changing the
-     expression never wipes out siblings (the pet lives alongside it) */
-  node.innerHTML=`<div class="shadow"></div><div class="charwrap sway" data-hydrated="1"><div class="charsvg">${characterSVG(cust.look,expr||"neutral",{w:84})}</div></div><div class="emoteslot"></div>`;
-  return node;
-}
-function hydrateActorVisual(entry){
-  if(!entry||!entry.node)return;const wrap=entry.node.querySelector(".charwrap");if(!wrap||wrap.dataset.hydrated==="1")return;
-  wrap.innerHTML=`<div class="charsvg">${characterSVG(entry.cust.look,entry.currentExpr||"neutral",{w:84})}</div>`;wrap.dataset.hydrated="1";entry.visualHydrated=true;if(entry.pet)attachPet(entry,entry.pet);
-}
-function dehydrateActorVisual(entry){
-  if(!entry||!entry.node||entry===SHIFT?.current)return;const wrap=entry.node.querySelector(".charwrap");if(!wrap||wrap.dataset.hydrated==="0")return;
-  wrap.replaceChildren();wrap.dataset.hydrated="0";entry.visualHydrated=false;
-}
-function setExpr(entry,expr){entry.currentExpr=expr;hydrateActorVisual(entry);const cs=entry.node&&entry.node.querySelector(".charsvg");if(cs)cs.innerHTML=characterSVG(entry.cust.look,expr,{w:84});}
-function popEmote(entry,txt){const slot=entry.node&&entry.node.querySelector(".emoteslot");if(!slot)return;const e=document.createElement("div");e.className="emote";e.textContent=txt;slot.appendChild(e);setTimeout(()=>e.remove(),1300);}
 function showImpatientEmote(entry){
   if(!entry||!entry.node)return;
   const slot=entry.node.querySelector(".emoteslot"); if(!slot)return;
@@ -2945,44 +2619,6 @@ function spawnBurst(container){
     b.style.animationDelay=(i*0.05)+"s";
     container.appendChild(b); setTimeout(()=>b.remove(),1300);
   }
-}
-function slideActor(node,left,bottom,ms,cb){
-  if(!node){cb&&cb();return;}
-  const d=dur(ms),start=node.getBoundingClientRect();
-  node.style.transition="none";node.style.transform="translateX(-50%)";
-  node.style.left=left;if(bottom!=null)node.style.bottom=bottom;
-  const end=node.getBoundingClientRect(),dx=start.left-end.left,dy=start.top-end.top;
-  if(!d){node.style.transform="translateX(-50%)";cb&&cb();return;}
-  node.style.transform=`translateX(-50%) translate3d(${dx}px,${dy}px,0)`;
-  void node.offsetWidth;
-  requestAnimationFrame(()=>{node.style.transition=`transform ${d}ms ease`;node.style.transform="translateX(-50%)";});
-  if(cb)setTimeout(cb,d+30);
-}
-function layoutQueue(){
-  if(!SHIFT)return;
-  /* Rush Hour may hold twenty waiting customers, but the stage has
-     room for three readable sprites. Previously every extra actor was
-     stacked at 96%, so later DOM nodes covered the actual next customer
-     and the whole stack was clipped by the stage edge. Keep the first
-     three (the real next-to-serve order) visible, park overflow actors
-     invisibly offstage, and promote them as the queue advances. */
-  SHIFT.queue.forEach((e,i)=>{
-    const node=e.node,visible=i<POS.wait.length;
-    if(visible)hydrateActorVisual(e);else dehydrateActorVisual(e);
-    node.setAttribute("data-q",i);
-    node.classList.toggle("queue-offstage",!visible);
-    if(visible)node.removeAttribute("aria-hidden");else node.setAttribute("aria-hidden","true");
-    /* Build 86f: pets sit BEHIND the customers ahead of them, by choice.
-       .petwrap is z-index 12 but lives inside .actor, which is its own
-       stacking context, so between actors paint order is pure DOM order
-       (left to right). 86e forced descending z-index to push pets in
-       front; Nigel prefers the natural depth of the original, so the
-       inline z-index is removed again and spacing does the work instead
-       — see POS, where the lanes are set so the served customer's pet
-       lands in the gap before the next customer rather than under it. */
-    node.style.removeProperty("z-index");
-    slideActor(node,visible?stagePos("wait",i):stagePos("stash"),null,visible?450:0);
-  });
 }
 
 function pump(){
@@ -3006,57 +2642,6 @@ function pump(){
 function recordPetGreeting(pet){
   const p=P();
   if(!p.petsMet.includes(pet.id)){ p.petsMet.push(pet.id); persist(); celebrateAchievements(checkAchievements()); }
-}
-function attachPet(entry,pet){
-  const p=P();
-  entry.pet=pet;
-  const pw=document.createElement("div");pw.className="petwrap";pw.innerHTML=petSVG(pet,"good",44);
-  pw.title="tap to say hello!";
-  pw.onclick=(e)=>{e.stopPropagation();
-    const moods=["good","excited","normal","bad"],mood=moods[rnd(moods.length)];
-    pw.innerHTML=petSVG(pet,mood,44);
-    clearTimeout(pw._moodTimer);pw._moodTimer=setTimeout(()=>{if(pw.isConnected)pw.innerHTML=petSVG(pet,"normal",44);},1500);
-    const anim=Math.random()<.5?"excited":"excited2";
-    pw.classList.remove("excited","excited2"); void pw.offsetWidth; pw.classList.add(anim);
-    pw.addEventListener("animationend",()=>pw.classList.remove(anim),{once:true});
-    AudioKit.pet(pet.species,true);popEmote(entry,"💕"); /* pure animal SFX — no spoken sentences */
-    recordPetGreeting(pet);
-    toast(`${pet.name.replace(/^a /,"The ")} ${petReactionText(pet,"tap")}`);};
-  entry.node.querySelector(".charwrap").appendChild(pw);
-  return pw;
-}
-function spawnCustomer(){
-  const S=SHIFT,p=P();
-  /* Exclude everyone currently on screen plus the last three
-     visitors, so the same face never queues twice at once. */
-  S.recentCust=S.recentCust||[];
-  const excluded=[...(S.current?[S.current.cust.id]:[]),...S.queue.map(e=>e.cust.id),...S.recentCust];
-  const ticket=buildTicket(S.streak,excluded),c=ticket.cust;
-  S.recentCust.push(c.id); if(S.recentCust.length>3)S.recentCust.shift();
-  if(c.id==="fox"&&!p.metFox){p.metFox=true;persist();}
-  if(c.id==="owl"&&!p.metOwl){p.metOwl=true;persist();}
-  if(c.id==="adeyemi"&&!p.metProf){p.metProf=true;persist();}
-  const ownPet=activePlayerPet(p);
-  const unPets=PETS.filter(x=>unlockedIds().pet.has(x.id)&&(!ownPet||x.id!==ownPet.id));
-  const pet=(Math.random()<.4&&unPets.length)?unPets[rnd(unPets.length)]:null;
-  const node=makeActor(c,"neutral");
-  const entry={ticket,cust:c,node,pet:null,qIndex:0,ticketRight:0,currentExpr:"neutral",visualHydrated:true};
-  if(pet) attachPet(entry,pet);
-  const lane=$("#lane"); if(lane)lane.appendChild(node);
-  S.queue.push(entry); S.spawned++;
-  layoutQueue(); updateTopbar();
-}
-function takeNext(){
-  const S=SHIFT;
-  if(S.current||!S.queue.length||S.debutActive) return;
-  const entry=S.queue.shift(); S.current=entry;hydrateActorVisual(entry);
-  entry.node.removeAttribute("data-q");
-  entry.node.classList.remove("queue-offstage");
-  entry.node.removeAttribute("aria-hidden");
-  entry.node.classList.add("serving");
-  entry.node.style.removeProperty("z-index");
-  layoutQueue(); setBarista("happy"); updateTopbar();
-  slideActor(entry.node,stagePos("serve"),null,dur(650),()=>panelArrival(entry));
 }
 function panelArrival(entry){
   const c=entry.cust,S=SHIFT,period=cafeDialoguePeriod(new Date());
@@ -3408,10 +2993,7 @@ function resolveAnswer(entry,q,answerText){
   persist();
   setExpr(entry,correct?"delighted":"sad"); setBarista(correct?"delighted":"happy");
   popEmote(entry,correct?"😊":"😕");
-  if(entry.pet){AudioKit.pet(entry.pet.species,correct);
-    if(correct){const pw=entry.node&&entry.node.querySelector(".petwrap");
-      if(pw){pw.classList.remove("excited","excited2"); void pw.offsetWidth; pw.classList.add("excited");
-        pw.addEventListener("animationend",()=>pw.classList.remove("excited"),{once:true});}}}
+  if(entry.pet){AudioKit.pet(entry.pet.species,correct);cafeCustomerPetReact(entry,correct);}
   updateTopbar();
   const fresh=checkAchievements();
 
@@ -3507,7 +3089,7 @@ function renderLadder(entry,q){
     if(solved)p._lifetimeCorrect=(p._lifetimeCorrect||0)+1;
     noteResult(solved);persist();
     setExpr(entry,solved?"delighted":"sad");setBarista(solved?"delighted":"happy");
-    popEmote(entry,solved?"😊":"😕");updateTopbar();
+    popEmote(entry,solved?"😊":"😕");cafeCustomerPetReact(entry,solved);updateTopbar();
     const fresh=checkAchievements();
     const advance=()=>{
       if(!SHIFT||SHIFT!==S||S.ended) return;
@@ -3579,18 +3161,6 @@ function openQuickSettings(){
 
 /* ---- ticket resolution: cup slide, tip, celebration burst, then
    auto-advance to the next customer ---- */
-function cupSlide(entry,perfect,cb){
-  const cup=$("#cup");if(!cup){cb&&cb();return;}
-  cup.innerHTML=drinkSVG(entry.ticket,perfect)+(entry.ticket.food?foodSVG(entry.ticket.food,perfect):"");
-  cup.style.transition="none";cup.style.transform="translateX(-50%)";cup.style.left="40%";cup.style.opacity="1";
-  const start=cup.getBoundingClientRect(),target=(parseFloat(entry.node.style.left)||34)-3+"%";
-  cup.style.left=target;const end=cup.getBoundingClientRect(),dx=start.left-end.left,d=dur(650);
-  if(d){
-    cup.style.transform=`translateX(-50%) translate3d(${dx}px,0,0)`;void cup.offsetWidth;
-    requestAnimationFrame(()=>{cup.style.transition=`transform ${d}ms ease, opacity .2s`;cup.style.transform="translateX(-50%)";});
-  }else cup.style.transform="translateX(-50%)";
-  setTimeout(()=>{cup.style.opacity="0";cb&&cb();},d+50);
-}
 function finishTicket(entry){
   const S=SHIFT,c=entry.cust,pp=P();
   const perfect=entry.ticketRight===entry.ticket.qs.length;
@@ -3641,16 +3211,6 @@ function finishTicket(entry){
     setTimeout(()=>{ if(SHIFT&&SHIFT===S&&!S.ended) departCurrent(); }, S.mode==="rush"?700:S.mode==="time"?1000:2400);
   });
 }
-function departCurrent(){
-  const S=SHIFT,entry=S.current;
-  if(entry){entry.node.classList.remove("serving");slideActor(entry.node,stagePos("exit"),null,dur(750),()=>entry.node&&entry.node.remove());}
-  S.current=null; updateTopbar();
-  if(S.mode==="normal" && S.served>=NORMAL_TARGET){ setTimeout(()=>endShift(false), dur(320)); return; }
-  if(S.mode==="review" && (S.served>=REVIEW_TARGET || !reviewPool().length)){ setTimeout(()=>endShift(false), dur(320)); return; }
-  if(S.pendingDebuts && S.pendingDebuts.length){ playDebut(S.pendingDebuts.shift()); return; }
-  const pnl=$("#panel"); if(pnl)pnl.innerHTML=`<div class="waitmsg">Here comes the next customer…</div>`;
-  pump();
-}
 
 /* 🎉 In-café debut: the freshly unlocked customer walks in for a bow,
    or the new pet bounds up to the counter — a proper little ceremony
@@ -3661,41 +3221,6 @@ function departCurrent(){
    a Rush spawn could start serving mid-ceremony, the ceremony then
    wiped the question panel, and the invisible question timed out into
    a wrong answer + a long "Here comes the next customer…" stall. */
-function playDebut(u){
-  const S=SHIFT; if(!S){ return; }
-  S.debutActive=true; S.popupOpen=true;
-  AudioKit.milestone();
-  if(u.type==="customer"){
-    const c=CUSTOMERS.find(x=>x.id===u.id);
-    if(!c){ departDebutDone(); return; }
-    const node=makeActor(c,null); $("#lane").appendChild(node);
-    slideActor(node,stagePos("serve"),null,dur(700),()=>{
-      spawnBurst($("#stage"));
-      popEmote({node},"🎉");
-      const pnl=$("#panel");
-      if(pnl)pnl.innerHTML=`<div class="debut felt"><b>🎉 New customer unlocked!</b>
-        <div class="debutname">${esc(c.name)}</div>
-        <small>${esc(c.blurb)}</small>
-        <div class="custsay" lang="en-GB">“${esc(c.lines.arrive[rnd(c.lines.arrive.length)])}”</div>
-        <small class="joined">${esc(c.name)} has joined the café!</small></div>`;
-      setTimeout(()=>{
-        slideActor(node,stagePos("exit"),null,dur(700),()=>node.remove());
-        setTimeout(departDebutDone, dur(750));
-      }, 2800);
-    });
-  } else {
-    const p=PETS.find(x=>x.id===u.id);
-    if(!p){ departDebutDone(); return; }
-    AudioKit.pet(p.species,true);
-    spawnBurst($("#stage"));
-    const pnl=$("#panel");
-    if(pnl)pnl.innerHTML=`<div class="debut felt"><b>🐾 New pet unlocked!</b>
-      <div class="debutpet">${petSVG(p,"good",110)}</div>
-      <div class="debutname">${esc(p.name.replace(/^a /i,""))}</div>
-      <small class="joined">might visit with a customer soon!</small></div>`;
-    setTimeout(departDebutDone, 3000);
-  }
-}
 function departDebutDone(){
   const S=SHIFT; if(!S) return;
   if(S.pendingDebuts && S.pendingDebuts.length){ playDebut(S.pendingDebuts.shift()); return; }
@@ -4015,8 +3540,8 @@ function screenShop(activeTier){
     /* Only the preview is redrawn when an item is bought/placed. The
        screen shell, tabs and current scroll position stay untouched. */
     const trying=tryOn&&SHOP.find(x=>x.id===tryOn);
-    const barista=trying?wardrobePreviewSVG(avatarLookFor(p),{...p.placed.avatar,[trying.slot]:trying.id},70):playerSVG("happy",70);
-    preview.innerHTML=`<div class="scenewrap small theme-${p.settings.theme}">${cafeScene(true,"preview")}<div class="standhere ${p.settings.theme==="foodtruck"?"foodtruck-barista":""}">${barista}</div>${playerCafePetHTML("preview")}</div>`+
+    const barista=trying?wardrobePreviewSVG(avatarLookFor(p),{...p.placed.avatar,[trying.slot]:trying.id},70):null;
+    preview.innerHTML=`<div class="scenewrap small theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:trying?cafeBaristaPreview(barista):cafeBaristaPreview(),baristaAttrs:"data-refreshable",pet:playerCafePetHTML("preview")})}</div>`+
       (trying?`<div class="tryonbar felt" role="status"><span>👀 Trying on: <b>${esc(trying.name)}</b></span><span class="tryonbtns"><button class="felt mini buy" data-buy="${trying.id}" ${p.tips<trying.price?"disabled":""}>🪙 ${trying.price}</button><button class="linky" id="tryOff">Take off</button></span></div>`:"");
   }
   function itemsForActiveTab(){
@@ -4618,7 +4143,7 @@ function screenCafeTheme(){
       <span class="thswatch" style="background:${t.wall};border-color:${t.accent}"></span>${t.name}${locked?`<small>🔒 ${t.unlock} lifetime coins</small>`:""}</button>`;}).join("");
   show(`<section class="screen cafe-theme-screen">
     <div class="topbar"><button class="iconb" id="back" aria-label="Go back">←</button><b>Café Theme</b><span></span></div>
-    <div class="scenewrap small theme-${s.theme}">${cafeScene(true,"preview")}<div class="ambientlayer">${ambientSVG(THEMES[s.theme].ambient)}</div><div class="standhere ${s.theme==="foodtruck"?"foodtruck-barista":""}">${playerSVG("happy",70)}</div>${playerCafePetHTML("preview")}</div>
+    <div class="scenewrap small theme-${s.theme}">${cafeSceneHTML("preview",{barista:cafeBaristaPreview(),baristaAttrs:"data-refreshable",pet:playerCafePetHTML("preview")})}<div class="ambientlayer">${ambientSVG(THEMES[s.theme].ambient)}</div></div>
     <div class="setcard felt"><h3>Lighting</h3>
       <div class="setrow"><span>Café lighting</span><select id="cafeLighting">
         ${[["auto","Automatic (phone time)"],["day","Always day"],["night","Always night"]].map(([v,n])=>`<option value="${v}" ${s.lightingMode===v?"selected":""}>${n}</option>`).join("")}

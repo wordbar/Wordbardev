@@ -1731,6 +1731,97 @@ body.reduce #kTimer.khurry{animation:none}
   .mainmenu-screen .menuclustergrid .felt{min-height:52px;padding:4px 3px}
   .mainmenu-screen .menuclustergrid .bemoji{font-size:1.36rem!important}
 }
+/* ============================================================
+   S13 café stage — open-entry layout on the supplied artwork.
+   One 360×274 design box (the reference picture's shape) holds the
+   café layers; people and pets are placed in it by cafe-stage.js.
+   ============================================================ */
+.stage{width:100%;height:min(calc((100vw - 30px)/1.3139),34dvh)!important;container-type:size;margin:4px 0}
+.scenewrap{container-type:size}
+.scenewrap.small{aspect-ratio:360/274;max-height:34dvh;height:auto}
+/* the café keeps its exact shape and is never cropped; in a wider box the
+   walls and floor simply carry on at the sides */
+.scenebox{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;aspect-ratio:360/274}
+@supports (width:1cqh){.scenebox{width:min(100cqw,131.39cqh)}}
+.scenebox>*{position:absolute;inset:0}
+.cafe-layer{overflow:visible}
+.cafe-back{z-index:0}.stage #laneB{z-index:1}.cafe-front{z-index:2}.stage #laneF{z-index:3}.stage #laneT{z-index:4}.cafe-light{z-index:5}.stage .fxlayer{z-index:6}
+.cafe-layer{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage .lane,.stage .fxlayer{position:absolute;inset:0;pointer-events:none}
+.door-leaf{transition:transform .5s ease;transform-box:fill-box;transform-origin:100% 50%}
+.cafe-back.door-open .door-leaf{transform:scaleX(.18)}
+.hl-glow{opacity:.35;animation:wbLightPulse 4s ease-in-out infinite}
+body.cafe-night .hl-glow{opacity:1}
+@keyframes wbLightPulse{50%{opacity:.6}}
+.aurora-strength{opacity:.22}body.cafe-night .aurora-strength{opacity:.8}
+.aurora-band{transform-box:view-box;transform-origin:400px 100px;animation:wbAuroraFloat 12s ease-in-out infinite}
+.aurora-band.b2{animation-duration:15s;animation-delay:-5s}.aurora-band.b3{animation-duration:18s;animation-delay:-9s}
+@keyframes wbAuroraFloat{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
+.cafe-layer .steam{animation:wbSteam 2.6s ease-in-out infinite}
+@keyframes wbSteam{0%,100%{opacity:.2}50%{opacity:.9}}
+body.reduce .hl-glow,body.reduce .aurora-band,body.reduce .cafe-layer .steam,body.psave .hl-glow,body.psave .aurora-band,body.psave .cafe-layer .steam{animation:none}
+/* people: motion on the character pack's own joints */
+.person{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;--dir:1}
+.person.waiting-offstage{visibility:hidden}
+.person .inner{position:relative;width:100%;height:100%;transform-origin:50% 96%}
+.person .inner>svg{width:100%;height:100%;display:block;overflow:visible}
+.person.fallback .inner>svg{height:auto}
+.person .emoteslot{position:absolute;left:50%;top:6%;width:0;height:0;z-index:2}
+.person [data-joint]{transform-box:view-box;transform-origin:0 0}
+.person.idle .inner{animation:wbBreathe 3.4s ease-in-out infinite}
+@keyframes wbBreathe{50%{transform:scaleY(1.008)}}
+.person.walk .inner{animation:wbGait .8s ease-in-out infinite}
+@keyframes wbGait{0%,50%,100%{transform:translateY(0) rotate(calc(var(--dir)*1.2deg))}12%,62%{transform:translateY(2.2%) rotate(calc(var(--dir)*1.2deg))}30%,80%{transform:translateY(-1.6%) rotate(calc(var(--dir)*1.6deg))}}
+.person.walk [data-joint="thigh-l"]{animation:wbLift .8s ease-in-out infinite}
+.person.walk [data-joint="thigh-r"]{animation:wbLift .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes wbLift{0%,50%,100%{transform:none}25%{transform:translateY(-10px) scaleY(.9)}}
+.person.walk [data-joint="foot-l"]{animation:wbToe .8s ease-in-out infinite}
+.person.walk [data-joint="foot-r"]{animation:wbToe .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes wbToe{0%,50%,100%{transform:none}25%{transform:translateY(-3px)}}
+.person.walk [data-joint="arm-l"]{animation:wbSwing .8s ease-in-out infinite}
+.person.walk [data-joint="arm-r"]{animation:wbSwing .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes wbSwing{0%,100%{transform:rotate(calc(var(--flip,1)*6deg))}50%{transform:rotate(calc(var(--flip,1)*-6deg))}}
+.person.walk .holding,.person.wave .holding{animation:none!important}
+.person.walk [data-joint="head"]{animation:wbHeadWalk .8s ease-in-out infinite}
+@keyframes wbHeadWalk{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-1.4deg)}75%{transform:rotate(1.4deg)}}
+.person.wave .waver{animation:wbRaise 2.4s ease-in-out forwards}
+@keyframes wbRaise{0%,100%{transform:rotate(0)}16%{transform:rotate(calc(var(--ra)*1.04deg))}24%{transform:rotate(calc(var(--ra)*1deg))}84%{transform:rotate(calc(var(--ra)*1deg))}}
+.person.wave .waverF{animation:wbWaveFore 2.4s ease-in-out forwards}
+@keyframes wbWaveFore{0%,16%,88%,100%{transform:rotate(0)}30%,58%{transform:rotate(calc(var(--wi)*-24deg))}44%,72%{transform:rotate(calc(var(--wi)*5deg))}}
+.person.wave [data-joint="head"]{animation:wbTilt 2.4s ease-in-out forwards}
+@keyframes wbTilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
+.person.hop .inner{animation:wbHop 1.15s ease-in-out}
+@keyframes wbHop{0%,100%{transform:none}15%{transform:translateY(3%) scaleY(.96)}32%{transform:translateY(-12%) scaleY(1.03)}46%{transform:translateY(-13%)}62%{transform:translateY(0)}74%{transform:translateY(2.5%) scaleY(.97)}}
+.person.nod [data-joint="head"]{animation:wbNod .55s ease-in-out 2}
+@keyframes wbNod{50%{transform:translateY(5px) rotate(-1deg)}}
+body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{animation:none!important}
+.held{position:absolute;pointer-events:none;z-index:1}.held svg{width:100%;height:100%;display:block}
+.barista-waist{position:absolute;left:0;top:0;pointer-events:none}.barista-waist svg{width:100%;height:auto;display:block}
+/* pets on the pet pack's joints; only taps reach them */
+.petactor{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;opacity:0;transition:opacity .3s}
+.petactor.shown,.petactor.playerpet-rig{opacity:1}
+.petactor .pflip,.petactor .pbody{width:100%;height:100%}
+.petactor .pbody{transform-origin:50% 91%}
+.petactor svg{width:100%;height:100%;display:block;overflow:visible}
+.petactor [data-joint],.petactor .pet-acc-wrap{transform-box:view-box;transform-origin:0 0}
+.petactor:focus-visible{outline:none;filter:drop-shadow(0 0 3px #FFF) drop-shadow(0 0 2px var(--berry))}
+.petactor .playerpetemote{top:-6%}
+.orderitem{position:absolute;left:0;top:0;display:flex;align-items:flex-end;gap:1px;opacity:0;pointer-events:none;transform-origin:50% 100%}
+.orderitem>svg,.orderitem .foodartsprite,.orderitem .foodartsprite img{height:100%;width:auto;flex:0 0 auto}
+/* previews (menu, shop, theme): barista and pet at their real spots */
+.scenebox>.scene-barista{position:absolute;top:auto;right:auto;transform:translateX(-50%);z-index:1}
+.scene-barista svg{width:100%;height:auto;display:block;overflow:visible}
+.scene-barista[role="button"]{cursor:pointer;pointer-events:auto}
+.scenebox>.scene-pet{position:absolute;top:auto;right:auto;transform:translateX(-50%);z-index:3}
+.scene-pet .playerpetspot{position:relative;left:auto;bottom:auto;transform:none;width:100%;height:auto;display:block}
+.scene-pet .playerpetbody{display:block}
+.scene-pet svg{width:100%!important;height:auto!important;display:block;overflow:visible}
+.cafepet-wrap{display:inline-block;line-height:0}
+/* no rolling in the café: preview pets wiggle gently instead */
+.pet-wiggle .playerpetbody{animation:wbPetWiggle 1.25s ease}
+@keyframes wbPetWiggle{0%,100%{transform:none}25%{transform:translateX(-3px) rotate(-5deg)}55%{transform:translateX(3px) rotate(5deg)}80%{transform:translateY(-3px)}}
+.pet-look .playerpetbody{animation:wbPetLook 1.45s ease}
+@keyframes wbPetLook{0%,100%{transform:none}30%{transform:rotate(-4deg)}65%{transform:rotate(4deg)}}
 </style>
 </head>
 <body>
@@ -1753,6 +1844,7 @@ body.reduce #kTimer.khurry{animation:none}
 <script type="module" src="spelling-v16-browser.mjs?v=batchS8b"></script>
 <script defer src="pet-pop.js?v=batchS12d"></script>
 <script defer src="analytics.js?v=analytics8-batchS12d"></script>
-<script defer src="06-ui.js?v=batchS12d"></script>
+<script defer src="cafe-stage.js?v=batchS13"></script>
+<script defer src="06-ui.js?v=batchS13"></script>
 </body>
 </html>
