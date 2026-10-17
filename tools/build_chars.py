@@ -89,6 +89,8 @@ def write(root, path):
     root.set("focusable", "false")
     data = etree.tostring(root, encoding="unicode")
     data = re.sub(r">\s+<", "><", data)
+    # hands use non-scaling strokes, which swamp them in small portraits
+    data = data.replace(' vector-effect="non-scaling-stroke"', "")
     with open(path, "w") as fh:
         fh.write(data)
     return len(data)

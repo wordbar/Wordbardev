@@ -451,6 +451,9 @@ footer.tiny{text-align:center;font-size:.7rem;color:var(--ink-soft);padding:8px 
 .customize-screen .custpreview{width:112px;height:138px;align-items:flex-start;overflow:visible}
 .customize-screen .custpreview svg{width:102px;transform:translateY(7px)!important}
 .customize-screen .custfooter{position:relative;z-index:4}
+.customize-screen .custpreview svg{transition:transform .3s ease!important;transform-origin:50% 24%}
+.customize-screen .custstage.zoom-face .custpreview svg{transform:translateY(22px) scale(1.85)!important}
+body.reduce .customize-screen .custpreview svg{transition:none!important}
 @media(max-height:760px) and (max-width:430px){
   .customize-screen{--cust-selection-h:294px;--cust-preview-h:102px;gap:3px;padding-top:4px}
   .customize-screen .custintro{font-size:.63rem}
@@ -1739,6 +1742,9 @@ body.reduce #kTimer.khurry{animation:none}
 /* S13b: the shared café height (Build 79 rule: width-only) is ~20% taller,
    matching the café's own 330×300 shape so it fills the box exactly */
 :root{--wordbar-cafe-height:min(calc((100vw - 30px)*.8),300px)}
+/* short portrait phones (iPhone SE and similar): a third of the screen, so all four answers stay on screen */
+@media (orientation:portrait) and (max-height:720px){:root{--wordbar-cafe-height:min(calc((100vw - 30px)*.8),300px,calc(100dvh*.31))}
+  .opts:not(.small){grid-template-columns:1fr 1fr!important}.opt{min-height:52px}}
 @media (orientation:landscape) and (max-height:520px){:root{--wordbar-cafe-height:min(calc((100vw - 36px)*.556),148px)}}
 .stage{width:100%;container-type:size;margin:4px 0}
 .scenewrap{container-type:size}
@@ -1748,7 +1754,10 @@ body.reduce #kTimer.khurry{animation:none}
 /* S13b: the café always covers its box (no empty bands); when the box
    is wider than the café, only a little ceiling is trimmed */
 .scenebox{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;aspect-ratio:375/300}
-@supports (width:1cqh){.scenebox{width:max(100cqw,125cqh)}}
+/* the whole café always fits the box height: a wide box (landscape, tablets)
+   shows the full room with the extended walls at the sides instead of cutting
+   off heads; the box is never taller than the room, so nothing else changes */
+@supports (width:1cqh){.scenebox{width:125cqh}}
 .scenebox>*{position:absolute;inset:0}
 .cafe-layer{overflow:visible}
 .cafe-back{z-index:0}.stage #laneB{z-index:1}.cafe-front{z-index:2}.stage #laneF{z-index:3}.stage #laneT{z-index:4}.cafe-light{z-index:5}.stage .fxlayer{z-index:6}
@@ -1759,7 +1768,14 @@ body.reduce #kTimer.khurry{animation:none}
 .hl-glow{opacity:.35;animation:wbLightPulse 4s ease-in-out infinite}
 body.cafe-night .hl-glow{opacity:1}
 @keyframes wbLightPulse{50%{opacity:.6}}
-.aurora-strength{opacity:.22}body.cafe-night .aurora-strength{opacity:.8}
+.aurora-strength{opacity:.42}body.cafe-night .aurora-strength{opacity:.8}
+.fx-drop{animation:wbDrop 1.65s ease-in infinite;opacity:0}
+@keyframes wbDrop{0%{transform:translateY(0);opacity:0}12%{opacity:1}85%{opacity:1}100%{transform:translateY(var(--fall));opacity:0}}
+.fx-glow{animation:wbTube 2.2s ease-in-out infinite;mix-blend-mode:screen}
+@keyframes wbTube{0%,100%{opacity:.15}50%{opacity:.6}}
+.fx-note{animation:wbNote 2.8s ease-out infinite;opacity:0}
+@keyframes wbNote{0%{transform:translate(0,0);opacity:0}20%{opacity:.9}100%{transform:translate(4px,-14px);opacity:0}}
+body.reduce .decor-fx,body.psave .decor-fx{display:none}
 .aurora-band{transform-box:view-box;transform-origin:400px 100px;animation:wbAuroraFloat 12s ease-in-out infinite}
 .aurora-band.b2{animation-duration:15s;animation-delay:-5s}.aurora-band.b3{animation-duration:18s;animation-delay:-9s}
 @keyframes wbAuroraFloat{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
@@ -1795,10 +1811,10 @@ body.reduce .hl-glow,body.reduce .aurora-band,body.reduce .cafe-layer .steam,bod
 @keyframes wbHeadWalk{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-1.4deg)}75%{transform:rotate(1.4deg)}}
 .person.wave .waver{animation:wbRaise 1.8s ease-in-out forwards}
 @keyframes wbRaise{0%,100%{transform:rotate(0)}18%,84%{transform:rotate(calc(var(--ra)*1deg))}}
-.person.wave .waverF{animation:wbWaveFore 1.8s ease-in-out forwards}
-/* a small "hi": the arm lifts to shoulder height and the forearm gives two
-   little waves; the elbow bend stays small so the sleeve joint never opens */
-@keyframes wbWaveFore{0%,100%{transform:rotate(0)}22%{transform:rotate(calc(var(--wi)*34deg))}36%{transform:rotate(calc(var(--wi)*20deg))}50%{transform:rotate(calc(var(--wi)*34deg))}64%{transform:rotate(calc(var(--wi)*20deg))}80%{transform:rotate(calc(var(--wi)*28deg))}}
+/* a small "hi": the straight arm lifts to shoulder height and the hand
+   gives two little waves from the wrist, so no joint ever opens */
+.person.wave .waverH{animation:wbWaveHand 1.8s ease-in-out forwards}
+@keyframes wbWaveHand{0%,100%{transform:rotate(0)}18%,80%{transform:rotate(calc(var(--wi)*24deg))}30%,54%{transform:rotate(calc(var(--wi)*38deg))}42%,66%{transform:rotate(calc(var(--wi)*12deg))}}
 .person.wave [data-joint="head"]{animation:wbTilt 1.8s ease-in-out forwards}
 @keyframes wbTilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
 .person.hop .inner{animation:wbHop 1.15s ease-in-out}

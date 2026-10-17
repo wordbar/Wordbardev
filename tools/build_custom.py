@@ -122,6 +122,7 @@ def clean_markup(el):
     s = re.sub(r"\s*display:\s*inline;?", "", s)
     s = re.sub(r'\s(data-(?:review-status|version|refinement|face-trial|motion-revision|palette-mode|joint-placement|nominal-scale|root-x|root-y|taper|follow|hand-standard))="[^"]*"', "", s)
     s = re.sub(r"(\d+\.\d{3})\d+", r"\1", s)
+    s = s.replace(' vector-effect="non-scaling-stroke"', "")
     return s
 
 

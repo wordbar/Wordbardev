@@ -1033,6 +1033,8 @@ function screenCustomize(prefillName,courseId=BootCoordinator.draftCourseId||COU
     activeCat=cat;
     $$('[data-custom-tab]').forEach(b=>{const on=b.dataset.customTab===cat;b.classList.toggle("on",on);b.setAttribute("aria-selected",String(on));});
     $$('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==cat);
+    /* eyes, face and glasses are small: the preview zooms in on the head */
+    const st=$(".custstage");if(st)st.classList.toggle("zoom-face",["eyes","face","glasses"].includes(cat));
     const panels=$(".custpanels");if(panels)panels.scrollTop=0;
   }
   /* a worn Shop clothing item / dye is what the barista shows, so the free
@@ -2991,7 +2993,7 @@ function resolveAnswer(entry,q,answerText){
     }
   }
   persist();
-  setExpr(entry,correct?"delighted":"sad"); setBarista(correct?"delighted":"happy");
+  setExpr(entry,correct?"delighted":"sad"); setBarista(correct?"delighted":"sad");
   /* S13b: the faces now show the reaction; no emoji pop-up */
   if(entry.pet){AudioKit.pet(entry.pet.species,correct);cafeCustomerPetReact(entry,correct);}
   updateTopbar();
@@ -3088,7 +3090,7 @@ function renderLadder(entry,q){
     S.answers++;p._lifetimeAnswers=(p._lifetimeAnswers||0)+1;wbNoteKind(S,"ladder",solved);
     if(solved)p._lifetimeCorrect=(p._lifetimeCorrect||0)+1;
     noteResult(solved);persist();
-    setExpr(entry,solved?"delighted":"sad");setBarista(solved?"delighted":"happy");
+    setExpr(entry,solved?"delighted":"sad");setBarista(solved?"delighted":"sad");
     cafeCustomerPetReact(entry,solved);updateTopbar();
     const fresh=checkAchievements();
     const advance=()=>{
@@ -3207,7 +3209,7 @@ function finishTicket(entry){
       <div class="drinkline">${drinkSVG(entry.ticket,perfect)}${entry.ticket.food?foodSVG(entry.ticket.food,perfect):""}<div><b>${entry.ticket.drinkEmoji||"🍹"} ${esc(entry.ticket.drink)}</b>${entry.ticket.food?`<br><b>${entry.ticket.food.emoji} ${esc(entry.ticket.food.name)}</b>`:""}<br><small>${perfect?"Made to perfection! ✨":"A decent effort — nearly perfect!"}</small></div></div>
       <div class="custsay" lang="en-GB">“${esc(dep)}”</div>
       <div class="tipline">+${tip} tips ${COIN} ${perfect&&S.streak>1?`<span class="pill">🔥 streak ×${S.streak}</span>`:""}${S.weekend?`<span class="pill">🎉 rush +20%</span>`:""}</div></div>`;
-    setTimeout(()=>{ if(SHIFT&&SHIFT===S&&!S.ended) departCurrent(); }, S.mode==="rush"?700:S.mode==="time"?1000:2400);
+    shiftDelay(()=>{ if(SHIFT&&SHIFT===S&&!S.ended) departCurrent(); }, S.mode==="rush"?700:S.mode==="time"?1000:2400);
   });
 }
 
