@@ -20,6 +20,8 @@
    used as small WebP sprites (art/decor), surfaces as tiling textures.
    ============================================================ */
 const CAFE_W=360, CAFE_H=274;
+/* the game's gold coin icon (styled in index.html) */
+const COIN='<i class="wbcoin" aria-hidden="true"></i>';
 /* Trimmed sprite sizes from tools/build_decor.py (decor-meta.json). */
 const DECOR_META={"bunting_rainbow":{"w":360,"h":75},"fairylights":{"w":360,"h":59},"lantern_paper":{"w":360,"h":86},"stars_paper":{"w":360,"h":57},"cakedome":{"w":191,"h":210},"clock_station":{"w":210,"h":210},"flowerbox":{"w":300,"h":114},"fountain_gold":{"w":171,"h":210},"gumball":{"w":124,"h":210},"jukebox":{"w":167,"h":220},"lamp_brass":{"w":160,"h":210},"lamp_rose":{"w":169,"h":210},"menu_chalk":{"w":149,"h":210},"mug_rack":{"w":180,"h":105},"mural_market":{"w":240,"h":123},"plant_monstera":{"w":178,"h":210},"portrait_fox":{"w":210,"h":209},"poster_abc":{"w":159,"h":210},"poster_fruit":{"w":159,"h":210},"print_seaside":{"w":210,"h":125},"radio_retro":{"w":210,"h":153},"rug_ocean":{"w":360,"h":96},"rug_rose":{"w":360,"h":101},"rug_stripe":{"w":360,"h":104},"shelf_books":{"w":240,"h":120},"shelf_kegs":{"w":200,"h":118},"shelf_trophies":{"w":240,"h":89},"stool_cherry":{"w":151,"h":210},"stool_oak":{"w":158,"h":210},"stool_simple":{"w":141,"h":210},"stool_velvet":{"w":144,"h":210},"window_awning":{"w":299,"h":330},"window_stained":{"w":250,"h":330},"petbasket":{"w":240,"h":145},"petbed_cloud":{"w":240,"h":161}};
 const DECOR_TILES=new Set(["counter_marble","floor_cocoa","floor_honey","floor_slate","tiles_terra","wall_blush","wall_meadow","wall_sky","wall_sunny"]);
@@ -815,7 +817,7 @@ function layoutQueue(){
 function attachPet(entry,pet){
   entry.pet=pet;const a=entry.actor;
   const pt=cafeNewPet(pet.id,{lane:"b",x:a?a.x:CAFE_GEO.doorIn.x,g:a?a.feet:CAFE_GEO.doorIn.feet,box:CAFE_PBOX*.84});
-  pt.owner=a;pt.state="follow";entry.petActor=pt;pt.el.classList.add("petwrap");
+  pt.owner=a;pt.state="follow";entry.petActor=pt;pt.el.classList.add("customer-pet");
   pt.el.title="tap to say hello!";
   const art=CafeArt.get("pets",pet.id);const dress=t=>{cafeDressPet(pt,t,petSVG(pet,"good",44));petPlay(pt,"idle");};
   if(art)dress(art);else CafeArt.load("pets",pet.id).then(dress);
@@ -889,7 +891,9 @@ function cupSlide(entry,perfect,cb){
   const cup=document.createElement("div");cup.className="orderitem";cup.innerHTML=drinkSVG(entry.ticket,perfect)+(entry.ticket.food?foodSVG(entry.ticket.food,perfect):"");
   laneT.appendChild(cup);
   const h=24,top=CAFE_GEO.counterTopY+1-h;
-  cup.style.height=sy(h)+"px";cup.style.transform=`translate(${sx(64)}px,${sy(top)}px) scale(.7)`;
+  cup.style.height=sy(h)+"px";
+  cup.querySelectorAll(".foodartsprite,.foodartsprite img").forEach(n=>{n.style.height=sy(h)+"px";n.style.width=sy(h*52/49)+"px";n.style.flex="0 0 auto";});
+  cup.style.transform=`translate(${sx(64)}px,${sy(top)}px) scale(.7)`;
   const d=dur(650);
   requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(64)}px,${sy(top)}px)`;
     setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-30)}px,${sy(top)}px)`;
@@ -1084,3 +1088,11 @@ function playerCafePetHTML(context="stage"){
 /* the eight ready-made baristas are needed on the first menu; pets soon after */
 setTimeout(()=>{["mei","marcus","tomek","hana","amara","arjun","finn","leo"].forEach(id=>CafeArt.load("chars",id));},300);
 setTimeout(()=>{if(typeof PETS!=="undefined")CafeArt.preload("pets",PETS.map(x=>x.id));},2500);
+
+/* shop tiles show the café decoration's own artwork */
+function cafeShopArt(it){
+  if(!it||it.dest!=="cafe")return "";
+  if(DECOR_META[it.id]||DECOR_TILES.has(it.id))return `<img src="${decorSrc(it.id)}" alt="" loading="lazy">`;
+  if(it.id==="aurora")return `<img src="${ART_DIR}decor/aurora.svg" alt="" loading="lazy">`;
+  return "";
+}

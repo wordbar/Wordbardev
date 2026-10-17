@@ -1368,7 +1368,7 @@ function screenMenu(){
   const daily=learningAvailable&&isFirstMenuViewToday()?wordOfTheDay():null;
   const resumeShift=learningAvailable?validShiftResume():null;   /* S9b */
   show(`<section class="screen mainmenu-screen">
-    <div class="topbar"><span class="tipbadge">🪙 ${p.tips}</span><b class="bartitle">${esc(p.name)}'s WordBar</b>
+    <div class="topbar"><span class="tipbadge">${COIN} ${p.tips}</span><b class="bartitle">${esc(p.name)}'s WordBar</b>
       <span class="menutopactions"><button class="iconb" id="shareGame" aria-label="Share WordBar" title="Share WordBar">↗</button><button class="iconb" id="switch" aria-label="Switch shopkeeper" title="Switch shopkeeper">👥</button></span></div>
     <div class="menucourse">${courseBadgeHTML(p.courseId)}<span class="menulang">${window.WBI18N?WBI18N.pillHTML():""}</span></div>
     <div class="scenewrap theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:cafeBaristaPreview(),baristaAttrs:`id="editLookBarista" data-refreshable role="button" tabindex="0" aria-label="Change my shopkeeper’s look"`,pet:playerCafePetHTML("preview")})}<div class="ambientlayer">${ambientSVG(THEMES[p.settings.theme].ambient)}</div>${daily?`<button class="dailywordchip" id="dailyWord" aria-label="Today's word: ${esc(daily.w)}"><span aria-hidden="true">💬</span><b lang="en-GB">${esc(daily.w)}</b></button>`:""}${resumeShift?`<div class="resumecard" role="group" aria-label="Carry on your shift"><div class="resumetext"><b>☕ Carry on your shift</b><small>${esc(shiftResumeLabel(resumeShift))}</small></div><div class="resumebtns"><button type="button" class="felt mini primary" id="resumeGo">Carry on</button><button type="button" class="linky" id="resumeEnd">End shift</button></div></div>`:""}</div>
@@ -2140,7 +2140,7 @@ function screenKitchenMenu(tab=KITCHEN_MENU_TAB,skipTutorialGate=false){
   if(!skipTutorialGate&&!k.tutorial.completed&&!k.tutorial.skipped){startKitchenTutorial();return;}
   KITCHEN_MENU_TAB=KITCHEN_MENU_CATEGORIES.some(x=>x.id===tab)?tab:"drinks";const isDrinks=KITCHEN_MENU_TAB==="drinks",foods=isDrinks?[]:KITCHEN_FOODS.filter(x=>x.category===KITCHEN_MENU_TAB),unlockedChallenge=KITCHEN_CHALLENGE_FOODS.filter(x=>k.unlockedFoods.includes(x.id)).length,totalChallenges=KITCHEN_CHALLENGE_FOODS.length,dailyUsed=kitchenDailyRewardsUsed(k);
   const content=isDrinks?`<div class="kitchenfoodgrid">${kitchenDrinkCards(k)}</div>`:`<div class="kitchenfoodgrid">${foods.map(food=>kitchenMenuCard(food,k)).join("")}</div>`;
-  show(`<section class="screen center kitchenmenu"><div class="topbar"><button class="iconb" id="back">←</button><b>Kitchen menu</b><span class="pill">Drinks & recipes</span></div><div class="note"><b>Your café menu:</b> complete Kitchen challenges to unlock Smoothies, Fizzy Drinks, Burger, Hot Dog and more.</div><div class="kitchenmenustats"><span>🍽️ ${unlockedChallenge}/${totalChallenges} recipes</span><span>🎁 Daily rewards: ${dailyUsed}/${KITCHEN_CONFIG.dailyPaidCompletions}</span><span>🪙 ${p.tips}</span></div><div class="tabbar kitchentabs">${KITCHEN_MENU_CATEGORIES.map(c=>`<button class="tab ${c.id===KITCHEN_MENU_TAB?"on":""}" data-kitchen-menu-tab="${c.id}">${c.emoji} ${esc(c.name)}</button>`).join("")}</div>${content}<div class="custactions"><button class="felt mini" id="kStats">Kitchen stats</button><button class="felt mini" id="kTutorialReplay">Replay tutorial</button></div></section>`);
+  show(`<section class="screen center kitchenmenu"><div class="topbar"><button class="iconb" id="back">←</button><b>Kitchen menu</b><span class="pill">Drinks & recipes</span></div><div class="note"><b>Your café menu:</b> complete Kitchen challenges to unlock Smoothies, Fizzy Drinks, Burger, Hot Dog and more.</div><div class="kitchenmenustats"><span>🍽️ ${unlockedChallenge}/${totalChallenges} recipes</span><span>🎁 Daily rewards: ${dailyUsed}/${KITCHEN_CONFIG.dailyPaidCompletions}</span><span>${COIN} ${p.tips}</span></div><div class="tabbar kitchentabs">${KITCHEN_MENU_CATEGORIES.map(c=>`<button class="tab ${c.id===KITCHEN_MENU_TAB?"on":""}" data-kitchen-menu-tab="${c.id}">${c.emoji} ${esc(c.name)}</button>`).join("")}</div>${content}<div class="custactions"><button class="felt mini" id="kStats">Kitchen stats</button><button class="felt mini" id="kTutorialReplay">Replay tutorial</button></div></section>`);
   $("#back").onclick=()=>{AudioKit.tap();screenMenu();};$$('[data-kitchen-menu-tab]').forEach(b=>b.onclick=()=>{AudioKit.tap();screenKitchenMenu(b.dataset.kitchenMenuTab);});$$('[data-kitchen-food]').forEach(b=>b.onclick=()=>{AudioKit.tap();screenKitchenIntro(b.dataset.kitchenFood);});$("#kStats").onclick=()=>{AudioKit.tap();screenKitchenStats();};$("#kTutorialReplay").onclick=()=>{AudioKit.tap();startKitchenTutorial();};
 }
 function kitchenPct(num,den){return den?Math.round(num*100/den):0;}
@@ -2214,7 +2214,7 @@ function renderKitchenChallenge(){
     const selectionIndex=selectedCursor,entered=filledChars[selectedCursor++]||"",returnable=!!entered&&(mode==="scramble"||(mode==="conveyor"&&selectionIndex===filledChars.length-1)),classes=`slot ${entered?"fill":""} ${returnable?"returnable":""}`;
     return returnable?`<button class="${classes}" data-kitchen-answer-index="${selectionIndex}" aria-label="Remove selected letter ${entered}">${entered}</button>`:`<div class="${classes}">${entered}</div>`;
   }).join("");
-  show(`<section class="screen center kitchenchallenge"><div class="topbar"><button class="felt mini kitchenexit" id="back" aria-label="Pause">⏸️ Pause</button><b>${esc(food.name)}</b><span class="pill">Kitchen</span></div><div class="kitchenstatus"><span>Round ${Math.min(7,run.correct+1)} · ${kitchenModeLabel(mode)}</span><span id="kTimer">⏱️ ${kitchenRemainingSeconds(run)}s</span><span id="kScore">✓ ${run.correct}/7 · ✕ ${run.mistakes}/${KITCHEN_CONFIG.submittedMistakesAllowed}</span></div><div class="kitchenprogresslabel">${esc(kitchenProgressFeeling(run,template))}</div><div class="kitchenprogress">${kitchenProgressHTML(run,template)}</div><div class="kitchenlab felt" data-kitchen-mode="${mode}"><div class="kitchenchefbubble">👩‍🍳 ${esc(run.chefComment||kitchenChefLine(run.correct===6?"final":"next",run))}</div><h3>${title}</h3><div class="kitchencluehead"><span>${kitchenClueLabel(q?.kind)}</span>${masteryBadge(q?.wid)}<span>${answer.length} letters</span></div><div class="kitchenprompt" lang="en-GB">${q?q.text:"Question unavailable."}</div><div class="kitchenanswer" aria-label="Answer with given letters in position">${slots}</div>${inputHTML}<div class="kitchenhintbar"><button class="felt" id="kRevealHint" ${run.extraLetterBought?"disabled":""}>${run.extraLetterBought?"Letter revealed":`+ letter · ${KITCHEN_CONFIG.extraLetterCost} 🪙`}</button><button class="felt" id="kPronounceHint">${run.pronunciationBought?"🔊 Hear again":`🔊 Hear · ${KITCHEN_CONFIG.pronunciationCost} 🪙`}</button></div><div class="custactions"><button class="felt big" id="kBackLetter" ${hasInput?"":"disabled"}>Undo letter</button><button class="felt big" id="kClear" ${hasInput?"":"disabled"}>Clear</button><button class="felt big primary" id="kSubmit" ${canSubmit?"":"disabled"}>Check answer</button></div></div></section>`);
+  show(`<section class="screen center kitchenchallenge"><div class="topbar"><button class="felt mini kitchenexit" id="back" aria-label="Pause">⏸️ Pause</button><b>${esc(food.name)}</b><span class="pill">Kitchen</span></div><div class="kitchenstatus"><span>Round ${Math.min(7,run.correct+1)} · ${kitchenModeLabel(mode)}</span><span id="kTimer">⏱️ ${kitchenRemainingSeconds(run)}s</span><span id="kScore">✓ ${run.correct}/7 · ✕ ${run.mistakes}/${KITCHEN_CONFIG.submittedMistakesAllowed}</span></div><div class="kitchenprogresslabel">${esc(kitchenProgressFeeling(run,template))}</div><div class="kitchenprogress">${kitchenProgressHTML(run,template)}</div><div class="kitchenlab felt" data-kitchen-mode="${mode}"><div class="kitchenchefbubble">👩‍🍳 ${esc(run.chefComment||kitchenChefLine(run.correct===6?"final":"next",run))}</div><h3>${title}</h3><div class="kitchencluehead"><span>${kitchenClueLabel(q?.kind)}</span>${masteryBadge(q?.wid)}<span>${answer.length} letters</span></div><div class="kitchenprompt" lang="en-GB">${q?q.text:"Question unavailable."}</div><div class="kitchenanswer" aria-label="Answer with given letters in position">${slots}</div>${inputHTML}<div class="kitchenhintbar"><button class="felt" id="kRevealHint" ${run.extraLetterBought?"disabled":""}>${run.extraLetterBought?"Letter revealed":`+ letter · ${KITCHEN_CONFIG.extraLetterCost} ${COIN}`}</button><button class="felt" id="kPronounceHint">${run.pronunciationBought?"🔊 Hear again":`🔊 Hear · ${KITCHEN_CONFIG.pronunciationCost} ${COIN}`}</button></div><div class="custactions"><button class="felt big" id="kBackLetter" ${hasInput?"":"disabled"}>Undo letter</button><button class="felt big" id="kClear" ${hasInput?"":"disabled"}>Clear</button><button class="felt big primary" id="kSubmit" ${canSubmit?"":"disabled"}>Check answer</button></div></div></section>`);
   $("#back").onclick=()=>pauseKitchen();$$('[data-kitchen-tile]').forEach(b=>b.onclick=()=>kitchenPickTile(b.dataset.kitchenTile));$$('[data-kitchen-answer-index]').forEach(b=>b.onclick=()=>kitchenReturnAnswer(Number(b.dataset.kitchenAnswerIndex)));$$('[data-kitchen-path-cell]').forEach(b=>b.onclick=()=>{if(Date.now()<KITCHEN_PATH_POINTER.ignoreClickUntil)return;kitchenPickPathCell(Number(b.dataset.kitchenPathCell));});if(mode==="path")bindKitchenPathDrag();$("#kBackLetter").onclick=()=>kitchenBackAnswer();$("#kClear").onclick=()=>kitchenClearAnswer();$("#kSubmit").onclick=()=>kitchenSubmitAnswer();$("#kRevealHint").onclick=()=>kitchenRevealExtraLetter();$("#kPronounceHint").onclick=()=>kitchenPronounceHint();
 }
 function updateKitchenHUD(){
@@ -2548,7 +2548,7 @@ function startShift(mode, timeSeconds, resume){
    and its event handlers are created once per mounted session. */
 function initTopbar(){
   const bar=$("#stopbar"); if(!bar||bar.dataset.ready==="1") return;
-  bar.innerHTML=`<span class="tipbadge" id="topTips">🪙 0</span>
+  bar.innerHTML=`<span class="tipbadge" id="topTips">${COIN} 0</span>
    <div class="nowserv"><span id="topStreak" aria-hidden="true"></span><b id="topNowName">—</b><span class="tierpill" id="topTier" data-i18n-ctx hidden></span><span class="waitbadge">Waiting: <b id="topWaiting">0</b></span></div>
    <span class="waitbadge" id="topModePrimary"></span>
    <span class="waitbadge" id="topModeSecondary" hidden></span>
@@ -2567,7 +2567,7 @@ function updateTopbar(){
   initTopbar();
   const waiting=S.queue.length+(S.current?1:0);
   const nowName=S.current?S.current.cust.name:"—";
-  $("#topTips").textContent=`🪙 ${p.tips}`;
+  $("#topTips").innerHTML=`${COIN} ${p.tips}`;
   $("#topStreak").textContent=S.streak>1?"🔥 ":"";
   $("#topNowName").textContent=nowName;
   $("#topWaiting").textContent=String(waiting);
@@ -2924,7 +2924,7 @@ function openReveal(correct, bodyHtml, wordObj, onDone){
         const p=P(); p._pronunClicks=(p._pronunClicks||0)+1;
         earn(3); AudioKit.coin(false);
         const bonus=dlg.querySelector("#listenBonus");
-        if(bonus){ bonus.textContent="+3 🪙"; bonus.classList.remove("pop"); void bonus.offsetWidth; bonus.classList.add("pop"); }
+        if(bonus){ bonus.innerHTML=`+3 ${COIN}`; bonus.classList.remove("pop"); void bonus.offsetWidth; bonus.classList.add("pop"); }
         updateTopbar();
         celebrateAchievements(checkAchievements());
       }
@@ -3207,7 +3207,7 @@ function finishTicket(entry){
     pnl.innerHTML=`<div class="result">
       <div class="drinkline">${drinkSVG(entry.ticket,perfect)}${entry.ticket.food?foodSVG(entry.ticket.food,perfect):""}<div><b>${entry.ticket.drinkEmoji||"🍹"} ${esc(entry.ticket.drink)}</b>${entry.ticket.food?`<br><b>${entry.ticket.food.emoji} ${esc(entry.ticket.food.name)}</b>`:""}<br><small>${perfect?"Made to perfection! ✨":"A decent effort — nearly perfect!"}</small></div></div>
       <div class="custsay" lang="en-GB">“${esc(dep)}”</div>
-      <div class="tipline">+${tip} tips 🪙 ${perfect&&S.streak>1?`<span class="pill">🔥 streak ×${S.streak}</span>`:""}${S.weekend?`<span class="pill">🎉 rush +20%</span>`:""}</div></div>`;
+      <div class="tipline">+${tip} tips ${COIN} ${perfect&&S.streak>1?`<span class="pill">🔥 streak ×${S.streak}</span>`:""}${S.weekend?`<span class="pill">🎉 rush +20%</span>`:""}</div></div>`;
     setTimeout(()=>{ if(SHIFT&&SHIFT===S&&!S.ended) departCurrent(); }, S.mode==="rush"?700:S.mode==="time"?1000:2400);
   });
 }
@@ -3493,7 +3493,7 @@ function endShift(early){
      <div class="srow"><span>Perfect tickets</span><b>${S.perfect}/${S.served}</b></div>
      <div class="srow"><span>Answer accuracy</span><b>${acc}%</b></div>
      <div class="srow"><span>Best streak</span><b>${S.bestStreak>1?"🔥 "+S.bestStreak:S.bestStreak}</b></div>
-     <div class="srow total"><span>Tips earned</span><b>🪙 ${S.tips}</b></div>
+     <div class="srow total"><span>Tips earned</span><b>${COIN} ${S.tips}</b></div>
    </div>
    ${missedWordsRecapHTML(S)}
    <div class="growthbanner" data-i18n-html>🌱 <b>You learned ${newWordsSeen} new word${newWordsSeen!==1?"s":""}</b>${newlyMastered?` and <b>mastered ${newlyMastered}</b>` :""} today.</div>
@@ -3522,7 +3522,7 @@ function screenShop(activeTier){
   const tiers=["My Items","Pet","Starter","Mid","Premium","Legendary"];
   activeTier=tiers.includes(activeTier)?activeTier:"Starter";
   show(`<section class="screen" id="shopScreen">
-   <div class="topbar"><button class="iconb" id="back" aria-label="Go back">←</button><b>Shop</b><span class="tipbadge" id="shopCoins">🪙 ${p.tips}</span></div>
+   <div class="topbar"><button class="iconb" id="back" aria-label="Go back">←</button><b>Shop</b><span class="tipbadge" id="shopCoins">${COIN} ${p.tips}</span></div>
    <div id="shopPreview"></div>
    <button class="felt mini shoplookbtn" id="shopLook">👗 Change look &amp; Wardrobe</button>
    <p class="note">💡 Character &amp; pet unlocks count <b>everything you've ever earned</b> — shopping never slows them down.</p>
@@ -3536,13 +3536,13 @@ function screenShop(activeTier){
   let tryOn=null;
 
   function updateShopChrome(){
-    coins.textContent=`🪙 ${p.tips}`;
+    coins.innerHTML=`${COIN} ${p.tips}`;
     /* Only the preview is redrawn when an item is bought/placed. The
        screen shell, tabs and current scroll position stay untouched. */
     const trying=tryOn&&SHOP.find(x=>x.id===tryOn);
     const barista=trying?wardrobePreviewSVG(avatarLookFor(p),{...p.placed.avatar,[trying.slot]:trying.id},70):null;
     preview.innerHTML=`<div class="scenewrap small theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:trying?cafeBaristaPreview(barista):cafeBaristaPreview(),baristaAttrs:"data-refreshable",pet:playerCafePetHTML("preview")})}</div>`+
-      (trying?`<div class="tryonbar felt" role="status"><span>👀 Trying on: <b>${esc(trying.name)}</b></span><span class="tryonbtns"><button class="felt mini buy" data-buy="${trying.id}" ${p.tips<trying.price?"disabled":""}>🪙 ${trying.price}</button><button class="linky" id="tryOff">Take off</button></span></div>`:"");
+      (trying?`<div class="tryonbar felt" role="status"><span>👀 Trying on: <b>${esc(trying.name)}</b></span><span class="tryonbtns"><button class="felt mini buy" data-buy="${trying.id}" ${p.tips<trying.price?"disabled":""}>${COIN} ${trying.price}</button><button class="linky" id="tryOff">Take off</button></span></div>`:"");
   }
   function itemsForActiveTab(){
     if(activeTier==="My Items")return p.owned.map(id=>SHOP.find(i=>i.id===id)).filter(Boolean);
@@ -3572,11 +3572,11 @@ function screenShop(activeTier){
           :`<button class="felt mini" data-place="${i.id}" ${needsLicence?"disabled":""}>${needsLicence?"🔒 Pet Licence required":placedNow?"✓ In place — remove":"Place it!"}</button>`;
       }else{
         const disabled=p.tips<i.price||needsLicence;
-        action=`<button class="felt mini buy" data-buy="${i.id}" ${disabled?"disabled":""}>${needsLicence?"🔒 Pet Licence":`🪙 ${i.price}`}</button>`;
+        action=`<button class="felt mini buy" data-buy="${i.id}" ${disabled?"disabled":""}>${needsLicence?"🔒 Pet Licence":`${COIN} ${i.price}`}</button>`;
         if(i.dest==="avatar"&&!i.permanent)action+=`<button class="linky tryon" data-try="${i.id}">${tryOn===i.id?"✓ Trying on":"👀 Try on"}</button>`;
       }
       return `<div class="shopitem felt ${owned?"owned":""}" data-shop-item="${i.id}">
-       <div class="swatch" style="background:${i.c}">${icon}</div>
+       <div class="swatch ${cafeShopArt(i)?"hasart":""}" style="background:${i.c}">${cafeShopArt(i)||icon}</div>
        <b>${i.name}</b>${origin}${petBadge}<small>${detail}</small>${action}
       </div>`;}).join("")}</div>`;
   }
@@ -3728,7 +3728,7 @@ function screenGallery(){
   const petCount=[...un.pet].filter(id=>PETS.some(x=>x.id===id)).length;
 
   show(`<section class="screen" id="galleryScreen">
-   <div class="topbar"><button class="iconb" id="back" aria-label="Go back">←</button><b>Gallery</b><span class="tipbadge">🪙 ${p.tips}</span></div>
+   <div class="topbar"><button class="iconb" id="back" aria-label="Go back">←</button><b>Gallery</b><span class="tipbadge">${COIN} ${p.tips}</span></div>
    <div class="note gprog" data-i18n-html>${nxt?`Next reveal: <b>${nxt.item.type==="customer"?"a new customer":"a new pet"}</b> in <b>${nxt.toGo}</b> more lifetime coins (every ${UNLOCK_STEP} earned reveals someone new!)`:`🎉 <b>Full house!</b> You've revealed everyone.`}</div>
    <div class="tabbar gallerytabs" id="galleryTabs" role="tablist" aria-label="Gallery sections">
      <button class="tab on" data-gallery-tab="customers" role="tab" aria-selected="true">☕ Customers <small>${custCount}/${CUSTOMERS.length}</small></button>
@@ -3843,18 +3843,18 @@ function screenLeaderboard(){
    <div class="setcard felt"><h3>🏅 Personal bests</h3>
      <div class="srow"><span>Best accuracy</span><b>${p.best.acc}%</b></div>
      <div class="srow"><span>Best streak</span><b>🔥 ${p.best.streak}</b></div>
-     <div class="srow"><span>Best tips (one session)</span><b>🪙 ${p.best.tips}</b></div>
+     <div class="srow"><span>Best tips (one session)</span><b>${COIN} ${p.best.tips}</b></div>
      <div class="srow"><span>Best Time Challenge score</span><b>⏱️ ${p.best.timeChallenge} tips</b></div>
      <div class="srow"><span>Days played</span><b>${(p.playDays||[]).length}</b></div>
-     <div class="srow"><span>Lifetime tips earned</span><b>🪙 ${p.lifetime}</b></div>
+     <div class="srow"><span>Lifetime tips earned</span><b>${COIN} ${p.lifetime}</b></div>
    </div>
    ${kitchenAvailable?(()=>{const k=kitchenOf(p),unlocked=KITCHEN_CHALLENGE_FOODS.filter(f=>k.unlockedFoods.includes(f.id)).length,best=Math.max(0,...Object.values(k.bestByFood||{}).map(x=>x.bestRemaining||0));return `<div class="setcard felt kitchenbestcard"><h3>👩‍🍳 Kitchen bests</h3><div class="srow"><span>Kitchen recipes unlocked</span><b>${unlocked}/${KITCHEN_CHALLENGE_FOODS.length}</b></div><div class="srow"><span>Challenges won</span><b>${k.stats.challengesWon||0}</b></div><div class="srow"><span>Perfect Kitchen wins</span><b>${k.stats.perfectWins||0}</b></div><div class="srow"><span>Best time remaining</span><b>⏱️ ${best}s</b></div></div>`;})():""}
    <div class="setcard felt"><h3>🔥 Rush Hour scoreboard</h3>
      <div class="srow"><span>Most customers in one rush</span><b>👥 ${p.best.rush||0}</b></div>
-   ${rushScores.length?rushScores.map((r,i)=>`<div class="srow"><span>${["🥇","🥈","🥉","4.","5."][i]} ${new Date(r.d).toLocaleDateString()}</span><b>👥 ${r.served} · 🪙${r.tips} · ❌${r.wrong}</b></div>`).join(""):"<small>No rushes yet — think you can beat the queue?</small>"}
+   ${rushScores.length?rushScores.map((r,i)=>`<div class="srow"><span>${["🥇","🥈","🥉","4.","5."][i]} ${new Date(r.d).toLocaleDateString()}</span><b>👥 ${r.served} · ${COIN}${r.tips} · ❌${r.wrong}</b></div>`).join(""):"<small>No rushes yet — think you can beat the queue?</small>"}
    </div>
    <div class="setcard felt"><h3>Recent sessions</h3>
-   ${recent.length?recent.map(s=>`<div class="srow"><span>${new Date(s.d).toLocaleDateString()} · ${s.mode==="time"?"⏱️ Time":s.mode==="rush"?"🔥 Rush":s.mode==="review"?"🎯 Review":"☕ Normal"}</span><b>${"★".repeat(s.stars)}${"☆".repeat(3-s.stars)} · 🪙${s.tips}</b></div>`).join(""):"<small>No sessions yet — go serve some customers!</small>"}
+   ${recent.length?recent.map(s=>`<div class="srow"><span>${new Date(s.d).toLocaleDateString()} · ${s.mode==="time"?"⏱️ Time":s.mode==="rush"?"🔥 Rush":s.mode==="review"?"🎯 Review":"☕ Normal"}</span><b>${"★".repeat(s.stars)}${"☆".repeat(3-s.stars)} · ${COIN}${s.tips}</b></div>`).join(""):"<small>No sessions yet — go serve some customers!</small>"}
    </div>
   </section>`);
   $("#back").onclick=()=>{AudioKit.tap();screenMenu();};
@@ -4434,9 +4434,9 @@ window.addEventListener("popstate",()=>{
 
 /* ---- How to play: shown automatically only the FIRST time a mode opens ---- */
 const MODE_INTROS={
-  normal:{title:"☕ Café",lines:[["☕","Serve 20 customers."],["👆","Tap the right answer to make each order."],["⏳","Watch the patience bar. A slow answer only loses that ticket, never the game."],["🪙","Perfect tickets earn the most tips."],["🔔","Sound plays even when the phone is on silent. Turn it off in ⏸️."]]},
+  normal:{title:"☕ Café",lines:[["☕","Serve 20 customers."],["👆","Tap the right answer to make each order."],["⏳","Watch the patience bar. A slow answer only loses that ticket, never the game."],[COIN,"Perfect tickets earn the most tips."],["🔔","Sound plays even when the phone is on silent. Turn it off in ⏸️."]]},
   rush:{title:"🔥 Rush Hour",lines:[["🔥","Customers keep arriving. Serve them fast!"],["❌","Five mix-ups, or 20 people in the queue, ends the rush."],["🏆","Beat your record for customers served."]]},
-  time:{title:"⏱️ Time Challenge",lines:[["⏱️","Serve as many customers as you can before the clock runs out."],["⚡","Answers flash right or wrong, with no pop-ups, so keep going."],["🪙","More customers means more tips."]]},
+  time:{title:"⏱️ Time Challenge",lines:[["⏱️","Serve as many customers as you can before the clock runs out."],["⚡","Answers flash right or wrong, with no pop-ups, so keep going."],[COIN,"More customers means more tips."]]},
   review:{title:"🎯 Review",lines:[["🎯","Practise words you’ve met before or found tricky."],["📖","Each answer shows the meaning again."],["🔥","Review on different days to build a streak."]]}
 };
 function showModeIntro(mode,{onDone,fromPause=false}={}){
