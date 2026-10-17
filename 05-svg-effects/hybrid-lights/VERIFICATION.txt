@@ -1,0 +1,14 @@
+WordBar Hybrid Lights — verification scope
+
+New isolated bulb and lantern PNGs generated using the built-in image tool.
+PNG alpha checked: both have substantial fully transparent backgrounds.
+Original PNG pixels preserved; SVG viewport bounds account for transparent padding.
+SVG static exports rendered and lantern composition visually inspected.
+Static geometry/export checks are provided in test-static.cjs.
+Browser test provided in test.cjs, but could not run here: browser executable missing.
+Therefore runtime CSS animation, actual OS reduced-motion execution, browser controls,
+and mobile performance remain unverified. Their code paths are implemented, not proven
+by a live browser test in this environment.
+
+This is a standalone preview/component package; no deployed game files changed.
+Only warm golden bulbs and warm ivory lanterns implemented in this first version.

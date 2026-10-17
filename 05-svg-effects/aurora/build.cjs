@@ -1,0 +1,6 @@
+const fs=require('fs'),sharp=require('sharp');
+const p=__dirname;
+const svg=fs.readFileSync(p+'/aurora.svg','utf8');
+const day=svg.replace('opacity:var(--aurora-strength,.8)','opacity:var(--aurora-strength,.22)');
+fs.writeFileSync(p+'/preview.html',`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WordBar Aurora effect</title><style>body{background:#f7edda;color:#382d39;font:16px system-ui;padding:20px;margin:auto;max-width:900px}section{border-radius:20px;padding:16px;background:#233149;margin:20px 0;color:#fff}section.day{background:#f1d9b8;color:#382d39}svg{display:block;width:100%;height:auto}h1{font-size:24px}h2{font-size:16px}p{line-height:1.5}</style><h1>Aurora Lantern · vector light effect</h1><p>Slow flowing colour bands, separate from the café wall and furniture.</p><section><h2>Night</h2>${svg}</section><section class="day"><h2>Day — reduced strength</h2>${day.replaceAll('wb-aurora-','wb-aurora-day-')}</section><p>OS reduced-motion preference is supported. This is an effect prototype, not a deployed game update.</p></html>`);
+(async()=>{for(const w of [400,800])await sharp(Buffer.from(svg)).resize(w).png().toBuffer();await sharp(Buffer.from(svg)).flatten({background:'#233149'}).png().toFile(p+'/qa-aurora.png');console.log('PASS: rasterization at 400 and 800px')})();
