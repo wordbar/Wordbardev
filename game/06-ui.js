@@ -3540,7 +3540,7 @@ function screenShop(activeTier){
        screen shell, tabs and current scroll position stay untouched. */
     const trying=tryOn&&SHOP.find(x=>x.id===tryOn);
     const barista=trying?wardrobePreviewSVG(avatarLookFor(p),{...p.placed.avatar,[trying.slot]:trying.id},70):null;
-    preview.innerHTML=`<div class="scenewrap small theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:trying?cafeBaristaPreview(barista):cafeBaristaPreview(),baristaAttrs:"data-refreshable",pet:playerCafePetHTML("preview")})}</div>`+
+    preview.innerHTML=`<div class="scenewrap small theme-${p.settings.theme}">${cafeSceneHTML("preview",{barista:trying?cafeBaristaPreview({look:avatarLookFor(p),opts:playerRenderOpts({placed:{avatar:{...p.placed.avatar,[trying.slot]:trying.id}}}),html:barista}):cafeBaristaPreview(),baristaAttrs:"data-refreshable",pet:playerCafePetHTML("preview")})}</div>`+
       (trying?`<div class="tryonbar felt" role="status"><span>👀 Trying on: <b>${esc(trying.name)}</b></span><span class="tryonbtns"><button class="felt mini buy" data-buy="${trying.id}" ${p.tips<trying.price?"disabled":""}>${COIN} ${trying.price}</button><button class="linky" id="tryOff">Take off</button></span></div>`:"");
   }
   function itemsForActiveTab(){

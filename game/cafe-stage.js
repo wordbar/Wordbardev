@@ -41,11 +41,11 @@ const CAFE_GEO=Object.freeze({
   bar:{x:206,w:154,top:174,face:184,bottom:244},        /* customer bar (right), marble top */
   bed:{x:40,y:290},                                     /* barista pet bed, front left */
   barista:{x:56,feet:212,k:.92},
-  serve:{x:136,feet:214,k:.92},                         /* beside the barista, same depth: order + collect */
-  queue:[{x:258,feet:208,k:.88},{x:310,feet:204,k:.87}],/* behind the bar: at most two wait, one orders */
+  serve:{x:160,feet:214,k:.92},                         /* near the barista (not crowding her), same depth: order + collect */
+  queue:[{x:258,feet:198,k:.86},{x:310,feet:194,k:.85}],/* well behind the bar: at most two wait, one orders */
   stash:{x:344,feet:166,k:.8},                          /* outside the door: overflow queue */
   doorIn:{x:344,feet:166,k:.8},
-  exit:{x:160,feet:480,k:1.15},                         /* straight down the middle, out of the picture */
+  exit:{x:160,feet:480,k:1.15},                         /* same x as the order spot: straight down */                         /* straight down the middle, out of the picture */
   barTopY:174, counterTopY:166
 });
 let cafeSceneUid=0;
@@ -357,16 +357,21 @@ function cafeCharStaticHTML(svgText,face="happy"){
 /* the barista for a preview: the pack drawing for a ready-made barista
    wearing nothing from the shop, otherwise the customiser's drawing */
 function cafeBaristaPreview(override){
-  if(override)return {html:override,mode:"waist"};
-  const id=cafeBaristaArtId(),t=id&&CafeArt.get("chars",id);
+  const p=P();
+  if(override&&!CafeCustom.lib)return {html:override.html||override,mode:"waist"};
+  const id=override?null:cafeBaristaArtId(p),t=id&&CafeArt.get("chars",id);
   if(t)return {html:cafeCharStaticHTML(t,"happy"),mode:"full"};
-  if(id)CafeArt.load("chars",id).then(()=>{if(typeof cafeRefreshPreviews==="function")cafeRefreshPreviews();});
-  return {html:playerSVG("happy",88),mode:"waist"};
+  if(id){CafeArt.load("chars",id).then(()=>cafeRefreshPreviews());return {html:playerSVG("happy",88),mode:"waist"};}
+  if(CafeCustom.lib){const o=override?override:null;
+    const opts=o&&o.opts?o.opts:playerRenderOpts(p),look=o&&o.look?o.look:playerLookFor(p,opts);
+    const c=cafeComposeCustom(look,opts);if(c)return {html:cafeCharStaticHTML(c,"happy"),mode:"full"};}
+  CafeCustom.load().then(()=>cafeRefreshPreviews());
+  return {html:override?(override.html||override):playerSVG("happy",88),mode:"waist"};
 }
 /* when art arrives after a preview was drawn, redraw just the barista */
 function cafeRefreshPreviews(){
   document.querySelectorAll(".scenebox .scene-barista.waist[data-refreshable]").forEach(el=>{
-    const b=cafeBaristaPreview();if(b.mode!=="full")return;const h=CAFE_BOX*CAFE_GEO.barista.k,w=h*CHAR_ASPECT;
+    if(el.dataset.tryon)return;const b=cafeBaristaPreview();if(b.mode!=="full")return;const h=CAFE_BOX*CAFE_GEO.barista.k,w=h*CHAR_ASPECT;
     el.classList.replace("waist","full");el.innerHTML=b.html;el.style.width=(w/CAFE_W*100).toFixed(3)+"%";
     el.style.bottom=((CAFE_H-CAFE_GEO.barista.feet-h*(16/500))/CAFE_H*100).toFixed(3)+"%";});
 }
@@ -412,7 +417,7 @@ const CHAR_GROUND=484/500, PET_GROUND=100/110, CAFE_PBOX=54;
 
 /* ---------- people ---------- */
 const CAFE_PROP=/attach|bent|sceptre|book|ball|briefcase|shield|staff|oar|magnif|frame|watering|hose/;
-function cafeMirrored(e,svg){for(let n=e;n&&n!==svg;n=n.parentNode){const t=n.getAttribute&&n.getAttribute("transform");if(t&&/scale\(\s*-1/.test(t))return true;}return false;}
+function cafeMirrored(e,svg){for(let n=e;n&&n!==svg;n=n.parentNode){const t=n.getAttribute&&n.getAttribute("transform");if(t&&/scale\(\s*-1|matrix\(\s*-[\d.]+[\s,]+-?0[\s,]+-?0[\s,]/.test(t))return true;}return false;}
 function cafeSetFace(svg,state){
   if(!svg)return;
   svg.querySelectorAll("[data-expression]").forEach(g=>g.setAttribute("opacity",g.getAttribute("data-expression").split(" ").includes(state)?"1":"0"));
@@ -442,7 +447,7 @@ function cafeDressPerson(a,svgText){
   a.waveSide=!a.holdr?"r":(!a.holdl?"l":null);
   a.bagSide=a.waveSide==="r"?(!a.holdl?"l":null):(a.waveSide==="l"&&!a.holdr?"r":null);
   if(a.waveSide){const s=a.waveSide,arm=J("arm-"+s),fore=J("fore-"+s);const out=(s==="r"?-1:1)*(a["mir"+s]?-1:1);
-    arm.classList.add("waver");arm.style.setProperty("--ra",out*40);if(fore){fore.classList.add("waverF");fore.style.setProperty("--wi",out);}
+    arm.classList.add("waver");arm.style.setProperty("--ra",out*96);if(fore){fore.classList.add("waverF");fore.style.setProperty("--wi",out);}
     a.el.style.setProperty("--tl",s==="r"?1:-1);}
   cafeSetFace(svg,a.face==="blink"?"normal":a.face);cafeBlinker(a);
 }
@@ -691,11 +696,12 @@ function cafeTick(now){
 }
 function cafeKick(){if(!STAGE.raf&&STAGE.mounted){STAGE.lastT=performance.now();STAGE.raf=requestAnimationFrame(cafeTick);}}
 function cafeFollow(pt,dt){
-  const a=pt.owner,target=a.s-PET_GAP;let moving=false;
+  const a=pt.owner,target=a.s-(pt.leaving?16:PET_GAP);let moving=false;
   if(target>pt.s+.3){pt.s=Math.min(target,pt.s+PET_SPEED*dt*(pt.t?pt.t.spd:1));moving=true;}
   const pos=cafePathAt(a,Math.max(0,pt.s));const dx=pos.x-pt.x;if(Math.abs(dx)>.05)pt.dirX=Math.sign(dx);
   const kk=pos.feet<CAFE_GEO.serve.feet-30?.88:Math.min(1.15,1+Math.max(0,pos.feet-CAFE_GEO.serve.feet)/(CAFE_GEO.exit.feet-CAFE_GEO.serve.feet)*.15);
-  pt.x=pos.x;pt.g=pos.feet;pt.box=CAFE_PBOX*kk;pt.lane=pos.lane==="f"?"f":"b";cafePetPlace(pt);
+  const side=pt.leaving&&pos.feet>CAFE_GEO.serve.feet+4?22*kk:0;
+  pt.x=pos.x+side;pt.g=pos.feet;pt.box=CAFE_PBOX*kk;pt.lane=pos.lane==="f"?"f":"b";cafePetPlace(pt);
   if(!pt.shown&&pt.s>2&&!pt.hiddenWait){pt.shown=true;pt.el.classList.add("shown");}
   if(moving){pt.still=0;if(pt.move!=="walk")petPlay(pt,"walk");}
   else{pt.still=(pt.still||0)+dt;if(pt.move==="walk"&&pt.still>.15)petPlay(pt,"idle");}
@@ -782,11 +788,14 @@ function cafeBaristaArtId(p=P()){
   return p.avatar;
 }
 function cafeMakeBarista(){
-  const G=CAFE_GEO.barista,id=cafeBaristaArtId();
-  if(id){
-    const a=cafeNewPerson(id,{lane:"b",x:G.x,feet:G.feet,k:G.k});a.el.id="barista";a.el.classList.add("is-barista");a.face="happy";
-    STAGE.barista=a;const t=CafeArt.get("chars",id);if(t)cafeDressPerson(a,t);else CafeArt.load("chars",id).then(t=>{if(t)cafeDressPerson(a,t);else{cafeRemovePerson(a);STAGE.barista=null;cafeMakeFallbackBarista();}});
-  }else cafeMakeFallbackBarista();
+  const G=CAFE_GEO.barista,id=cafeBaristaArtId(),p=P();
+  const a=cafeNewPerson(id||"barista",{lane:"b",x:G.x,feet:G.feet,k:G.k});a.el.id="barista";a.el.classList.add("is-barista");a.face="happy";STAGE.barista=a;
+  const fail=()=>{cafeRemovePerson(a);STAGE.barista=null;cafeMakeFallbackBarista();};
+  if(id){const t=CafeArt.get("chars",id);if(t)cafeDressPerson(a,t);else CafeArt.load("chars",id).then(t=>t?cafeDressPerson(a,t):fail());return;}
+  /* a custom look, or a ready-made barista wearing shop clothes: assembled
+     from the customisation pack with every choice and wearable */
+  const opts=playerRenderOpts(p),look=playerLookFor(p,opts);
+  CafeCustom.load().then(()=>{if(!STAGE.mounted||STAGE.barista!==a)return;const t=cafeComposeCustom(look,opts);t?cafeDressPerson(a,t):fail();});
 }
 function cafeMakeFallbackBarista(){
   const el=document.createElement("div");el.className="barista-waist";el.id="barista";el.innerHTML=playerSVG("happy",80);
@@ -940,7 +949,7 @@ function takeNext(){
   const a=entry.actor,G=CAFE_GEO;a.slot="serve";
   if(a.path===undefined)cafeTrackStart(a);
   /* round the end of the bar into the open area in front of the barista */
-  entry.goServe=()=>{cafePetDown(entry);cafeWalk(a,[{x:G.bar.x-8,feet:212,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
+  entry.goServe=()=>{cafePetDown(entry);cafeWalk(a,[{x:G.bar.x-4,feet:204,k:.89,lane:"f"},{...G.serve,lane:"f"}],()=>{
     if(!SHIFT||SHIFT.current!==entry)return;
     cafeFace(a,"happy",1500);cafeGreet(a);
     panelArrival(entry);
@@ -965,8 +974,8 @@ function cafeQueuePet(e){
 function cafePetDown(entry){
   const pt=entry.petActor,a=entry.actor;if(!pt||!a)return;
   pt.hiddenWait=false;
-  const follow=()=>{pt.state="follow";a.path=[{x:pt.x,feet:pt.g,lane:"f",s:0},{x:a.x,feet:a.feet,lane:a.lane,s:Math.hypot(a.x-pt.x,(a.feet-pt.g)*1.4)}];a.s=a.path[1].s;pt.s=0;pt.shown=true;pt.el.classList.add("shown");petPlay(pt,"idle",true);};
-  if(pt.state==="counter"||pt.state==="hop"){pt.state="jump";cafePetJump(pt,pt.x+4,a.feet-2,"f",follow);}
+  const follow=()=>{pt.state="follow";a.path=[{x:pt.x,feet:pt.g,lane:"b",s:0},{x:a.x,feet:a.feet,lane:"b",s:Math.hypot(a.x-pt.x,(a.feet-pt.g)*1.4)}];a.s=a.path[1].s;pt.s=0;pt.shown=true;pt.el.classList.add("shown");petPlay(pt,"idle",true);};
+  if(pt.state==="counter"||pt.state==="hop"){pt.state="jump";cafePetJump(pt,pt.x+6,a.feet-2,"b",follow);}
   else if(pt.state==="follow"&&!pt.shown){pt.s=Math.max(0,a.s-PET_GAP-8);}
 }
 /* answers: the served customer's pet dances or droops beside them */
@@ -1011,7 +1020,7 @@ function cafeLeave(entry){
   if(pt){pt.leaving=true;
     const follow=()=>{pt.state="follow";a.path=[{x:pt.x,feet:pt.g,lane:"f",s:0},{x:a.x,feet:a.feet,lane:"f",s:Math.hypot(a.x-pt.x,(a.feet-pt.g)*1.4)}];a.s=a.path[1].s;pt.s=0;petPlay(pt,"idle",true);};
     if(pt.state==="counter"||pt.state==="hop"){pt.state="jump";cafePetJump(pt,a.x+22,a.feet-2,"f",follow);}else follow();}
-  cafeWalk(a,[{x:G.serve.x+18,feet:G.serve.feet+40,k:1.0,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>{cafeRemovePerson(a);
+  cafeWalk(a,[{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>{cafeRemovePerson(a);
     if(pt&&pt.state!=="follow")cafeRemovePet(pt);},{fast:true});
 }
 
@@ -1026,7 +1035,7 @@ function playDebut(u){
     if(!c){ departDebutDone(); return; }
     const a=makeActor(c,null),entry={cust:c,actor:a,node:a.el};hydrateActorVisual(entry);
     a.el.classList.remove("waiting-offstage");cafeOpenDoor();cafeTrackStart(a);const G=CAFE_GEO;
-    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.88,lane:"b"},{x:G.bar.x-8,feet:212,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
+    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.86,lane:"b"},{x:G.bar.x-4,feet:204,k:.89,lane:"f"},{...G.serve,lane:"f"}],()=>{
       spawnBurst($("#stage"));cafeFace(a,"happy",2600);cafeGreet(a);
       popEmote(entry,"🎉");
       const pnl=$("#panel");
@@ -1036,7 +1045,7 @@ function playDebut(u){
         <div class="custsay" lang="en-GB">“${esc(c.lines.arrive[rnd(c.lines.arrive.length)])}”</div>
         <small class="joined">${esc(c.name)} has joined the café!</small></div>`;
       setTimeout(()=>{
-        cafeWalk(a,[{x:G.serve.x+18,feet:G.serve.feet+40,k:1.0,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>cafeRemovePerson(a),{fast:true});
+        cafeWalk(a,[{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>cafeRemovePerson(a),{fast:true});
         setTimeout(departDebutDone, dur(750));
       }, 2800);
     },{fast:true});
@@ -1187,3 +1196,109 @@ function cafeShopArt(it){
   if(it.id==="aurora")return `<img src="${ART_DIR}decor/aurora.svg" alt="" loading="lazy">`;
   return "";
 }
+
+/* ============================================================
+   Stage 4: the barista from the Customisation SVG pack
+
+   art/custom/parts.json (tools/build_custom.py) holds the pack's base
+   figure with colour variables, plus — for every choice — only the parts
+   that choice changes. A look is assembled by swapping those parts in,
+   so every hairstyle, colour, eye/brow/cheek/beard choice, glasses style
+   and every shop wearable shows on the same rigged body the customers
+   use (it walks, waves and changes faces the same way).
+   ============================================================ */
+const CafeCustom={lib:null,wait:null,cache:new Map(),
+  load(){if(this.lib)return Promise.resolve(this.lib);
+    if(!this.wait)this.wait=fetch(`${ART_DIR}custom/parts.json`).then(r=>r.ok?r.json():null).then(j=>{this.lib=j;return j;}).catch(()=>null);
+    return this.wait;}
+};
+const CAFE_CLOTH_STYLES=new Set(["tee","polo","shirt","hoodie","stripes"]);
+function cafeHex(c,fb){return typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c)?c:fb;}
+function cafeMul(hex,f){const n=parseInt(hex.slice(1),16);return "#"+[(n>>16)&255,(n>>8)&255,n&255].map(v=>Math.round(v*f).toString(16).padStart(2,"0")).join("");}
+function cafeLighten(hex,f){const n=parseInt(hex.slice(1),16);return "#"+[(n>>16)&255,(n>>8)&255,n&255].map(v=>Math.round(v+(255-v)*f).toString(16).padStart(2,"0")).join("");}
+/* the game's look + worn items -> pack option keys and colours */
+function cafeCustomRecipe(look,opts={}){
+  const lib=CafeCustom.lib,O=lib.options,has=k=>!!O[k];
+  const gStyleItem=opts.gstyle?SHOP.find(s=>s.id===opts.gstyle):null,gColorItem=opts.gcolor?SHOP.find(s=>s.id===opts.gcolor):null;
+  let style=(gStyleItem&&gStyleItem.gs)||(look.garment&&look.garment.style)||"tee";if(!CAFE_CLOTH_STYLES.has(style))style="tee";
+  const apron=opts.apron==="waistcoat"?"waistcoat":opts.apron?"apron_cherry":"none";
+  const cloth=cafeHex(gColorItem&&gColorItem.c,cafeHex(look.garment&&typeof GARMENT_PALETTES!=="undefined"&&GARMENT_PALETTES[look.garment.palette],cafeHex(look.top,"#3E7CA6")));
+  const shape=["round","tall","almond","sleepy","wide","upturned"].includes(look.eyeShape)?look.eyeShape:"round";
+  const lash=["classic","short","long","flick","none"].includes(look.lashStyle)?look.lashStyle:(look.lashes===false?"none":"classic");
+  const keys=[`clothing/${style}--${apron}`,`hair/${look.hairstyle}`,`eyes/${shape}--${lash}`,`brows/${look.brows||"natural"}`,`cheeks/${look.cheeks||"plain"}`,`facialhair/${look.facialHair||"none"}`];
+  const extras=opts.extras||[];
+  const shopEyes=extras.some(id=>{const it=SHOP.find(x=>x.id===id);return it&&it.slot==="eyes";});
+  if(!shopEyes){if(look.accessory&&has(`glasses/${look.accessory}`))keys.push(`glasses/${look.accessory}`);else if(opts.glasses)keys.push("glasses/glasses");}
+  [opts.hat,opts.badge,...extras].forEach(id=>{if(id&&has(`acc/${id}`))keys.push(`acc/${id}`);});
+  const skin=cafeHex(look.skin,"#E8B88A"),hair=cafeHex(look.hair,"#2B1B12"),iris=cafeHex(look.iris,"#6E4A2E"),glass=cafeHex(look.glassesColor,"#2E2440"),fabric=cafeHex(look.hijab,"#2F3E66");
+  const vars={"--skin":skin,"--skin-d579":cafeMul(skin,.579),"--skin-d690":cafeMul(skin,.69),"--hair":hair,"--hair-d680":cafeMul(hair,.68),"--hair-d720":cafeMul(hair,.72),"--hair-l240":cafeLighten(hair,.24),
+    "--iris":iris,"--cloth":cloth,"--cloth-d760":cafeMul(cloth,.76),"--cloth-d900":cafeMul(cloth,.9),"--cloth-d910":cafeMul(cloth,.91),"--cloth-l250":cafeLighten(cloth,.25),
+    "--glass":glass,"--fabric":fabric,"--fabric-l240":cafeLighten(fabric,.24),"--fabric-l278":cafeLighten(fabric,.278)};
+  return {keys:keys.filter(has),vars};
+}
+const CAFE_SVGNS="http://www.w3.org/2000/svg";
+function cafeFrag(markup){return new DOMParser().parseFromString(`<svg xmlns="${CAFE_SVGNS}">${markup}</svg>`,"image/svg+xml").documentElement.firstElementChild;}
+function cafeApplyOption(svg,opt){
+  if(!opt)return;
+  const find=p=>svg.querySelector(`[data-part="${p}"]`);
+  for(const p in opt.set){const old=find(p);if(old)old.replaceWith(document.importNode(cafeFrag(opt.set[p]),true));}
+  (opt.remove||[]).forEach(p=>{const el=find(p);if(el)el.remove();});
+  (opt.add||[]).forEach(a=>{if(find(a.part))return;const node=document.importNode(cafeFrag(a.svg),true);
+    const par=a.parent?svg.querySelector(a.parent):null,prev=a.after?svg.querySelector(a.after):null;
+    if(prev&&prev.parentNode)prev.after(node);else if(par)par.prepend(node);else svg.appendChild(node);});
+}
+/* the four game faces: mouth + brows (and closed eyes for a blink) come
+   from the pack's expression files; the player's own eye shape stays */
+function cafeExpressionWrap(svg,lib){
+  const O=lib.options,face={normal:null,happy:O["mouth/happy"],concern:O["mouth/sad"],blink:O["mouth/blink"]};
+  ["mouth","brows","eyes"].forEach(part=>{
+    const base=svg.querySelector(`[data-part="${part}"]`);if(!base)return;
+    const wrap=document.createElementNS(CAFE_SVGNS,"g");wrap.setAttribute("data-face-wrap",part);base.before(wrap);
+    Object.entries(face).forEach(([st,opt])=>{
+      let node=null;
+      if(opt&&opt.set&&opt.set[part]&&!(part==="eyes"&&st!=="blink"))node=document.importNode(cafeFrag(opt.set[part]),true);
+      else node=base.cloneNode(true);
+      if(part==="eyes"&&st==="blink"&&opt&&!(opt.set&&opt.set.eyes)){node.querySelectorAll('[data-part="eye-white"],[data-part="upper-lid"]').forEach(n=>n.remove());}
+      const g=document.createElementNS(CAFE_SVGNS,"g");g.setAttribute("data-expression",st);g.appendChild(node);wrap.appendChild(g);});
+    base.remove();});
+}
+function cafeComposeCustom(look,opts={}){
+  const lib=CafeCustom.lib;if(!lib||!look)return null;
+  const r=cafeCustomRecipe(look,opts),key=r.keys.join("|")+JSON.stringify(r.vars);
+  if(CafeCustom.cache.has(key))return CafeCustom.cache.get(key);
+  let svg;try{svg=document.importNode(new DOMParser().parseFromString(lib.foundation,"image/svg+xml").documentElement,true);}catch(e){return null;}
+  r.keys.forEach(k=>cafeApplyOption(svg,lib.options[k]));
+  cafeExpressionWrap(svg,lib);
+  svg.setAttribute("style",Object.entries(r.vars).map(([k,v])=>`${k}:${v}`).join(";"));
+  svg.setAttribute("data-character","barista-custom");svg.setAttribute("aria-hidden","true");
+  const out=new XMLSerializer().serializeToString(svg);
+  if(CafeCustom.cache.size>40)CafeCustom.cache.clear();
+  CafeCustom.cache.set(key,out);return out;
+}
+
+/* ---- one entry point for every character drawing in the game ---- */
+const CAFE_PORTRAIT_VB="30 36 260 338";   /* waist-up crop of the 320×500 figure for small boxes */
+let cafeLookIds=null;
+function cafeLookId(look){
+  if(!cafeLookIds){cafeLookIds=new WeakMap();
+    (typeof CUSTOMERS!=="undefined"?CUSTOMERS:[]).forEach(c=>c.look&&cafeLookIds.set(c.look,c.id));
+    (typeof AVATARS!=="undefined"?AVATARS:[]).forEach(a=>a.look&&cafeLookIds.set(a.look,a.id));}
+  return look&&typeof look==="object"?cafeLookIds.get(look)||null:null;
+}
+function cafeWearsShop(o){return !!o&&!!((o.apron&&o.apron!=="apron_cherry")||o.hat||o.glasses||o.badge||o.gstyle||o.gcolor||(o.extras&&o.extras.length));}
+function cafePortrait(svgText,expr,w){
+  return cafeCharStaticHTML(svgText,CAFE_FACE[expr]||"normal").replace(/<svg /,`<svg width="${w}" height="${Math.round(w*1.3)}" `).replace(/viewBox="[^"]*"/,`viewBox="${CAFE_PORTRAIT_VB}"`);
+}
+if(typeof characterSVG==="function"){
+  const previousCharacterSVG=characterSVG;
+  characterSVG=function(look,expr,opts={}){
+    try{
+      const w=opts.w||96,id=cafeLookId(look),custom=!!(look&&(look.eyeShape||look.faceFix))||(id&&CAFE_CHAR_IDS.has(id)&&cafeWearsShop(opts)&&AVATARS.some(a=>a.id===id));
+      if(!custom&&id&&CAFE_CHAR_IDS.has(id)){const t=CafeArt.get("chars",id);if(t)return cafePortrait(t,expr,w);CafeArt.load("chars",id);}
+      else if(custom){const t=CafeCustom.lib?cafeComposeCustom(look,opts):null;if(t)return cafePortrait(t,expr,w);CafeCustom.load();}
+    }catch(e){}
+    return previousCharacterSVG(look,expr,opts);
+  };
+}
+/* fetch the art the first screens need */
+setTimeout(()=>{CafeCustom.load();if(typeof CUSTOMERS!=="undefined")CafeArt.preload("chars",CUSTOMERS.map(c=>c.id).filter(id=>CAFE_CHAR_IDS.has(id)));},600);

@@ -1796,8 +1796,9 @@ body.reduce .hl-glow,body.reduce .aurora-band,body.reduce .cafe-layer .steam,bod
 .person.wave .waver{animation:wbRaise 1.8s ease-in-out forwards}
 @keyframes wbRaise{0%,100%{transform:rotate(0)}18%,84%{transform:rotate(calc(var(--ra)*1deg))}}
 .person.wave .waverF{animation:wbWaveFore 1.8s ease-in-out forwards}
-/* a small "hi": the forearm comes up beside the face and gives two little waves */
-@keyframes wbWaveFore{0%,100%{transform:rotate(0)}20%{transform:rotate(calc(var(--wi)*96deg))}34%{transform:rotate(calc(var(--wi)*78deg))}48%{transform:rotate(calc(var(--wi)*96deg))}62%{transform:rotate(calc(var(--wi)*78deg))}80%{transform:rotate(calc(var(--wi)*90deg))}}
+/* a small "hi": the arm lifts to shoulder height and the forearm gives two
+   little waves; the elbow bend stays small so the sleeve joint never opens */
+@keyframes wbWaveFore{0%,100%{transform:rotate(0)}22%{transform:rotate(calc(var(--wi)*34deg))}36%{transform:rotate(calc(var(--wi)*20deg))}50%{transform:rotate(calc(var(--wi)*34deg))}64%{transform:rotate(calc(var(--wi)*20deg))}80%{transform:rotate(calc(var(--wi)*28deg))}}
 .person.wave [data-joint="head"]{animation:wbTilt 1.8s ease-in-out forwards}
 @keyframes wbTilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
 .person.hop .inner{animation:wbHop 1.15s ease-in-out}
