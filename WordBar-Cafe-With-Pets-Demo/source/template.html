@@ -1,0 +1,695 @@
+<title>WordBar Café with Pets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@600;700;800&display=swap">
+<style>
+:root{
+  --bg:#E9E5DE; --panel:#FFFDF8; --ink:#2F2A27; --muted:#6F665F; --line:#DED6CB; --chip:#EEE8DF; --accent:#1F6B52;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --g-screen:#FAF1E1; --g-ink:#2E2440; --g-card:#FFFFFF; --g-teal:#62B5AE; --g-tealD:#3E8C86; --g-sun:#F2B33D; --g-good:#5DAA6E; --g-bad:#D9675C; --g-cocoa:#8A5A44;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1B1917;--panel:#262320;--ink:#F1EBE4;--muted:#B8ADA3;--line:#403A34;--chip:#34302B;--accent:#5DC09B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1B1917;--panel:#262320;--ink:#F1EBE4;--muted:#B8ADA3;--line:#403A34;--chip:#34302B;--accent:#5DC09B;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:18px 36px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+@media (max-width:780px){.wrap{grid-template-columns:1fr}}
+.stagebox{display:grid;justify-items:center;min-width:0}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px;min-width:0}
+.side h1{font-family:var(--display);font-weight:600;font-size:23px;margin:0;line-height:1.2;text-wrap:balance}
+.side h2{font-family:var(--display);font-weight:600;font-size:16px;margin:4px 0 0}
+.side p{margin:0;color:var(--muted);font-size:14px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btns .lbl{font-size:12px;font-weight:800;color:var(--muted);min-width:96px}
+.side button{font:inherit;font-weight:800;font-size:13px;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 10px;border-radius:12px;cursor:pointer;line-height:1.2}
+.side button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.side button:focus-visible,.side select:focus-visible{outline:3px solid var(--g-sun);outline-offset:2px}
+.flow{margin:0;padding-left:20px;font-size:14px;color:var(--muted);display:grid;gap:4px}
+.flow b{color:var(--ink)}
+details{border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+summary{cursor:pointer;font-weight:800;font-size:14px}
+.slots{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center;margin-top:8px;font-size:13px}
+.slots label{color:var(--muted);font-weight:700}
+.slots select{font:inherit;font-size:13px;padding:4px 6px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);min-width:0;width:100%}
+.note{font-size:13px;color:var(--muted)}
+
+/* ---------- phone ---------- */
+.phoneScale{position:relative}
+.phoneScale>.phone{transform-origin:top left;position:absolute;left:0;top:0}
+.phone{width:390px;height:844px;border-radius:44px;background:#1E1A18;padding:10px;box-shadow:0 18px 50px rgba(40,25,15,.28)}
+.screen{width:370px;height:824px;border-radius:36px;overflow:hidden;background:var(--g-screen);color:var(--g-ink);display:flex;flex-direction:column;position:relative}
+.status{height:36px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:13px;font-weight:800}
+.topbar{height:52px;flex:none;display:flex;align-items:center;gap:6px;padding:0 10px}
+.pill{display:flex;align-items:center;gap:5px;background:#fff;border:2.5px solid var(--g-ink);border-radius:999px;padding:4px 10px;font-weight:800;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 0 rgba(46,36,64,.18)}
+.pill.coins{background:var(--g-sun)}
+.pill.pause{margin-left:auto;border-radius:12px;padding:4px 9px}
+.coin{width:16px;height:16px;border-radius:50%;background:#FFD766;border:2px solid #B9862B}
+.pill.bump{animation:bump .5s ease}
+@keyframes bump{40%{transform:scale(1.15)}}
+.cafe{position:relative;flex:none;height:270px;overflow:hidden;border-top:2.5px solid var(--g-ink);border-bottom:2.5px solid var(--g-ink);background:#2B2522}
+.layer{position:absolute;inset:0;pointer-events:none}
+.layer>svg{position:absolute;left:0;top:0;overflow:visible}
+.actor{position:absolute;left:0;bottom:0;will-change:transform}
+.actor .inner{width:100%;height:100%;transform-origin:50% 100%}
+.actor svg{width:100%;height:100%;display:block;overflow:visible}
+.abs{position:absolute}
+.abs>svg{width:100%;height:100%;display:block;overflow:visible}
+.cup{display:flex;align-items:flex-end;opacity:0;will-change:transform}
+.cup svg{height:100%;width:auto;overflow:visible}
+.held{position:absolute;pointer-events:none}
+.held svg{width:100%;height:100%;display:block}
+/* pets: full-body joint pets; the wrapper moves, the inside turns its joints */
+.pa{position:absolute;left:0;top:0;will-change:transform}
+.pa .flip,.pa .pbody{width:100%;height:100%;transform-origin:50% 90.9%}
+.pa svg{width:100%;height:100%;display:block;overflow:visible}
+.wb-pet [data-pivot]{transform-box:view-box;transform-origin:0 0}
+.wb-pet .pv{display:none}
+.bubble{position:absolute;z-index:80;background:#fff;border:2.5px solid var(--g-ink);border-radius:14px;padding:3px 8px;transform:translate(-50%,-100%) scale(.6);opacity:0;transition:opacity .2s,transform .25s cubic-bezier(.3,1.5,.6,1);pointer-events:none;display:flex;align-items:center;gap:2px}
+.bubble.on{opacity:1;transform:translate(-50%,-100%) scale(1)}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-8px;width:12px;height:12px;background:#fff;border-right:2.5px solid var(--g-ink);border-bottom:2.5px solid var(--g-ink);transform:translateX(-50%) rotate(45deg)}
+.bubble svg{height:28px;width:auto}
+.emote{position:absolute;z-index:85;font-size:24px;transform:translate(-50%,-100%);animation:pop 1.3s ease forwards;pointer-events:none}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-70%) scale(.7)}18%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-150%) scale(1.15)}}
+.burst{position:absolute;z-index:86;font-size:22px;pointer-events:none;animation:burstFly 1.1s ease forwards}
+@keyframes burstFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--bx,0px)),calc(-50% - 70px)) scale(1)}}
+.tipfly{position:absolute;z-index:87;font-weight:800;color:#C98A12;text-shadow:0 1px 0 #fff,0 0 4px #fff;font-size:19px;transform:translateX(-50%);animation:tipUp 1.1s ease forwards;pointer-events:none;white-space:nowrap}
+@keyframes tipUp{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-46px)}}
+.timetag{position:absolute;z-index:90;right:8px;bottom:6px;background:rgba(46,36,64,.78);color:#fff;font-weight:800;font-size:11px;border-radius:8px;padding:2px 7px;pointer-events:none}
+
+/* day / night (same class names as the live café) */
+.cafe-window-day,.cafe-window-night,.cafe-day-detail,.cafe-night-detail,.night-wash,.night-glow,.door-day,.door-night,.lamp-on{transition:opacity .5s ease}
+.cafe-window-night,.cafe-night-detail,.night-wash,.night-glow,.door-night,.lamp-on{opacity:0}
+.night .cafe-window-day,.night .cafe-day-detail,.night .door-day{opacity:0}
+.night .cafe-window-night,.night .cafe-night-detail,.night .night-glow,.night .door-night,.night .lamp-on{opacity:1}
+.night .night-wash{opacity:.2}
+.door-leaf{transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.door-open .door-leaf{transform:translateX(40px)}
+/* decor animation hooks used by the game's items */
+.steam{animation:steam 2.4s ease-in-out infinite;opacity:.7}.steam.s2{animation-delay:-1.2s}
+@keyframes steam{0%{transform:translateY(4px);opacity:0}40%{opacity:.75}100%{transform:translateY(-6px);opacity:0}}
+.twinkle{animation:twinkle 1.8s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.35}}
+.lanternglow{animation:lglow 3s ease-in-out infinite}
+@keyframes lglow{50%{opacity:.82}}
+.shimmer{animation:shim 3.4s ease-in-out infinite}
+@keyframes shim{50%{opacity:.8}}
+.slotguide{opacity:0;transition:opacity .25s}
+.showslots .slotguide{opacity:1}
+
+.qa{flex:1;display:flex;flex-direction:column;gap:10px;padding:12px 14px 16px;min-height:0;overflow:auto}
+.talk{display:grid;gap:2px;font-size:14.5px;line-height:1.35;min-height:60px}
+.talk b{font-family:var(--display);font-weight:600;font-size:16px}
+.talk q{font-style:italic;color:#5A4A66}
+.order{display:flex;align-items:center;gap:6px;font-weight:800;font-size:13.5px;color:var(--g-cocoa)}
+.order svg{height:26px;width:auto}
+.qcard{background:var(--g-card);border:2.5px solid var(--g-ink);border-radius:18px;padding:11px 14px;display:grid;gap:4px;box-shadow:0 4px 0 rgba(46,36,64,.12)}
+.qtag{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--g-tealD)}
+.qtext{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.28;text-wrap:pretty}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ans{font:inherit;font-family:var(--display);font-weight:600;font-size:17px;line-height:1.2;color:var(--g-ink);background:#fff;border:2.5px solid var(--g-ink);border-bottom-width:5px;border-radius:16px;padding:12px 8px;cursor:pointer;min-height:54px}
+.ans:hover{background:#F2FAF9}
+.ans:focus-visible{outline:3px solid var(--g-teal);outline-offset:2px}
+.ans.good{background:#E3F3E6;border-color:var(--g-good)} .ans.bad{background:#FBE5E2;border-color:var(--g-bad)}
+.ans:disabled{cursor:default}
+.waitmsg{color:var(--g-cocoa);font-weight:700;font-style:italic}
+
+/* ---------- people: motion on the character pack's joints ---------- */
+.actor [data-joint]{transform-box:view-box;transform-origin:0 0}
+.actor{--dir:1}
+.idle .inner{animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scaleY(1.008)}}
+.walk .inner{animation:gait .8s ease-in-out infinite}
+@keyframes gait{0%,50%,100%{transform:translateY(0) rotate(calc(var(--dir)*1.6deg))}12%,62%{transform:translateY(2.2%) rotate(calc(var(--dir)*1.6deg))}30%,80%{transform:translateY(-1.6%) rotate(calc(var(--dir)*2deg))}}
+.walk [data-joint="thigh-l"]{animation:lift .8s ease-in-out infinite}
+.walk [data-joint="thigh-r"]{animation:lift .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes lift{0%,50%,100%{transform:none}25%{transform:translateY(-10px) scaleY(.9)}}
+.walk [data-joint="foot-l"]{animation:toe .8s ease-in-out infinite}
+.walk [data-joint="foot-r"]{animation:toe .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes toe{0%,50%,100%{transform:none}25%{transform:translateY(-3px)}}
+.walk [data-joint="arm-l"]{animation:swing .8s ease-in-out infinite}
+.walk [data-joint="arm-r"]{animation:swing .8s ease-in-out infinite;animation-delay:-.4s}
+@keyframes swing{0%,100%{transform:rotate(calc(var(--flip,1)*6deg))}50%{transform:rotate(calc(var(--flip,1)*-6deg))}}
+.walk .holding,.wave .holding{animation:none!important}
+.walk [data-joint="head"]{animation:headw .8s ease-in-out infinite}
+@keyframes headw{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-1.4deg)}75%{transform:rotate(1.4deg)}}
+.wave .waver{animation:raise 2.4s ease-in-out forwards}
+@keyframes raise{0%,100%{transform:rotate(0)}16%{transform:rotate(calc(var(--ra)*1.04deg))}24%{transform:rotate(calc(var(--ra)*1deg))}84%{transform:rotate(calc(var(--ra)*1deg))}}
+.wave .waverF{animation:wavef 2.4s ease-in-out forwards}
+@keyframes wavef{0%,16%,88%,100%{transform:rotate(0)}30%,58%{transform:rotate(calc(var(--wi)*-24deg))}44%,72%{transform:rotate(calc(var(--wi)*5deg))}}
+.wave [data-joint="head"]{animation:tilt 2.4s ease-in-out forwards}
+@keyframes tilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
+.hop .inner{animation:hop 1.15s ease-in-out}
+@keyframes hop{0%,100%{transform:none}15%{transform:translateY(3%) scaleY(.96)}32%{transform:translateY(-12%) scaleY(1.03)}46%{transform:translateY(-13%)}62%{transform:translateY(0)}74%{transform:translateY(2.5%) scaleY(.97)}}
+.nod [data-joint="head"]{animation:nod .55s ease-in-out 2}
+@keyframes nod{50%{transform:translateY(5px) rotate(-1deg)}}
+@media (prefers-reduced-motion: reduce){.actor *,.actor .inner{animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="stagebox" id="stagebox">
+    <div class="phoneScale" id="phoneScale">
+      <div class="phone"><div class="screen">
+        <div class="status"><span id="clock">9:41</span><span>WordBar</span><span>100%</span></div>
+        <div class="topbar">
+          <span class="pill coins" id="coinPill"><span class="coin" aria-hidden="true"></span><span id="coins">120</span></span>
+          <span class="pill">Waiting: <span id="waiting">3</span></span>
+          <span class="pill">🎯 <span id="target">0</span>/20</span>
+          <span class="pill pause" aria-hidden="true">❚❚</span>
+        </div>
+        <div class="cafe" id="cafe">
+          <div class="layer" id="Lbg"></div>
+          <div class="layer" id="Lback"></div>
+          <div class="layer" id="Lfront"></div>
+          <div class="layer" id="Lcounter"></div>
+          <div class="layer" id="LonCounter"></div>
+          <div class="layer" id="Lfloor"></div>
+          <div class="layer" id="Lnight"></div>
+          <div class="layer" id="Lguide"></div>
+          <div class="layer" id="fx"></div>
+          <div class="bubble" id="bubble"></div>
+          <div class="timetag" id="timetag">Day</div>
+        </div>
+        <div class="qa">
+          <div class="talk" id="talk"></div>
+          <div class="qcard"><span class="qtag" id="qtag"></span><span class="qtext" id="qtext"></span></div>
+          <div class="answers" id="answers"></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <h1>Café with pets</h1>
+    <p>A modern coffee bar with a glass front. Customers bring their pets, and Mei's own corgi naps in its bed by the counter. Answer on the phone to serve the customer at the counter.</p>
+    <h2>How customers and pets move</h2>
+    <ol class="flow">
+      <li><b>In:</b> through the sliding glass door at the right, with their pet trotting behind.</li>
+      <li><b>Order:</b> at the counter. The pet jumps up onto the counter and waits there, wagging its tail and twitching its ears.</li>
+      <li><b>Served:</b> a right answer makes the pet dance; a wrong one makes its ears droop.</li>
+      <li><b>Leave:</b> the customer picks up the drink and walks off to the left, behind Mei. The pet jumps down and follows. The counter stops short at both ends, so you see them walk in and out in full.</li>
+    </ol>
+    <h2>Try the pet moves</h2>
+    <div class="btns" id="petBtnsC"><span class="lbl">Counter pet</span>
+      <button data-m="walk">Walk</button><button data-m="twitch">Ears</button><button data-m="tail">Tail</button><button data-m="jump">Jump</button><button data-m="dance">Dance</button></div>
+    <div class="btns" id="petBtnsB"><span class="lbl">Mei's corgi</span>
+      <button data-m="walk">Walk</button><button data-m="twitch">Ears</button><button data-m="tail">Tail</button><button data-m="jump">Jump</button><button data-m="dance">Dance</button></div>
+    <h2>Time of day</h2>
+    <div class="btns" id="timeBtns">
+      <button data-t="auto" aria-pressed="true">Real time</button>
+      <button data-t="day" aria-pressed="false">Day</button>
+      <button data-t="night" aria-pressed="false">Night</button>
+    </div>
+    <h2>Decor (the game's own items)</h2>
+    <div class="btns" id="setBtns">
+      <button data-set="0" aria-pressed="false">Empty</button>
+      <button data-set="1" aria-pressed="true">Set 1</button>
+      <button data-set="2" aria-pressed="false">Set 2</button>
+      <button data-set="3" aria-pressed="false">Set 3</button>
+      <button id="slotBtn" aria-pressed="false">Show slots</button>
+    </div>
+    <details><summary>Try any item in any slot</summary><div class="slots" id="slotSel"></div></details>
+    <div class="btns"><button id="replay">Replay the queue</button></div>
+  </aside>
+</div>
+
+<script>
+const CAST=__CAST__, PET_LIST=__PETS__, MENU=__DRINKS__, DECOR=__DECOR__;
+(function(){
+const NS='http://www.w3.org/2000/svg', GI='#463A54';
+const reduceOS=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const byId=id=>CAST.find(c=>c.id===id);
+const T=DECOR.theme, L=T.lighting;
+
+/* ================= the scene: 360 x 262 design units ================= */
+const DW=360, DH=262;
+const CT=184, CF=192, CB=240;          /* counter: top surface 184 to 192, front face to 240 */
+const CX0=50, CX1=298;                 /* the counter stops short at both ends */
+const WALLB=196;                       /* back wall meets the floor */
+const SLOT_T={
+  lights:'', bunting:'', shelf:'translate(-172 0)', wallart:'translate(-14 0)',
+  menu:'translate(54.8 -4.2) scale(.7)', window:'translate(-30 -10) scale(1.2)',
+  lamp:'translate(-73 110)', display:'translate(120 52)', counter:'translate(-24 52)',
+  plant:'translate(-250 63.5) scale(1.5)', rug:'translate(0 65)', stool:['translate(-80 56)','translate(-20 56)'], petbed:'translate(0 62)'};
+const SLOTS=['wallpaper','floor','counter','window','wallart','menu','shelf','lights','bunting','lamp','display','plant','rug','stool','petbed'];
+const SLOT_NAMES={wallpaper:'Wallpaper',floor:'Floor',counter:'Counter',window:'Window',wallart:'Wall art',menu:'Menu',shelf:'Shelf',lights:'Lights',bunting:'Bunting',lamp:'Lamp',display:'Display',plant:'Plant',rug:'Rug',stool:'Stools',petbed:'Pet bed'};
+const SETS=[
+  {},
+  {wallpaper:'wall_sunny',floor:'floor_honey',window:'flowerbox',wallart:'poster_fruit',menu:'menu_chalk',shelf:'shelf_books',lamp:'lamp_brass',display:'radio_retro',plant:'plant_monstera',rug:'rug_stripe',stool:'stool_oak',petbed:'petbasket'},
+  {wallpaper:'wall_sky',floor:'floor_slate',counter:'counter_marble',window:'window_awning',wallart:'clock_station',menu:'menu_chalk',shelf:'shelf_trophies',lights:'fairylights',lamp:'lamp_rose',display:'cakedome',plant:'plant_monstera',rug:'rug_ocean',stool:'stool_velvet',petbed:'petbed_cloud'},
+  {wallpaper:'wall_blush',floor:'tiles_terra',counter:'fountain_gold',window:'window_stained',wallart:'portrait_fox',menu:'menu_chalk',shelf:'shelf_trophies',lights:'aurora',lamp:'lantern_paper',display:'jukebox',plant:'plant_monstera',rug:'rug_rose',stool:'stool_cherry',petbed:'petbed_cloud'}];
+let sel={...SETS[1]};
+const it=id=>id&&DECOR.items[id];
+const frag=(slot)=>{const i=it(sel[slot]);return i?i.frag:''};
+const g=(t,inner)=>inner?`<g transform="${t}">${inner}</g>`:'';
+const shade=(hex,f)=>{const n=parseInt(hex.slice(1),16);let r=n>>16,gg=(n>>8)&255,b=n&255;const m=v=>Math.max(0,Math.min(255,Math.round(f<0?v*(1+f):v+(255-v)*f)));return '#'+[m(r),m(gg),m(b)].map(v=>v.toString(16).padStart(2,'0')).join('')};
+
+function bgSVG(){
+  const wall=it(sel.wallpaper)?.c||'#EFE3D0', floor=it(sel.floor)?.c||'#D9B98C';
+  const lampI=it(sel.lamp);
+  let slats='';for(let x=124;x<302;x+=5)slats+=`M${x} 152V${WALLB}`;
+  let tiles='';for(let y=34;y<WALLB;y+=7){tiles+=`M0 ${y}H122`;const o=((y-34)/7)%2?7:0;for(let x=o;x<122;x+=14)tiles+=`M${x} ${y}v7`}
+  let planks='';[205,216,229,246].forEach((y,i)=>{planks+=`M0 ${y}H${DW}`;for(let x=(i*23)%60;x<DW;x+=60)planks+=`M${x} ${y}v${[11,13,17,16][i]}`});
+  return `<svg viewBox="0 0 ${DW} ${DH}" preserveAspectRatio="none" xmlns="${NS}">
+  <defs><clipPath id="doorclip"><rect x="306" y="48" width="48" height="148"/></clipPath></defs>
+  <rect width="${DW}" height="${WALLB}" fill="${wall}"/>
+  <rect y="${WALLB}" width="${DW}" height="${DH-WALLB}" fill="${floor}"/>
+  <path d="${planks}" stroke="${shade(floor,-.18)}" stroke-width="1" fill="none" opacity=".7"/>
+  <rect y="${WALLB}" width="${DW}" height="5" fill="#000" opacity=".07"/>
+  <!-- fluted oak wainscot -->
+  <rect x="122" y="150" width="180" height="${WALLB-150}" fill="#C79E72"/>
+  <path d="${slats}" stroke="#A97F55" stroke-width="1.1"/>
+  <rect x="122" y="148" width="180" height="4" fill="#8F6942"/>
+  <!-- barista station: white tiles with a deep green band -->
+  <rect x="0" y="34" width="122" height="${WALLB-34}" fill="#F2EFE9"/>
+  <path d="${tiles}" stroke="#DAD3C8" stroke-width=".8" fill="none"/>
+  <rect x="0" y="28" width="122" height="7" fill="#1F5A46"/>
+  <rect x="122" y="10" width="2.5" height="${WALLB-10}" fill="#1F5A46" opacity=".9"/>
+  <!-- ceiling: dark timber slats -->
+  <rect width="${DW}" height="10" fill="#3A2E28"/>
+  <path d="${Array.from({length:36},(_,i)=>`M${i*10+4} 0v10`).join('')}" stroke="#4E3F37" stroke-width="2"/>
+  <!-- sliding glass door: customers come in here -->
+  <g>
+    <rect x="300" y="42" width="60" height="${WALLB-42}" fill="#26282B"/>
+    <g clip-path="url(#doorclip)">
+      <g class="door-day"><rect x="306" y="48" width="48" height="148" fill="#BFE2EF"/><rect x="306" y="170" width="48" height="26" fill="#C9C4BA"/>
+        <circle cx="344" cy="140" r="15" fill="#86B86A"/><circle cx="332" cy="146" r="11" fill="#9CCB7E"/><rect x="341" y="150" width="3.5" height="22" fill="#7A5A3A"/><rect x="306" y="120" width="20" height="50" fill="#E7D3B5"/><rect x="309" y="126" width="5" height="6" fill="#9FC9DA"/><rect x="317" y="126" width="5" height="6" fill="#9FC9DA"/><rect x="309" y="138" width="5" height="6" fill="#9FC9DA"/></g>
+      <g class="door-night"><rect x="306" y="48" width="48" height="148" fill="#172640"/><rect x="306" y="170" width="48" height="26" fill="#2C3346"/>
+        <circle cx="316" cy="64" r="1.2" fill="#F2E8C8"/><circle cx="340" cy="58" r="1" fill="#F2E8C8"/><circle cx="348" cy="80" r="1.3" fill="#F2E8C8"/>
+        <rect x="337" y="104" width="2.5" height="68" fill="#4A5068"/><circle cx="338" cy="104" r="4" fill="#FFE2A0"/><circle cx="338" cy="104" r="16" fill="#FFE2A0" opacity=".18"/><rect x="306" y="120" width="20" height="50" fill="#2A3350"/><rect x="309" y="126" width="5" height="6" fill="#F6D58A"/><rect x="317" y="138" width="5" height="6" fill="#F6D58A"/></g>
+      <g class="door-leaf">
+        <rect x="306" y="48" width="48" height="148" fill="#DDF1F7" opacity=".14"/>
+        <path d="M310 60 L322 52 M314 76 L340 58 M318 92 L346 72" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>
+        <rect x="306" y="48" width="48" height="148" fill="none" stroke="#26282B" stroke-width="3"/>
+        <rect x="311" y="104" width="3" height="36" rx="1.5" fill="#C9CBD0"/>
+        <rect x="318" y="58" width="24" height="9" rx="2" fill="#1F5A46"/><text x="330" y="65" text-anchor="middle" font-size="6.2" font-weight="800" font-family="Nunito,sans-serif" fill="#fff">OPEN</text>
+      </g>
+    </g>
+  </g>
+  ${frag('lights')}${frag('bunting')}${sel.lamp==='lantern_paper'?lampI.frag:''}
+  ${g(SLOT_T.shelf,frag('shelf'))}
+  <g transform="translate(0 16)">${DECOR.machine}</g>
+  <rect x="10" y="100" width="6" height="96" fill="#8A5A2E" opacity=".5"/><rect x="102" y="100" width="6" height="96" fill="#8A5A2E" opacity=".5"/>
+  <g transform="${SLOT_T.window}">${DECOR.window}<path d="M165 24V82M130 53H200" stroke="#26282B" stroke-width="2"/>${frag('window')}</g>
+  ${g(SLOT_T.wallart,frag('wallart'))}
+  ${g(SLOT_T.menu,frag('menu'))}
+  <!-- pendant lights over the bar -->
+  ${[110,216].map(x=>`<g><line x1="${x}" y1="10" x2="${x}" y2="14" stroke="#26282B" stroke-width="1.2"/><path d="M${x-9} 23 L${x-4} 14 H${x+4} L${x+9} 23 Z" fill="#26282B"/><rect x="${x-3}" y="12.5" width="6" height="2.5" rx="1" fill="#C9A227"/><ellipse class="lamp-on" cx="${x}" cy="23.5" rx="5.5" ry="1.6" fill="#FFE2A0"/></g>`).join('')}
+  </svg>`;
+}
+function counterSVG(){
+  const c=it(sel.counter)?.c, front=c||'#D8B88E', top=sel.counter==='counter_marble'?'#E8E4DC':'#2F2B2A';
+  let flutes='';for(let x=CX0+5;x<CX1;x+=6)flutes+=`M${x} ${CF+4}V${CB-3}`;
+  const lampI=it(sel.lamp);
+  return `<svg viewBox="0 0 ${DW} ${DH}" preserveAspectRatio="none" xmlns="${NS}">
+  <ellipse cx="${(CX0+CX1)/2}" cy="${CB+1}" rx="${(CX1-CX0)/2+6}" ry="3" fill="#000" opacity=".12"/>
+  <rect x="${CX0}" y="${CF}" width="${CX1-CX0}" height="${CB-CF}" fill="${front}" stroke="${GI}" stroke-width="2.4"/>
+  <path d="${flutes}" stroke="${shade(front,-.2)}" stroke-width="1.3"/>
+  <rect x="${CX0}" y="${CB-5}" width="${CX1-CX0}" height="5" fill="${shade(front,-.35)}"/>
+  <path d="M${CX0-4} ${CF} L${CX0+2} ${CT} H${CX1-2} L${CX1+4} ${CF} Z" fill="${top}" stroke="${GI}" stroke-width="2.4" stroke-linejoin="round"/>
+  <rect x="${CX0-4}" y="${CF}" width="${CX1-CX0+8}" height="3.5" rx="1.5" fill="${shade(top,-.25)}" stroke="${GI}" stroke-width="1.6"/>
+  ${lampI&&sel.lamp!=='lantern_paper'?g(SLOT_T.lamp,lampI.frag):''}
+  ${g(SLOT_T.counter,sel.counter==='fountain_gold'?frag('counter'):'')}
+  ${g(SLOT_T.display,frag('display'))}
+  </svg>`;
+}
+function floorSVG(){
+  const stool=frag('stool');
+  return `<svg viewBox="0 0 ${DW} ${DH}" preserveAspectRatio="none" xmlns="${NS}">
+  ${g(SLOT_T.rug,frag('rug'))}
+  ${stool?SLOT_T.stool.map(t=>g(t,stool)).join(''):''}
+  ${g(SLOT_T.petbed,frag('petbed'))}
+  ${g(SLOT_T.plant,frag('plant'))}
+  </svg>`;
+}
+function nightSVG(){
+  return `<svg viewBox="0 0 ${DW} ${DH}" preserveAspectRatio="none" xmlns="${NS}"><defs><radialGradient id="ng"><stop offset="0" stop-color="${L.lamp}" stop-opacity=".42"/><stop offset="1" stop-color="${L.lamp}" stop-opacity="0"/></radialGradient></defs>
+  <rect class="night-wash" width="${DW}" height="${DH}" fill="${L.nightWash}"/>
+  <g class="night-glow"><ellipse cx="110" cy="58" rx="44" ry="42" fill="url(#ng)"/><ellipse cx="216" cy="58" rx="44" ry="42" fill="url(#ng)"/><ellipse cx="60" cy="96" rx="70" ry="56" fill="url(#ng)" opacity=".7"/></g></svg>`;
+}
+const GUIDE=[['Lights / bunting',110,10,190,26],['Shelf',20,6,72,28],['Coffee station',4,36,114,64],['Window (day / night)',124,10,90,96],['Wall art',214,16,46,64],['Menu',262,14,38,44],['Glass door: way in',300,42,60,154],['Lamp',260,146,30,40],['Counter extra',266,150,34,34],['Display',222,150,40,36],['Customer pet',182,148,42,38],['Way out (behind Mei)',0,150,50,100],['Pet bed + corgi',62,226,72,34],['Rug',130,240,140,22],['Stools',168,216,92,36],['Plant',244,206,52,54]];
+function guideSVG(){
+  return `<svg class="slotguide" viewBox="0 0 ${DW} ${DH}" preserveAspectRatio="none" xmlns="${NS}">${GUIDE.map(([n,x,y,w,h])=>`<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="rgba(47,143,136,.10)" stroke="#2F8F88" stroke-width="1.4" stroke-dasharray="4 3"/><text x="${x+3}" y="${y+9}" font-size="7" font-weight="800" font-family="Nunito,sans-serif" fill="#1d5f5a" stroke="#fff" stroke-width="2.4" paint-order="stroke">${n}</text></g>`).join('')}</svg>`;
+}
+const cafe=document.getElementById('cafe');
+const Lbg=document.getElementById('Lbg'),Lback=document.getElementById('Lback'),Lfront=document.getElementById('Lfront'),Lcounter=document.getElementById('Lcounter'),LonCounter=document.getElementById('LonCounter'),Lfloor=document.getElementById('Lfloor'),Lnight=document.getElementById('Lnight'),Lguide=document.getElementById('Lguide'),fx=document.getElementById('fx');
+const H=270, W=370, S=H/DH, OX=(W-DW*S)/2;
+const X=x=>OX+x*S, Y=y=>y*S;
+function sizeLayer(l){const v=l.querySelector(':scope>svg');if(v){v.style.width=DW*S+'px';v.style.height=DH*S+'px';v.style.left=OX+'px'}}
+function drawScene(){
+  Lbg.innerHTML=bgSVG();Lcounter.innerHTML=counterSVG();Lnight.innerHTML=nightSVG();Lguide.innerHTML=guideSVG();
+  const keep=[...Lfloor.querySelectorAll('.pa')];Lfloor.innerHTML=floorSVG();keep.forEach(k=>Lfloor.appendChild(k));
+  [Lbg,Lcounter,Lfloor,Lnight,Lguide].forEach(sizeLayer);if(bpet)placeBaristaPet();
+}
+function openDoor(ms=1300){const d=Lbg.querySelector('.door-leaf');if(!d)return;Lbg.classList.add('door-open');clearTimeout(openDoor.t);openDoor.t=setTimeout(()=>Lbg.classList.remove('door-open'),ms)}
+
+/* ================= people (character pack, rigged at its joints) ================= */
+const ASPECT=320/500, BOX=152;
+const LANE=[{feet:228,k:1},{feet:214,k:.9}];     /* 0 = queue lane by the counter, 1 = walkway along the back wall */
+function laneAt(d){return{feet:LANE[0].feet+(LANE[1].feet-LANE[0].feet)*d,k:LANE[0].k+(LANE[1].k-LANE[0].k)*d}}
+function isMirrored(e,svg){for(let n=e;n&&n!==svg;n=n.parentNode){const t=n.getAttribute&&n.getAttribute('transform');if(t&&/scale\(\s*-1/.test(t))return true}return false}
+const PROP=/attach|bent|sceptre|book|ball|briefcase|shield|staff|oar|magnif|frame|watering|hose/;
+function setFace(svg,state){
+  svg.querySelectorAll('[data-expression]').forEach(g=>g.setAttribute('opacity',g.getAttribute('data-expression').split(' ').includes(state)?'1':'0'));
+  svg.querySelectorAll('[data-eyes]').forEach(e=>e.setAttribute('opacity',(e.getAttribute('data-eyes')==='blink')===(state==='blink')?'1':'0'));
+  svg.querySelectorAll('[data-expressions]').forEach(e=>{const w=state==='blink'?'normal':state;e.setAttribute('opacity',e.getAttribute('data-expressions').split(' ').includes(w)?'1':'0')});
+}
+function handView(hand,v){if(!hand)return;const views=[...hand.querySelectorAll('[data-view]')];if(!views.length)return;
+  const want=views.some(x=>x.getAttribute('data-view')===v)?v:'relaxed';views.forEach(x=>x.setAttribute('opacity',x.getAttribute('data-view')===want?'1':'0'))}
+function makeActor(id,layer){
+  const c=byId(id);const el=document.createElement('div');el.className='actor idle';
+  el.innerHTML='<div class="inner"></div>';const inner=el.firstChild;inner.innerHTML=c.svg;const svg=inner.firstElementChild;
+  layer.appendChild(el);
+  const J=n=>svg.querySelector(`[data-joint="${n}"]`);
+  const a={id,c,el,inner,svg,x:0,d:0,face:'normal',J};
+  ['l','r'].forEach(s=>{const arm=J('arm-'+s);if(!arm)return;const m=isMirrored(arm,svg);arm.style.setProperty('--flip',m?-1:1);
+    const held=[...arm.querySelectorAll('[data-part]')].some(p=>PROP.test(p.getAttribute('data-part')));if(held)arm.classList.add('holding');a['hold'+s]=held;a['mir'+s]=m});
+  a.waveSide=!a.holdr?'r':(!a.holdl?'l':null);
+  if(a.waveSide){const s=a.waveSide,arm=J('arm-'+s),fore=J('fore-'+s);const out=(s==='r'?-1:1)*(a['mir'+s]?-1:1);
+    arm.classList.add('waver');arm.style.setProperty('--ra',out*140);if(fore){fore.classList.add('waverF');fore.style.setProperty('--wi',out)}
+    el.style.setProperty('--tl',s==='r'?1:-1)}
+  setFace(svg,'normal');blinker(a);return a;
+}
+function place(a){const L=laneAt(a.d),box=BOX*L.k,w=box*ASPECT;a.el.style.width=w*S+'px';a.el.style.height=box*S+'px';
+  a.el.style.transform=`translate(${X(a.x-w/2).toFixed(1)}px,${(-(DH-L.feet-box*.032)*S).toFixed(1)}px)`;
+  const want=a.d>.5?Lback:Lfront;if(a.el.parentNode!==want&&!a.fixed){want.insertBefore(a.el,want.querySelector('.pa'))}}
+function headTop(a){const L=laneAt(a.d);return L.feet-BOX*L.k*.9}
+function blinker(a){const t=()=>{if(!a.svg.isConnected)return;if(a.face==='normal'){setFace(a.svg,'blink');setTimeout(()=>{if(a.face==='normal')setFace(a.svg,'normal')},140)}setTimeout(t,3000+Math.random()*3500)};setTimeout(t,900+Math.random()*2500)}
+function face(a,st,ms){a.face=st;setFace(a.svg,st);clearTimeout(a.ft);if(ms)a.ft=setTimeout(()=>{a.face='normal';setFace(a.svg,'normal')},ms)}
+function act(a,cls,ms){a.el.classList.remove('idle','walk','wave','hop','nod');void a.el.offsetWidth;a.el.classList.add(cls);
+  if(cls==='wave'&&a.waveSide){const h=a.J('hand-'+a.waveSide);setTimeout(()=>handView(h,'edge'),300);setTimeout(()=>handView(h,'palm'),420);setTimeout(()=>handView(h,'edge'),1980);setTimeout(()=>handView(h,'relaxed'),2100)}
+  setTimeout(()=>{a.el.classList.remove(cls);a.el.classList.add('idle')},ms)}
+function greet(a,ms=2400){if(a.waveSide)act(a,'wave',ms);else act(a,'nod',1150)}
+/* the path each customer walks is recorded, so their pet can follow the same route a few steps behind */
+function trackStart(a){a.path=[{x:a.x,d:a.d,s:0}];a.s=0}
+function trackPush(a){if(!a.path)return;const P=a.path[a.path.length-1];const dl=Math.hypot(a.x-P.x,(a.d-P.d)*40);if(dl>.4){a.s+=dl;a.path.push({x:a.x,d:a.d,s:a.s});if(a.path.length>600)a.path.splice(0,200)}}
+function pathAt(a,s){const P=a.path;if(s<=P[0].s)return P[0];for(let i=P.length-1;i>0;i--){if(P[i-1].s<=s){const q=P[i-1],r=P[i];const t=Math.min(1,(s-q.s)/((r.s-q.s)||1));return{x:q.x+(r.x-q.x)*t,d:q.d+(r.d-q.d)*t}}}return P[P.length-1]}
+function walk(a,pts,done){
+  if(a.tw)cancelAnimationFrame(a.tw);
+  const segs=[];let px=a.x,pd=a.d;for(const p of pts){const len=Math.hypot(p.x-px,(p.d-pd)*40);segs.push({x0:px,d0:pd,x1:p.x,d1:p.d,len});px=p.x;pd=p.d}
+  const total=segs.reduce((s,q)=>s+q.len,0);if(total<1){done&&done();return}
+  const speed=reduceOS?2000:150*.55*laneAt(a.d).k*1.1;
+  a.el.classList.remove('idle','wave','hop','nod');a.el.classList.add('walk');
+  let si=0,t0=performance.now();
+  const step=now=>{const q=segs[si];const dur=q.len/speed*1000;const t=Math.min(1,(now-t0)/dur);
+    a.x=q.x0+(q.x1-q.x0)*t;a.d=q.d0+(q.d1-q.d0)*t;a.el.style.setProperty('--dir',q.x1<q.x0?-1:1);place(a);trackPush(a);
+    if(t>=1){si++;t0=now;if(si>=segs.length){a.tw=null;a.el.classList.remove('walk');a.el.classList.add('idle');done&&done();return}}
+    a.tw=requestAnimationFrame(step)};
+  a.tw=requestAnimationFrame(step);
+}
+function fade(el,to,ms){return el.animate([{opacity:to?0:1},{opacity:to?1:0}],{duration:reduceOS?10:ms,fill:'forwards'}).finished}
+
+/* ================= pets: the 52-pet joint pack ================= */
+const PETS={};PET_LIST.forEach(p=>PETS[p.id]=p);
+function kindOf(p){const j=p.joints;if(j.some(x=>/^front-/.test(x)))return 'quad';if(p.id==='bat')return 'bat';if(p.id==='seacow')return 'swim';if(j.some(x=>/wing|flipper/.test(x)))return 'bird';return 'sit'}
+const TUNE={sloth:{spd:.4,jump:.3},loris:{spd:.55,jump:.55},hippo:{jump:.45,heavy:1},gorilla:{jump:.6,heavy:1},capybara:{jump:.5,heavy:1},wombat:{jump:.55,heavy:1},panda:{jump:.6,heavy:1},koala:{jump:.8},
+  jumpingrat:{jump:1.45,hop:1},frog:{jump:1.45,hop:1},rabbit:{jump:1.35,hop:1},hollandlop:{jump:1.3,hop:1},squirrel:{jump:1.3},lemur:{jump:1.3},cat:{jump:1.3},lion:{jump:1.1},
+  penguin:{rock:1.5},duck:{rock:1.25},owl2:{rock:.8},parrot:{headbang:1},pigeon:{headbang:1},chicken:{headbang:1}};
+PET_LIST.forEach(p=>{p.kind=kindOf(p);p.t=Object.assign({spd:1,jump:1,rock:1},TUNE[p.id]||{});p.hasTail=p.joints.includes('tail');p.hasEars=p.joints.includes('l-ear')});
+const PBOX=70;          /* pet box in design units (the drawn pet fills roughly two thirds of it) */
+function petMake(id,layer,box){
+  const p=PETS[id];const el=document.createElement('div');el.className='pa';
+  el.innerHTML='<div class="flip"><div class="pbody">'+p.svg+'</div></div>';layer.appendChild(el);
+  const flip=el.firstChild,body=flip.firstChild,svg=body.firstChild;
+  const pt={p,id,el,flip,body,svg,anims:[],J:{},faces:[...svg.querySelectorAll('[data-face]')],x:0,gy:228,box,dirX:-1,move:null,s:0,state:'follow'};
+  petPlace(pt);
+  const q=n=>svg.querySelector('[id="'+p.id+'-'+n+'"]');
+  const map={sl:'l-shoulder',el:'l-elbow',sr:'r-shoulder',er:'r-elbow',al:'l-ankle',ar:'r-ankle',hipl:'l-hip',hipr:'r-hip',legl:'l-leg-root',legr:'r-leg-root',
+    wgl:'l-wing',wgr:'r-wing',fll:'l-flipper',flr:'r-flipper',thl:'l-thumb',thr:'r-thumb',tail:'tail',earl:'l-ear',earr:'r-ear',neck:'neck',
+    fl:'front-l-root',fla:'front-l-ankle',fr:'front-r-root',fra:'front-r-ankle',hl:'hind-l-root',hla:'hind-l-ankle',hr:'hind-r-root',hra:'hind-r-ankle'};
+  for(const k in map){const e=q(map[k]);if(e)pt.J[k]={el:e}}
+  if(!pt.J.fl&&q('front-near-root')){pt.J.fl={el:q('front-near-root')};pt.J.fr={el:q('front-far-root')};pt.J.hl={el:q('hind-near-root')};pt.J.hr={el:q('hind-far-root')}}
+  if(!pt.J.wgl&&pt.J.fll){pt.J.wgl=pt.J.fll;pt.J.wgr=pt.J.flr}
+  petMeasure(pt);return pt;
+}
+function petPlace(pt){const w=pt.box*100/110,h=pt.box;pt.el.style.width=w*S+'px';pt.el.style.height=h*S+'px';
+  pt.el.style.transform=`translate(${X(pt.x-w/2).toFixed(1)}px,${Y(pt.gy-h*100/110).toFixed(1)}px)`;
+  pt.flip.style.transform=pt.dirX>0?'scaleX(-1)':''}
+/* which way "outward", "forward" and "up" turn each joint on screen (right-hand parts often sit inside a mirror) */
+function petMeasure(pt){
+  const svg=pt.svg,J=pt.J;const tor=svg.querySelector('.pet-torso')||svg.querySelector('.pet-body-assembly');
+  const tr=tor.getBoundingClientRect(),bc={x:tr.left+tr.width/2};const hr=(J.neck?J.neck.el:tor).getBoundingClientRect(),hc={x:hr.left+hr.width/2};
+  pt.headDir=Math.abs(hc.x-bc.x)>tr.width*.08?Math.sign(hc.x-bc.x):-1;
+  for(const k in J){const j=J[k],m=j.el.getScreenCTM();const det=Math.sign(m.a*m.d-m.b*m.c)||1;const r=j.el.getBoundingClientRect();
+    const v={x:r.left+r.width/2-m.e,y:r.top+r.height/2-m.f};const ref=(k==='earl'||k==='earr')?hc:bc;
+    j.side=Math.sign(m.e-ref.x)||(/l$/.test(k)?-1:1);const vert=Math.abs(v.y)>=Math.abs(v.x)*.3;
+    const towards=dx=>vert?dx*-Math.sign(v.y||1)*det:-Math.sign(v.x||1)*det*(dx===j.side?1:-1);
+    j.out=towards(j.side);j.fwd=towards(pt.headDir);j.up=-Math.sign(v.x||j.side)*det}
+}
+function PA(pt,el,frames,dur,o={}){if(!el)return;
+  const a=el.animate(frames.map(f=>Object.assign({easing:'ease-in-out'},f)),{duration:dur,iterations:o.it??Infinity,delay:-((o.ph||0)*dur),fill:'both'});pt.anims.push(a);return a}
+function PR(pt,j,k,frames,dur,o){if(!j||reduceOS)return;PA(pt,j.el,frames.map(([of,d,ty,tx,ease])=>({offset:of,transform:`translate(${tx||0}px,${ty||0}px) rotate(${(d*(k||1)).toFixed(2)}deg)`,easing:ease||'ease-in-out'})),dur,o)}
+function PB(pt,frames,dur,o){if(reduceOS)return;PA(pt,pt.body,frames.map(([of,t,ease])=>({offset:of,transform:t,easing:ease||'ease-in-out'})),dur,o)}
+function PF(pt,segs,dur,o){pt.faces.forEach(el=>{const st=el.getAttribute('data-face');
+  const kf=segs.map(([of,s])=>({offset:of,opacity:s===st?1:0,easing:'steps(1,end)'}));kf.push({offset:1,opacity:segs[segs.length-1][1]===st?1:0});PA(pt,el,kf,dur,o)})}
+function petStop(pt){pt.anims.forEach(a=>a.cancel());pt.anims=[]}
+const PM={
+  idle(pt){const J=pt.J,d=4200;
+    PB(pt,[[0,'scale(1,1)'],[.5,'scale(1.02,.98)'],[1,'scale(1,1)']],d/2);
+    PR(pt,J.tail,1,[[0,-6],[.5,6],[1,-6]],d/2);
+    PR(pt,J.earl,J.earl&&J.earl.out,[[0,0],[.3,0],[.33,16],[.37,0],[1,0]],d);
+    PR(pt,J.neck,1,[[0,0],[.55,0],[.62,5],[.85,5],[.92,0],[1,0]],d);
+    PF(pt,[[0,'normal'],[.46,'blink'],[.5,'normal']],d)},
+  walk(pt){const p=pt.p,J=pt.J,k=p.kind,t=p.t,hop=t.hop;
+    const c=(hop?600:k==='quad'?700:k==='bird'?(p.id==='penguin'?560:620):640)/t.spd;
+    PF(pt,[[0,'normal'],[.62,'blink'],[.66,'normal']],c*4);
+    if(hop){PB(pt,[[0,'translateY(0) scale(1.07,.9)'],[.16,'translateY(-4%) scale(.94,1.08)','ease-out'],[.46,'translateY(-22%) scale(1,1)','ease-in'],[.76,'translateY(-2%) scale(.97,1.04)'],[.88,'translateY(0) scale(1.08,.89)'],[1,'translateY(0) scale(1.07,.9)']],c);
+      ['al','ar','hipl','hipr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.16,-8],[.46,14,-1.5],[.76,4],[1,0]],c));
+      ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.2,-6],[.55,12],[.85,-4],[1,0]],c));
+      PR(pt,J.tail,J.tail&&J.tail.up,[[0,0],[.3,14],[.7,-8],[1,0]],c);return}
+    if(k==='quad'){const leg=(j,ph)=>j&&PR(pt,j,j.fwd,[[0,16],[.5,-16,0,0,'linear'],[.75,6,-1.6],[1,16]],c,{ph});const paw=(j,ph)=>j&&PR(pt,j,j.fwd,[[0,0],[.5,0],[.6,-34],[.84,-8],[1,0]],c,{ph});
+      leg(J.fl,0);leg(J.hr,0);leg(J.fr,.5);leg(J.hl,.5);paw(J.fla,0);paw(J.hra,0);paw(J.fra,.5);paw(J.hla,.5);
+      PB(pt,[[0,'translateY(0)'],[.25,'translateY(-2.4%)'],[.5,'translateY(0)'],[.75,'translateY(-2.4%)'],[1,'translateY(0)']],c);
+      PR(pt,J.neck,1,[[0,0],[.25,2.5,.5],[.5,0],[.75,2.5,.5],[1,0]],c);PR(pt,J.tail,1,[[0,-14],[.5,14],[1,-14]],c);
+      ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.3,6],[.55,0],[.8,6],[1,0]],c));return}
+    const rock=(k==='bird'?6:3.4)*t.rock;
+    PB(pt,[[0,`translateY(0) rotate(${-rock}deg)`],[.25,`translateY(-${k==='bird'?3:4.5}%) rotate(0deg)`],[.5,`translateY(0) rotate(${rock}deg)`],[.75,`translateY(-${k==='bird'?3:4.5}%) rotate(0deg)`],[1,`translateY(0) rotate(${-rock}deg)`]],c);
+    const foot=(j,ph)=>j&&PR(pt,j,j.out,[[0,0],[.25,10,-3],[.5,0],[1,0]],c,{ph});
+    const lft=(J.al&&J.al.side<0)?'al':'ar',rgt=lft==='al'?'ar':'al';foot(J[rgt],0);foot(J[lft],.5);
+    ['legl','legr','hipl','hipr'].forEach(n=>{const j=J[n];if(j)PR(pt,j,j.out,[[0,0],[.25,-7,-2],[.5,0],[1,0]],c,{ph:j.side<0?.5:0})});
+    if(k==='bird'){['wgl','wgr'].forEach(n=>{const j=J[n];if(j)PR(pt,j,j.out,[[0,2],[.25,j.side<0?12:3],[.5,2],[.75,j.side<0?3:12],[1,2]],c)});
+      PR(pt,J.neck,1,[[0,0,0],[.25,0,t.headbang?1.6:.8],[.5,0,0],[.75,0,t.headbang?1.6:.8],[1,0,0]],c)}
+    else{['sl','sr'].forEach(n=>{const j=J[n];if(j)PR(pt,j,j.out,[[0,j.side<0?10:-4],[.5,j.side<0?-4:10],[1,j.side<0?10:-4]],c)});PR(pt,J.neck,1,[[0,rock*.7],[.5,-rock*.7],[1,rock*.7]],c)}
+    PR(pt,J.tail,1,[[0,-12],[.5,12],[1,-12]],c);
+    ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.3,5],[.55,0],[.8,5],[1,0]],c))},
+  twitch(pt){const J=pt.J,d=3000;
+    if(pt.p.hasEars){PR(pt,J.earl,J.earl.out,[[0,0],[.06,24],[.1,-4],[.14,20],[.18,0],[.5,0],[.56,-12],[.7,-12],[.76,0],[1,0]],d);
+      PR(pt,J.earr,J.earr.out,[[0,0],[.3,0],[.34,24],[.38,-3],[.42,0],[.5,0],[.56,-12],[.7,-12],[.76,0],[1,0]],d)}
+    PR(pt,J.neck,1,[[0,0],[.06,-4],[.2,0],[.32,4],[.45,0],[.56,8],[.7,8],[.78,0],[1,0]],d);
+    PF(pt,[[0,'normal'],[.24,'blink'],[.27,'normal'],[.56,'good'],[.76,'normal']],d)},
+  tail(pt){const J=pt.J,d=2600;const wig=[[0,'rotate(0deg)']];const fast=[[0,0]];
+    for(let i=1;i<=8;i++){fast.push([i*.05,i%2?24:-24]);wig.push([i*.05,`translateX(${pt.p.hasTail?0:(i%2?-3:3)}%) rotate(${(pt.p.hasTail?1.6:4.5)*(i%2?-1:1)}deg)`])}
+    fast.push([.45,0],[.55,12],[.7,-12],[.85,10],[.95,-4],[1,0]);wig.push([.45,'rotate(0deg)'],[1,'rotate(0deg)']);
+    PR(pt,J.tail,1,fast,d);PB(pt,wig,d);
+    ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.06,-8],[.42,-8],[.5,0],[1,0]],d));
+    PF(pt,[[0,'good'],[.46,'normal'],[.7,'blink'],[.73,'normal']],d)},
+  jump(pt){const J=pt.J,p=pt.p,k=p.kind,d=p.t.heavy?1650:1450;const h=Math.min(70,48*p.t.jump);
+    PB(pt,[[0,'translateY(0) scale(1,1)'],[.14,'translateY(0) scale(1.12,.84)'],[.26,`translateY(-${h*.55}%) scale(.92,1.12)`,'ease-out'],[.42,`translateY(-${h}%) scale(1,1)`,'ease-in'],[.58,`translateY(-${h*.6}%) scale(.98,1.04)`,'ease-in'],[.7,'translateY(0) scale(1.12,.86)'],[.8,'translateY(-3%) scale(.97,1.04)'],[.9,'translateY(0) scale(1,1)'],[1,'translateY(0) scale(1,1)']],d);
+    if(k==='quad'){['fl','fr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].fwd,[[0,0],[.14,-10],[.3,40],[.5,34],[.7,12],[.85,0],[1,0]],d));['hl','hr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].fwd,[[0,0],[.14,12],[.3,-38],[.5,-30],[.7,-8],[.85,0],[1,0]],d))}
+    else if(k==='bird'){['wgl','wgr'].forEach(n=>{const j=J[n];if(j)PR(pt,j,j.out,[[0,0],[.14,-4],[.26,60],[.34,22],[.42,60],[.5,22],[.58,52],[.7,8],[.82,0],[1,0]],d)})}
+    else{['sl','sr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.14,-14],[.3,92],[.45,112],[.6,96],[.72,22],[.86,0],[1,0]],d));['el','er'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.3,24],[.45,42],[.6,20],[.75,0],[1,0]],d))}
+    ['al','ar','hipl','hipr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.14,6],[.45,-16,-2],[.7,4],[.85,0],[1,0]],d));
+    PR(pt,J.tail,J.tail&&J.tail.up,[[0,0],[.14,-10],[.42,26],[.7,-16],[.85,4],[1,0]],d);
+    ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.14,8],[.28,20],[.45,-8],[.6,-14],[.72,22],[.84,-5],[1,0]],d));
+    PF(pt,[[0,'normal'],[.22,'excited'],[.66,'good'],[.95,'normal']],d)},
+  dance(pt){const J=pt.J,p=pt.p,k=p.kind,b=480,d=b*8;const beat=(a,bb)=>{const f=[];for(let i=0;i<=8;i++)f.push([i/8,i%2?bb:a]);return f};const sway=k==='quad'?3:6;
+    PB(pt,[[0,`translateY(0) rotate(${-sway}deg) scaleX(1)`],[.0625,'translateY(-6%) rotate(0deg) scaleX(1)'],[.125,`translateY(0) rotate(${sway}deg) scaleX(1)`],[.1875,'translateY(-6%) rotate(0deg) scaleX(1)'],[.25,`translateY(0) rotate(${-sway}deg) scaleX(1)`],[.3125,'translateY(-6%) rotate(0deg) scaleX(1)'],[.375,`translateY(0) rotate(${sway}deg) scaleX(1)`],[.4375,'translateY(-6%) rotate(0deg) scaleX(1)'],
+      [.5,'translateY(0) rotate(0deg) scaleX(1)'],[.5625,'translateY(-8%) rotate(0deg) scaleX(.05)','linear'],[.625,'translateY(-10%) rotate(0deg) scaleX(-1)','linear'],[.6875,'translateY(-8%) rotate(0deg) scaleX(.05)','linear'],[.75,'translateY(0) rotate(0deg) scaleX(1)'],[.8125,'translateY(-14%) rotate(0deg) scaleX(1)'],[.875,'translateY(0) rotate(0deg) scaleX(1)'],[.9375,'translateY(-14%) rotate(0deg) scaleX(1)'],[1,`translateY(0) rotate(${-sway}deg) scaleX(1)`]],d);
+    if(k==='quad'){const paddle=(j,ph)=>j&&PR(pt,j,j.fwd,[[0,0],[.0625,32],[.125,0],[.25,0],[.3125,32],[.375,0],[.5,0],[.625,20],[.75,0],[.8125,36],[.875,0],[.9375,36],[1,0]],d,{ph});paddle(J.fl,0);paddle(J.fr,.125);['hl','hr'].forEach(n=>J[n]&&PR(pt,J[n],J[n].fwd,beat(0,-10),d))}
+    else if(k==='bird'){['wgl','wgr'].forEach((n,i)=>{const j=J[n];if(j)PR(pt,j,j.out,[[0,0],[.0625,i?10:50],[.125,0],[.1875,i?50:10],[.25,0],[.3125,i?10:50],[.375,0],[.4375,i?50:10],[.5,0],[.625,45],[.75,0],[.78,60],[.81,20],[.84,60],[.875,20],[.9,60],[.93,20],[.96,60],[1,0]],d)})}
+    else{const left=J.sl&&J.sl.side<0?'sl':'sr',right=left==='sl'?'sr':'sl';const arms=(j,first)=>j&&PR(pt,j,j.out,[[0,first?108:20],[.125,first?20:108],[.25,first?108:20],[.375,first?20:108],[.5,75],[.75,75],[.78,112],[1,first?108:20]],d);arms(J[left],true);arms(J[right],false);
+      ['el','er'].forEach(n=>J[n]&&PR(pt,J[n],J[n].out,(()=>{const f=[];for(let i=0;i<=16;i++)f.push([i/16,i%2?28:-6]);return f})(),d))}
+    ['al','ar','hipl','hipr'].forEach((n,i)=>J[n]&&PR(pt,J[n],J[n].out,beat(0,14),d,{ph:i%2?.125:0}));
+    PR(pt,J.tail,1,beat(-20,20),d);PR(pt,J.neck,1,[[0,sway*1.2],[.125,-sway*1.2],[.25,sway*1.2],[.375,-sway*1.2],[.5,0],[1,0]],d);
+    ['earl','earr'].forEach(n=>J[n]&&PR(pt,J[n],J[n].out,beat(0,12),d,{ph:.05}));
+    PF(pt,[[0,'good'],[.5,'excited'],[.75,'good'],[.78,'excited']],d)},
+  sad(pt){const J=pt.J,d=1800;
+    ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.2,28],[1,28]],d,{it:1}));
+    PR(pt,J.neck,1,[[0,0],[.25,0,1.5],[1,0,1.5]],d,{it:1});PR(pt,J.tail,J.tail&&J.tail.up,[[0,0],[.25,-18],[1,-18]],d,{it:1});
+    PB(pt,[[0,'scale(1,1)'],[.25,'scale(1.03,.95)'],[1,'scale(1.03,.95)']],d,{it:1});
+    PF(pt,[[0,'bad']],d,{it:1})},
+  hop(pt){const J=pt.J,d=640;
+    PB(pt,[[0,'scale(1,1)'],[.18,'scale(1.12,.84)'],[.42,'scale(.9,1.14)'],[.72,'scale(1,1)'],[.86,'scale(1.1,.9)'],[1,'scale(1,1)']],d,{it:1});
+    ['earl','earr'].forEach(n=>PR(pt,J[n],J[n]&&J[n].out,[[0,0],[.4,18],[.75,-8],[1,0]],d,{it:1}));
+    PR(pt,J.tail,J.tail&&J.tail.up,[[0,0],[.4,20],[1,0]],d,{it:1});
+    PF(pt,[[0,'excited']],d,{it:1})}
+};
+function petPlay(pt,m,force){if(!pt||(!force&&pt.move===m))return;petStop(pt);pt.move=m;PM[m](pt)}
+/* an arc from one spot to another (floor to counter top and back) */
+function petJump(pt,x2,g2,landLayer,done){
+  pt.state='jump';petPlay(pt,'hop',true);const x1=pt.x,g1=pt.gy,apex=Math.min(g1,g2)-24,t0=performance.now(),dur=reduceOS?1:620;
+  pt.dirX=x2>x1+1?1:(x2<x1-1?-1:pt.dirX);
+  const step=now=>{const t=Math.min(1,(now-t0)/dur);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    pt.x=x1+(x2-x1)*e;const a=(1-t)*(1-t)*g1+2*(1-t)*t*apex+t*t*g2;pt.gy=a;
+    if(landLayer===LonCounter&&a<CT+1&&pt.el.parentNode!==LonCounter)LonCounter.appendChild(pt.el);
+    if(landLayer!==LonCounter&&t>.5&&a>CT+4&&pt.el.parentNode!==landLayer)landLayer.appendChild(pt.el);
+    petPlace(pt);if(t<1)requestAnimationFrame(step);else{if(pt.el.parentNode!==landLayer)landLayer.appendChild(pt.el);done&&done()}};
+  requestAnimationFrame(step);
+}
+
+/* ================= the barista, her corgi and the customers ================= */
+const barista=makeActor('mei',Lfront);barista.x=80;barista.d=0;barista.fixed=true;place(barista);
+const BPET='corgi';let bpet=null;
+function placeBaristaPet(){const hasBed=!!it(sel.petbed);bpet.x=98;bpet.gy=hasBed?250:256;petPlace(bpet)}
+const ORDERS={
+  maya:{pet:'pugclassic',d:7,food:null,line:'Heyy, a blue raspberry slush please. I’m mid-revision!'},
+  king:{pet:'lion',d:0,food:'croissant',line:'A caramel latte and a croissant, fit for a king.'},
+  librarian:{pet:'owl2',d:1,food:'muffin',line:'Jasmine green tea, please. I have a stack of books to read.'},
+  callum:{pet:'dog',d:5,food:'cookie',line:'Mango smoothie and a cookie, please. Lots of post today!'},
+  benji:{pet:'rabbit',d:4,food:'pancakes',line:'Orange sunrise and pancakes, please!'},
+  queen:{pet:'hollandlop',d:9,food:'cinnamonroll',line:'Berry hibiscus tea, if you would be so kind.'},
+  fox:{pet:'redpanda',d:6,food:'doughnut',line:'A mocha swirl, please. I have a dictionary to finish.'},
+  iris:{pet:'koala',d:3,food:'sandwich',line:'Mint fizz and a sandwich, please.'},
+  captain:{pet:'penguin',d:2,food:null,line:'A berry blast smoothie before my flight, please.'},
+  striker:{pet:'dachshund',d:8,food:null,line:'Grape sparkle, please. Big match later!'},
+  pirate:{pet:'parrot',d:6,food:'cookie',line:'Arr! A mocha swirl for the captain!'}};
+const POOL=['maya','king','librarian','callum','benji','queen','fox','iris','captain','striker','pirate'];
+const foodSvg=k=>MENU.food[k];
+const petName=id=>PETS[id].name.replace('Owl2','Owl');
+
+/* pets follow their owner's recorded route, a few steps behind */
+const GAP=34, PSPEED=150;const followers=new Set();
+let lastT=performance.now();
+function petTick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+  followers.forEach(a=>{const pt=a.pet;if(!pt||pt.state!=='follow'||!a.path){return}
+    const target=a.s-GAP;let moving=false;
+    if(target>pt.s+.3){pt.s=Math.min(target,pt.s+PSPEED*dt);moving=true}
+    const pos=pathAt(a,Math.max(0,pt.s));const dx=pos.x-pt.x;if(Math.abs(dx)>.05)pt.dirX=Math.sign(dx);
+    pt.x=pos.x;const Ln=laneAt(pos.d);pt.gy=Ln.feet;pt.box=PBOX*Ln.k;petPlace(pt);
+    const want=pos.d>.5?Lback:Lfront;if(pt.el.parentNode!==want)want.appendChild(pt.el);
+    if(!pt.shown&&pt.s>2){pt.shown=true;fade(pt.el,1,300)}
+    if(moving){pt.still=0;if(pt.move!=='walk')petPlay(pt,'walk')}else{pt.still=(pt.still||0)+dt;if(pt.move==='walk'&&pt.still>.15)petPlay(pt,'idle')}
+    if(a.gone&&pt.x<-34){pt.el.remove();followers.delete(a)}});
+  requestAnimationFrame(petTick)}
+requestAnimationFrame(petTick);
+
+/* ================= the queue ================= */
+const SPOTS=[160,236,302], DOOR=330, EXIT=-48;
+let next=0,queue=[],served=0,coins=120,gen=0,counterPet=null;
+function updateWaiting(){document.getElementById('waiting').textContent=queue.length}
+function enter(i,my,cb){ /* through the sliding door, a step forward into the queue lane, then along to the spot; the pet trots behind */
+  const id=POOL[next++%POOL.length];const a=makeActor(id,Lback);a.x=DOOR;a.d=1;place(a);a.el.style.opacity=0;openDoor(1600);
+  trackStart(a);const pt=petMake(ORDERS[id].pet,Lback,PBOX*.9);pt.x=DOOR;pt.gy=laneAt(1).feet;pt.el.style.opacity=0;pt.s=0;pt.shown=false;petPlace(pt);petPlay(pt,'idle');a.pet=pt;followers.add(a);
+  fade(a.el,1,350).then(()=>{if(my!==gen)return;walk(a,[{x:DOOR-24,d:.15},{x:SPOTS[i],d:0}],()=>cb&&cb(a))});return a}
+function arrive(a,my){if(my!==gen)return;const o=ORDERS[a.id];face(a,'happy',1500);greet(a);
+  showBubble(a,MENU.drinks[o.d].svg+(o.food?foodSvg(o.food):''));showTalk(a);setTimeout(()=>{if(my===gen)showQ()},400);
+  /* the pet catches up, then jumps onto the counter beside its owner */
+  const pt=a.pet;const go=()=>{if(my!==gen||!pt)return;if(pt.s<a.s-GAP-1){setTimeout(go,120);return}
+    petJump(pt,a.x+44,CT+4,LonCounter,()=>{pt.state='counter';pt.box=PBOX;pt.dirX=-1;petPlace(pt);petPlay(pt,'tail');counterPet=pt;
+      setTimeout(()=>{if(counterPet===pt&&pt.move==='tail')petPlay(pt,'twitch')},2600)})};
+  setTimeout(go,250)}
+function startQueue(){
+  gen++;const my=gen;queue.forEach(a=>{a.tw&&cancelAnimationFrame(a.tw);a.el.remove();if(a.pet)a.pet.el.remove()});followers.forEach(a=>{if(a.pet)a.pet.el.remove()});followers.clear();
+  document.querySelectorAll('#Lback .actor,#Lfront .actor:not(:first-child),#LonCounter .pa,#LonCounter .cup').forEach(e=>{if(e!==barista.el)e.remove()});
+  queue=[];next=0;counterPet=null;hideBubble();
+  document.getElementById('talk').innerHTML='';document.getElementById('answers').innerHTML='';document.getElementById('qtag').textContent='';
+  document.getElementById('qtext').innerHTML='<span class="waitmsg">Here comes the first customer…</span>';
+  for(let i=0;i<3;i++)setTimeout(()=>{if(my!==gen)return;const a=enter(i,my,i===0?b=>arrive(b,my):null);queue[i]=a;updateWaiting()},i*1900);
+}
+function leave(a,cupEl){ /* drink in hand, a step back into the walkway, then out to the left behind Mei; the pet hops down and follows */
+  const pt=a.pet;
+  const go=()=>{
+    if(pt&&pt.state==='counter'){counterPet=null;petJump(pt,a.x+20,laneAt(1).feet,Lback,()=>{pt.box=PBOX*.9;a.path=[{x:pt.x,d:1,s:0},{x:a.x,d:a.d,s:Math.hypot(a.x-pt.x,(a.d-1)*40)}];a.s=a.path[1].s;pt.s=0;pt.state='follow';petPlay(pt,'idle',true)})}
+    walk(a,[{x:a.x-8,d:1},{x:EXIT,d:1}],()=>{a.el.remove();a.gone=true});
+  };
+  if(cupEl&&a.waveSide){carry(a,cupEl);setTimeout(go,reduceOS?0:520)}else{if(cupEl)cupEl.remove();go()}
+}
+function carry(a,cupEl){
+  const s=a.waveSide,arm=a.J('arm-'+s),fore=a.J('fore-'+s),hand=a.J('hand-'+s);
+  const inw=(s==='r'?1:-1)*(a['mir'+s]?-1:1);
+  [arm,fore].forEach(e=>{if(e){e.classList.add('holding');e.style.transition='transform .4s ease'}});
+  if(arm)arm.style.transform=`rotate(${-inw*10}deg)`;if(fore)fore.style.transform=`rotate(${inw*118}deg)`;handView(hand,'grip-edge');
+  setTimeout(()=>{const ir=a.inner.getBoundingClientRect(),hr=hand.getBoundingClientRect();
+    const h=document.createElement('div');h.className='held';h.innerHTML=MENU.drinks[+cupEl.dataset.drink].svg;
+    const w=ir.width*.17;h.style.width=w+'px';h.style.height=w*1.3+'px';
+    h.style.left=(hr.left+hr.width/2-ir.left-w/2)+'px';h.style.top=(hr.top+hr.height*.5-ir.top-w*1.15)+'px';
+    a.inner.appendChild(h);cupEl.remove()},reduceOS?0:380);
+}
+function advance(cupEl){
+  const my=gen;const done=queue.shift();leave(done,cupEl);
+  queue.forEach((a,i)=>setTimeout(()=>{if(my===gen)walk(a,[{x:SPOTS[i],d:0}],i===0?()=>arrive(a,my):null)},1100+i*250));
+  setTimeout(()=>{if(my!==gen)return;const n=enter(2,my,null);queue.push(n);updateWaiting()},2600);
+  updateWaiting();
+}
+
+/* ================= bubbles and the game's serve effect ================= */
+const bubble=document.getElementById('bubble');
+function showBubble(a,html){bubble.innerHTML=html;bubble.style.left=X(a.x)+'px';bubble.style.top=Math.max(40,Y(headTop(a))-4)+'px';bubble.classList.add('on');clearTimeout(bubble.t);bubble.t=setTimeout(hideBubble,2600)}
+function hideBubble(){bubble.classList.remove('on')}
+function emote(a,txt){const e=document.createElement('div');e.className='emote';e.textContent=txt;e.style.left=X(a.x)+'px';e.style.top=Math.max(30,Y(headTop(a)))+'px';fx.appendChild(e);setTimeout(()=>e.remove(),1300)}
+function burst(a){if(reduceOS)return;const em=['🎉','✨','👏','⭐'];for(let i=0;i<6;i++){const b=document.createElement('div');b.className='burst';b.textContent=em[i%4];b.style.left=(X(a.x)+(Math.random()*70-35))+'px';b.style.top=(Y(headTop(a))+30+Math.random()*30)+'px';b.style.setProperty('--bx',(Math.random()*80-40)+'px');b.style.animationDelay=(i*.05)+'s';fx.appendChild(b);setTimeout(()=>b.remove(),1300)}}
+function tip(a,n){const t=document.createElement('div');t.className='tipfly';t.textContent='+'+n+' 🪙';t.style.left=(X(a.x)+30)+'px';t.style.top=(Y(headTop(a))+20)+'px';fx.appendChild(t);setTimeout(()=>t.remove(),1200);
+  coins+=n;document.getElementById('coins').textContent=coins;const p=document.getElementById('coinPill');p.classList.remove('bump');void p.offsetWidth;p.classList.add('bump')}
+function serveCup(o,perfect,cb){
+  const cup=document.createElement('div');cup.className='abs cup';cup.dataset.drink=o.d;
+  cup.innerHTML=(perfect?MENU.drinks[o.d].perfect:MENU.drinks[o.d].svg)+(o.food?foodSvg(o.food):'');LonCounter.appendChild(cup);
+  cup.style.height=28*S+'px';cup.style.top=Y(CT+4-28)+'px';cup.style.left=X(88)+'px';cup.style.transform='translateY(-6px) scale(.7)';
+  requestAnimationFrame(()=>{cup.style.transition='opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)';cup.style.opacity='1';cup.style.transform='none';
+    setTimeout(()=>{const d=reduceOS?0:650;cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translateX(${(X(124)-X(88))}px)`;setTimeout(()=>cb&&cb(cup),d+40)},420)});
+}
+
+/* ================= questions ================= */
+const QS=[
+  {tag:'Synonym',q:'Which word means very happy?',opts:['Elated','Furious','Timid','Weary'],a:0},
+  {tag:'Meaning in context',q:'In the sentence “The explorers remained <b>undaunted</b>, even as the storm grew wilder by the hour”, what does <b>undaunted</b> mean?',opts:['Not discouraged','Very frightened','Completely lost','Rather tired'],a:0},
+  {tag:'Antonym',q:'Which word is the opposite of <b>ancient</b>?',opts:['Antique','Elderly','Modern','Faded'],a:2},
+  {tag:'Complete the sentence',q:'After weeks of practice, her performance at the school concert was so ______ that the whole audience rose to its feet.',opts:['Mediocre','Captivating','Tedious','Hesitant'],a:1},
+  {tag:'Meaning',q:'What does <b>reluctant</b> mean?',opts:['Excited','Careless','Generous','Unwilling'],a:3}];
+let qi=0,busy=false;const ansBox=document.getElementById('answers');
+function showTalk(a){const o=ORDERS[a.id],d=MENU.drinks[o.d];
+  document.getElementById('talk').innerHTML=`<b>${a.c.name} <small style="font-family:var(--body);font-weight:700;font-size:13px;color:var(--g-cocoa)">with their ${petName(o.pet).toLowerCase()}</small></b><q>${o.line}</q><span class="order">Order: ${d.svg} ${d.name}${o.food?` + ${o.food.replace('cinnamonroll','cinnamon roll')}`:''}</span>`}
+function showQ(){const q=QS[qi%QS.length];document.getElementById('qtag').textContent=`${q.tag} · word ${served+1} of 20`;document.getElementById('qtext').innerHTML=q.q;
+  ansBox.innerHTML='';q.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='ans';b.type='button';b.textContent=o;b.onclick=()=>answer(i,b);ansBox.appendChild(b)});busy=false}
+function answer(i,btn){
+  if(busy||!queue.length)return;busy=true;const my=gen;const q=QS[qi%QS.length];const right=i===q.a;const c=queue[0],o=ORDERS[c.id];const pt=c.pet;
+  [...ansBox.children].forEach((b,k)=>{b.disabled=true;if(k===q.a)b.classList.add('good');else if(b===btn)b.classList.add('bad')});hideBubble();
+  const serve=()=>{if(my!==gen)return;face(barista,right?'happy':'normal',2200);greet(barista);
+    serveCup(o,right,cup=>{if(my!==gen)return;emote(c,right?'✨':'🙂');
+      if(right){face(c,'happy',1800);act(c,'hop',1150);burst(c);if(pt&&pt.state==='counter')petPlay(pt,'dance');petPlay(bpet,'jump');setTimeout(()=>petPlay(bpet,'idle'),1450)}
+      else{face(c,'normal');if(pt&&pt.state==='counter')petPlay(pt,'idle')}
+      tip(c,right?15:5);served++;document.getElementById('target').textContent=served;
+      setTimeout(()=>{if(my!==gen)return;qi++;document.getElementById('talk').innerHTML='';document.getElementById('qtag').textContent='';document.getElementById('qtext').innerHTML='<span class="waitmsg">Here comes the next customer…</span>';ansBox.innerHTML='';advance(cup)},right?3200:1600)})};
+  if(right)serve();else{face(c,'concern',1500);act(c,'nod',1150);if(pt&&pt.state==='counter')petPlay(pt,'sad');petPlay(bpet,'sad');setTimeout(()=>petPlay(bpet,'idle'),1800);face(barista,'concern',1200);setTimeout(serve,1500)}
+}
+
+/* ================= Mei's corgi: naps in its bed, with a little routine ================= */
+function bpetStroll(){ /* gets out of bed, potters along the front of the counter and comes back */
+  const pt=bpet;pt.strolling=true;const home=pt.x,legs=[home+46,home];let li=0;
+  const goLeg=()=>{if(li>=legs.length){pt.strolling=false;pt.dirX=-1;petPlace(pt);petPlay(pt,'idle');return}
+    const x1=pt.x,x2=legs[li++],t0=performance.now(),dur=Math.abs(x2-x1)/42*1000;pt.dirX=x2>x1?1:-1;petPlay(pt,'walk',true);
+    const step=now=>{const t=Math.min(1,(now-t0)/dur);pt.x=x1+(x2-x1)*t;petPlace(pt);if(t<1)requestAnimationFrame(step);else{petPlay(pt,'twitch',true);setTimeout(goLeg,1600)}};requestAnimationFrame(step)};
+  goLeg()}
+function bpetRoutine(){const order=['idle','tail','idle','twitch','idle','stroll'];let i=0;
+  setInterval(()=>{if(!bpet||bpet.manual||bpet.strolling)return;if(['jump','sad','dance'].includes(bpet.move))return;i=(i+1)%order.length;if(order[i]==='stroll')bpetStroll();else petPlay(bpet,order[i])},4200)}
+
+/* ================= time of day: real clock by default (day 06:00 to 20:00, as in the game) ================= */
+let tmode='auto';
+function period(){if(tmode!=='auto')return tmode;const d=new Date(),m=d.getHours()*60+d.getMinutes();return m>=360&&m<=1200?'day':'night'}
+function applyTime(){const p=period();cafe.classList.toggle('night',p==='night');const d=new Date();
+  document.getElementById('clock').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('timetag').textContent=(p==='night'?'Night':'Day')+(tmode==='auto'?' · real time':'')}
+document.querySelectorAll('#timeBtns button').forEach(b=>b.onclick=()=>{tmode=b.dataset.t;document.querySelectorAll('#timeBtns button').forEach(x=>x.setAttribute('aria-pressed',x===b));applyTime()});
+setInterval(applyTime,30000);
+
+/* ================= controls ================= */
+const selBox=document.getElementById('slotSel');
+SLOTS.forEach(s=>{const l=document.createElement('label');l.textContent=SLOT_NAMES[s];l.htmlFor='sl-'+s;const se=document.createElement('select');se.id='sl-'+s;
+  se.innerHTML='<option value="">— none —</option>'+Object.entries(DECOR.items).filter(([,v])=>v.slot===s).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+  se.onchange=()=>{sel[s]=se.value;document.querySelectorAll('#setBtns [data-set]').forEach(x=>x.setAttribute('aria-pressed','false'));drawScene()};selBox.append(l,se)});
+function syncSelects(){SLOTS.forEach(s=>{document.getElementById('sl-'+s).value=sel[s]||''})}
+document.querySelectorAll('#setBtns [data-set]').forEach(b=>b.onclick=()=>{sel={...SETS[+b.dataset.set]};document.querySelectorAll('#setBtns [data-set]').forEach(x=>x.setAttribute('aria-pressed',x===b));syncSelects();drawScene()});
+document.getElementById('slotBtn').onclick=e=>{const on=cafe.classList.toggle('showslots');e.currentTarget.setAttribute('aria-pressed',on)};
+document.getElementById('replay').onclick=startQueue;
+function petBtns(boxId,getPet){document.querySelectorAll('#'+boxId+' [data-m]').forEach(b=>b.onclick=()=>{const pt=getPet();if(!pt)return;pt.manual=true;petPlay(pt,b.dataset.m,true);
+  clearTimeout(pt.mt);pt.mt=setTimeout(()=>{pt.manual=false;petPlay(pt,pt===bpet?'idle':'twitch',true)},5200)})}
+petBtns('petBtnsC',()=>counterPet);petBtns('petBtnsB',()=>bpet);
+
+/* ================= phone fit ================= */
+const scaleBox=document.getElementById('phoneScale');
+function fit(){const avail=Math.max(420,window.innerHeight-40);const s=Math.min(1,avail/844,(document.getElementById('stagebox').clientWidth)/390);scaleBox.firstElementChild.style.transform=`scale(${s})`;scaleBox.style.width=390*s+'px';scaleBox.style.height=844*s+'px'}
+window.addEventListener('resize',fit);
+fit();syncSelects();drawScene();
+bpet=petMake(BPET,Lfloor,PBOX);bpet.dirX=-1;placeBaristaPet();petPlay(bpet,'idle');bpetRoutine();
+applyTime();startQueue();
+document.addEventListener('visibilitychange',()=>{document.getAnimations().forEach(an=>document.hidden?an.pause():an.play())});
+window.__cafe={get counterPet(){return counterPet},get bpet(){return bpet},queue:()=>queue,answer:(i)=>{const b=ansBox.children[i];if(b)b.click()}};
+})();
+</script>
