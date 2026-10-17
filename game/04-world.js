@@ -1014,15 +1014,15 @@ const PET_CAFE_LAYOUTS = {
 const THEMES = {
  sunny:{name:"Sunny Corner",unlock:0,wall:"#F6E3C2",floor:"#E5C89A",counter:"#C98A55",accent:"#D8547A",window:"day",ambient:"dust",lighting:{daySky:"#BEE3F0",nightSky:"#172640",nightWash:"#25324A",nightOpacity:.15,lamp:"#FFD58A"},
   drinks:["Sunrise Fizz","Berry Whirl","Mango Cloud","Minty Cooler","Lemon Sparkle","Peach Dream","Apple Zing","Coco Breeze"]},
- spring:{name:"Blossom Season",unlock:3000,wall:"#F9E8EE",floor:"#E8D3BC",counter:"#C9899A",accent:"#E07A9B",window:"blossom",ambient:"petals",lighting:{daySky:"#F9DCE6",nightSky:"#292442",nightWash:"#352847",nightOpacity:.14,lamp:"#FFD0A2"},
+ spring:{name:"Spring Blossom Garden",unlock:3000,wall:"#FBF1EA",floor:"#EBDCCB",counter:"#E3A6AE",accent:"#E07A9B",window:"blossom",ambient:"petals",lighting:{daySky:"#F9DCE6",nightSky:"#292442",nightWash:"#352847",nightOpacity:.14,lamp:"#FFD0A2"},
   drinks:["Blossom Lemonade","Strawberry Petal","Honey Dew Drop","Garden Mint Spritz","Rhubarb Ribbon"]},
- halloween:{name:"Pumpkin Nights",unlock:6000,wall:"#4A3B52",floor:"#6E5636",counter:"#8A4A1E",accent:"#E8891D",window:"night",ambient:"embers",lighting:{daySky:"#D9BCA0",nightSky:"#1F1930",nightWash:"#20172E",nightOpacity:.12,lamp:"#FFB347"},
+ halloween:{name:"Pumpkin Nights",unlock:6000,wall:"#F0DDB8",floor:"#C98B54",counter:"#4E3154",accent:"#E8891D",window:"night",ambient:"embers",lighting:{daySky:"#D9BCA0",nightSky:"#1F1930",nightWash:"#20172E",nightOpacity:.12,lamp:"#FFB347"},
   drinks:["Pumpkin-Spice Swirl","Ghostly Grape Fizz","Cauldron Cooler","Toffee-Apple Mist","Blackberry Bat Juice"]},
- christmas:{name:"Winter Lights",unlock:9000,wall:"#F0E8E0",floor:"#C9B8A0",counter:"#7A3B3B",accent:"#B23A3A",window:"snow",ambient:"snow",lighting:{daySky:"#DCE8F0",nightSky:"#1D2B46",nightWash:"#26354B",nightOpacity:.15,lamp:"#FFE4A3"},
+ christmas:{name:"Winter Lights",unlock:9000,wall:"#F4EADB",floor:"#DDCBB0",counter:"#8E2E2E",accent:"#B23A3A",window:"snow",ambient:"snow",lighting:{daySky:"#DCE8F0",nightSky:"#1D2B46",nightWash:"#26354B",nightOpacity:.15,lamp:"#FFE4A3"},
   drinks:["Gingerbread Steamer","Peppermint Snow","Cranberry Twinkle","Spiced Orange Glow","Snowball Smoothie"]},
- kyoto:{name:"Kyoto Counter",unlock:12000,wall:"#EFE8D8",floor:"#B89B78",counter:"#6E5636",accent:"#C25B5B",window:"lantern",ambient:"maple",lighting:{daySky:"#F4D8A8",nightSky:"#202941",nightWash:"#2D2A3E",nightOpacity:.14,lamp:"#FFBF67"},
+ kyoto:{name:"Kyoto Courtyard",unlock:12000,wall:"#F2E8D2",floor:"#CDBFA6",counter:"#24375E",accent:"#C25B5B",window:"lantern",ambient:"maple",lighting:{daySky:"#F4D8A8",nightSky:"#202941",nightWash:"#2D2A3E",nightOpacity:.14,lamp:"#FFBF67"},
   drinks:["Matcha Cloud","Yuzu Sparkle","Sakura Cream","Plum Blossom Soda","Toasted Rice Cooler"]},
- foodtruck:{name:"Park Food Truck",unlock:15000,wall:"#F6EEDC",floor:"#9CBF7E",counter:"#E04B3A",accent:"#F2B33D",window:"day",ambient:"maple",lighting:{daySky:"#A9D8F2",nightSky:"#173052",nightWash:"#23344A",nightOpacity:.13,lamp:"#FFD56B"},
+ foodtruck:{name:"Sunny Park Pavilion",unlock:15000,wall:"#F6EEDC",floor:"#E6D3AE",counter:"#3F6B4C",accent:"#F2B33D",window:"day",ambient:"maple",lighting:{daySky:"#A9D8F2",nightSky:"#173052",nightWash:"#23344A",nightOpacity:.13,lamp:"#FFD56B"},
   drinks:["Vanilla Shake","Strawberry Shake","Park Lemonade","Rocket Slushie","Banana Split Float","Choc-Malt Shake"]}
 };
 

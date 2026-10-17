@@ -19,7 +19,7 @@
    how each item is drawn has moved here. Supplied decoration art is
    used as small WebP sprites (art/decor), surfaces as tiling textures.
    ============================================================ */
-const CAFE_W=360, CAFE_H=274;
+const CAFE_W=330, CAFE_H=300;
 /* the game's gold coin icon (styled in index.html) */
 const COIN='<i class="wbcoin" aria-hidden="true"></i>';
 /* Trimmed sprite sizes from tools/build_decor.py (decor-meta.json). */
@@ -28,21 +28,25 @@ const DECOR_TILES=new Set(["counter_marble","floor_cocoa","floor_honey","floor_s
 const ART_DIR="art/";
 const decorSrc=id=>`${ART_DIR}decor/${id}.webp`;
 
-/* ---- scene geometry (design units) ---- */
+/* ---- scene geometry (design units) ----
+   Batch S13b: a taller, tighter café (330 × 300) that fills the phone
+   stage edge to edge. The customer bar sits lower and in front of the
+   barista counter, leaving a wide walkway behind it from the big door
+   and a short way out down the middle. */
 const CAFE_GEO=Object.freeze({
-  wallBottom:150,
-  window:{x:128,y:22,w:82,h:76},
-  door:{x:318,y:30,w:38,h:120},
-  bCounter:{x:0,w:122,top:139,face:149,bottom:214},      /* barista counter (left) */
-  bar:{x:196,w:132,top:126,face:136,bottom:198},         /* raised customer bar (right) */
-  bed:{x:44,y:262},                                     /* barista pet bed, front left */
-  barista:{x:66,feet:178,k:.9},
-  serve:{x:160,feet:216,k:1},                           /* open area: order + collect */
-  queue:[{x:228,feet:166,k:.84},{x:262,feet:164,k:.83},{x:296,feet:162,k:.82}],
-  stash:{x:346,feet:156,k:.8},                          /* behind the door: overflow queue */
-  doorIn:{x:337,feet:152,k:.78},
-  exit:{x:166,feet:420,k:1.15},                         /* straight down, out of the picture */
-  barTopY:126, counterTopY:139
+  wallBottom:160,
+  window:{x:116,y:24,w:80,h:80},
+  door:{x:274,y:20,w:54,h:142},
+  bCounter:{x:0,w:110,top:152,face:162,bottom:232},     /* barista counter (left) */
+  bar:{x:164,w:154,top:182,face:192,bottom:252},        /* raised customer bar (right, in front) */
+  bed:{x:38,y:292},                                     /* barista pet bed, front left */
+  barista:{x:56,feet:198,k:.92},
+  serve:{x:136,feet:272,k:1},                           /* open area: order + collect */
+  queue:[{x:214,feet:216,k:.88},{x:264,feet:212,k:.87}],/* behind the bar: at most two wait, one orders */
+  stash:{x:302,feet:166,k:.8},                          /* outside the door: overflow queue */
+  doorIn:{x:302,feet:166,k:.8},
+  exit:{x:140,feet:480,k:1.15},                         /* straight down, out of the picture */
+  barTopY:182, counterTopY:152
 });
 let cafeSceneUid=0;
 
@@ -97,152 +101,197 @@ function auroraSVG(uid,x,y,w,h){
     </g></g>`;
 }
 
-/* ---- the view through the window and the glass door ---- */
-function outsideViewSVG(x,y,w,h,T,L,uid,clip){
-  const ground=y+h*.78;
+/* ---- the view through the window and the glass door, per theme ---- */
+function outsideViewSVG(x,y,w,h,T,L,uid,clip,theme){
+  const g=y+h*.78;
+  const skyline=(fill)=>`<path d="M${x} ${g} L${x} ${y+h*.58} l${w*.1} 0 l0 ${-h*.12} l${w*.12} 0 l0 ${h*.06} l${w*.1} 0 l0 ${-h*.2} l${w*.14} 0 l0 ${h*.14} l${w*.1} 0 l0 ${-h*.06} l${w*.16} 0 l0 ${h*.12} l${w*.12} 0 l0 ${-h*.08} l${w*.16} 0 L${x+w} ${g} Z" fill="${fill}"/>`;
+  const trees=(c1,c2)=>`<g fill="${c1}"><circle cx="${x+w*.16}" cy="${g-h*.08}" r="${h*.17}"/><circle cx="${x+w*.42}" cy="${g-h*.04}" r="${h*.13}"/><circle cx="${x+w*.86}" cy="${g-h*.06}" r="${h*.18}"/></g><g fill="${c2}"><circle cx="${x+w*.3}" cy="${g}" r="${h*.12}"/><circle cx="${x+w*.68}" cy="${g+h*.02}" r="${h*.14}"/></g>`;
+  const dots=(c,pts,r)=>`<g fill="${c}">${pts.map(([a,b])=>`<circle cx="${(x+w*a).toFixed(1)}" cy="${(y+h*b).toFixed(1)}" r="${r}"/>`).join("")}</g>`;
+  let dayTrees=trees("#8CBF6A","#6FA455"),nightTrees=trees("#2F4A3A","#284033"),ground="#A7CF7E",nightGround="#2E4A33",extra="",nightExtra="";
+  if(theme==="kyoto"){dayTrees=trees("#E0663A","#C9452E")+dots("#F2A23A",[[.2,.55],[.5,.6],[.78,.5]],2.4);ground="#B9B49A";
+    extra=`<path d="M${x+w*.55} ${g} v${-h*.12} h-3 l2 -3 h-6 l2 3 h-3 v${h*.12}z" fill="#8F8A7C"/>`;nightTrees=trees("#5A2E2A","#46241F");}
+  if(theme==="halloween"){dayTrees=trees("#D9822B","#B4562A");ground="#7B5A3A";
+    extra=dots("#F2B33D",[[.14,.62],[.3,.5],[.62,.56],[.86,.62]],1.6);nightTrees=trees("#4A2B26","#3A2320");nightExtra=dots("#FFB347",[[.14,.62],[.3,.5],[.62,.56],[.86,.62]],1.6);}
+  if(theme==="spring"){dayTrees=trees("#F4B6C8","#EE9AB8")+dots("#FFF",[[.2,.5],[.45,.62],[.8,.52]],1.4);ground="#B7D88E";nightTrees=trees("#6B4A62","#5B3D54");}
+  if(theme==="christmas"){dayTrees=`<g fill="#E9F1F5">${[[.16,.42],[.84,.4],[.5,.48]].map(([a,b])=>`<path d="M${x+w*a} ${y+h*b} l${w*.08} ${h*.34} h${-w*.16} z"/>`).join("")}</g>`;ground="#F4F8FB";
+    extra=dots("#FFF",[[.1,.2],[.3,.34],[.55,.16],[.72,.3],[.9,.12],[.4,.55],[.65,.6]],1.3);nightTrees=dayTrees.replace("#E9F1F5","#C9D6E2");nightGround="#DCE5EE";nightExtra=extra;}
   const day=`<g class="cafe-window-day"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${L.daySky}"/>
     <circle cx="${x+w*.78}" cy="${y+h*.2}" r="${Math.min(w,h)*.09}" fill="#FFE27A"/>
-    <path d="M${x+w*.08} ${y+h*.3} q${w*.06} ${-h*.08} ${w*.12} 0 q${w*.06} ${-h*.06} ${w*.12} 0" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
-    <path d="M${x} ${ground} L${x} ${y+h*.56} l${w*.1} 0 l0 ${-h*.12} l${w*.12} 0 l0 ${h*.06} l${w*.1} 0 l0 ${-h*.2} l${w*.14} 0 l0 ${h*.14} l${w*.1} 0 l0 ${-h*.06} l${w*.16} 0 l0 ${h*.12} l${w*.12} 0 l0 ${-h*.08} l${w*.16} 0 L${x+w} ${ground} Z" fill="#C9D9E6" opacity=".9"/>
-    <g fill="#8CBF6A"><circle cx="${x+w*.16}" cy="${ground-h*.08}" r="${h*.17}"/><circle cx="${x+w*.42}" cy="${ground-h*.04}" r="${h*.13}"/><circle cx="${x+w*.86}" cy="${ground-h*.06}" r="${h*.18}"/></g>
-    <g fill="#6FA455"><circle cx="${x+w*.3}" cy="${ground}" r="${h*.12}"/><circle cx="${x+w*.68}" cy="${ground+h*.02}" r="${h*.14}"/></g>
-    <rect x="${x}" y="${ground}" width="${w}" height="${y+h-ground}" fill="#A7CF7E"/></g>`;
+    ${skyline(theme==="halloween"?"#C9B6A6":"#C9D9E6")}${dayTrees}<rect x="${x}" y="${g}" width="${w}" height="${y+h-g}" fill="${ground}"/>${extra}</g>`;
   const night=`<g class="cafe-window-night"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${L.nightSky}"/>
     <circle cx="${x+w*.78}" cy="${y+h*.2}" r="${Math.min(w,h)*.08}" fill="#F2E8C8"/><circle cx="${x+w*.82}" cy="${y+h*.18}" r="${Math.min(w,h)*.07}" fill="${L.nightSky}"/>
-    <g fill="#F2E8C8"><circle cx="${x+w*.2}" cy="${y+h*.16}" r=".9"/><circle cx="${x+w*.38}" cy="${y+h*.28}" r=".7"/><circle cx="${x+w*.55}" cy="${y+h*.12}" r=".8"/></g>
-    <path d="M${x} ${ground} L${x} ${y+h*.56} l${w*.1} 0 l0 ${-h*.12} l${w*.12} 0 l0 ${h*.06} l${w*.1} 0 l0 ${-h*.2} l${w*.14} 0 l0 ${h*.14} l${w*.1} 0 l0 ${-h*.06} l${w*.16} 0 l0 ${h*.12} l${w*.12} 0 l0 ${-h*.08} l${w*.16} 0 L${x+w} ${ground} Z" fill="#2B3A5A"/>
-    <g fill="#FFD58A" opacity=".85"><rect x="${x+w*.13}" y="${y+h*.62}" width="2.4" height="2.4"/><rect x="${x+w*.47}" y="${y+h*.5}" width="2.4" height="2.4"/><rect x="${x+w*.8}" y="${y+h*.6}" width="2.4" height="2.4"/></g>
-    <g fill="#2F4A3A"><circle cx="${x+w*.16}" cy="${ground-h*.08}" r="${h*.17}"/><circle cx="${x+w*.86}" cy="${ground-h*.06}" r="${h*.18}"/></g>
-    <rect x="${x}" y="${ground}" width="${w}" height="${y+h-ground}" fill="#2E4A33"/></g>`;
-  let themed="";
-  if(T.window==="snow")themed=`<g fill="#FFF">${[[.15,.3],[.35,.5],[.62,.22],[.8,.45],[.45,.15],[.25,.68],[.7,.66]].map(([a,b])=>`<circle cx="${x+w*a}" cy="${y+h*b}" r="1.5"/>`).join("")}</g><rect x="${x}" y="${y+h*.86}" width="${w}" height="${h*.14}" fill="#F4F8FB"/>`;
-  if(T.window==="blossom")themed=`<g fill="#F0A8C0">${[[.18,.24],[.3,.42],[.52,.2],[.64,.38],[.82,.3],[.4,.62]].map(([a,b])=>`<circle cx="${x+w*a}" cy="${y+h*b}" r="2.2"/>`).join("")}</g>`;
-  if(T.window==="lantern")themed=`<g class="lanternglow"><rect x="${x+w*.2}" y="${y+h*.28}" width="8" height="11" rx="3" fill="#E86A4A"/><rect x="${x+w*.62}" y="${y+h*.34}" width="7" height="10" rx="3" fill="#E8A84A"/></g>`;
-  if(T.window==="night")themed=`<g class="cafe-pumpkin"><circle cx="${x+w*.2}" cy="${y+h*.88}" r="4" fill="#E8891D"/><circle cx="${x+w*.74}" cy="${y+h*.9}" r="3.2" fill="#E8891D"/></g>`;
-  return `<g clip-path="url(#${clip})">${day}${night}${themed}</g>`;
+    ${dots("#F2E8C8",[[.2,.16],[.38,.28],[.55,.12]],.9)}${skyline("#2B3A5A")}
+    ${dots("#FFD58A",[[.13,.64],[.47,.52],[.8,.62]],1.2)}${nightTrees}<rect x="${x}" y="${g}" width="${w}" height="${y+h-g}" fill="${nightGround}"/>${nightExtra}</g>`;
+  return `<g clip-path="url(#${clip})">${day}${night}</g>`;
+}
+
+/* ---- per-theme dressing (part of each café theme, not shop items) ---- */
+function garlandSVG(theme,x0,x1,y,sag=9){
+  const ink="#463A54";const n=Math.max(4,Math.round((x1-x0)/10));let s=`<path d="M${x0} ${y} Q${(x0+x1)/2} ${y+sag*2} ${x1} ${y}" fill="none" stroke="#5E8A47" stroke-width="1.8"/>`;
+  for(let i=0;i<=n;i++){const t=i/n,x=x0+(x1-x0)*t,yy=y+sag*4*t*(1-t)+1.5;
+    if(theme==="christmas")s+=`<ellipse cx="${x}" cy="${yy}" rx="6" ry="3.2" fill="${i%2?"#3E7055":"#2F5A43"}" stroke="${ink}" stroke-width=".5" transform="rotate(${i%2?24:-24} ${x} ${yy})"/>${i%2===0?`<circle cx="${x+1.5}" cy="${yy+2.6}" r="2" fill="#C0392B" stroke="${ink}" stroke-width=".6"/>`:""}`;
+    else if(theme==="halloween"||theme==="kyoto")s+=`<path transform="translate(${x} ${yy}) scale(1.45)" d="M0 -3 l1.6 2.2 2.6 -.6 -1 2.4 2 1.6 -2.6 .6 0 2.6 -2.6 -1.4 -2.6 1.4 0 -2.6 -2.6 -.6 2 -1.6 -1 -2.4 2.6 .6 z" fill="${["#D9542B","#E8891D","#C9452E","#F2B33D"][i%4]}" stroke="${ink}" stroke-width=".4"/>`;
+    else if(theme==="spring")s+=`<g fill="${i%2?"#F7C6D6":"#F2A8C0"}" stroke="${ink}" stroke-width=".5"><circle cx="${x}" cy="${yy}" r="3.6"/><circle cx="${x+3.8}" cy="${yy+2.2}" r="2.8"/></g><circle cx="${x+.6}" cy="${yy+.3}" r="1.1" fill="#F2B33D"/>`;
+  }
+  if(theme==="christmas")s+=[x0+8,x1-8].map(x=>`<g transform="translate(${x} ${y+3})"><path d="M0 0 q-6 -5 -6 1 q0 4 6 -1 q6 5 6 -1 q0 -6 -6 1 M0 0 l-3 8 M0 0 l3 8" stroke="#C0392B" stroke-width="2" fill="none" stroke-linecap="round"/></g>`).join("");
+  return `<g class="theme-garland">${s}</g>`;
+}
+function themeDressingBack(theme,ctx){
+  const G=CAFE_GEO,ink="#463A54",W=CAFE_W;let s="";
+  if(theme==="spring")s+=garlandSVG("spring",-4,W+4,11)+`<g class="wisteria">${[16,104,206].map(x=>`<g fill="#B79AD8" stroke="${ink}" stroke-width=".4">${[0,1,2,3,4].map(i=>`<circle cx="${x+(i%2)*2}" cy="${12+i*4}" r="${2.4-i*.3}"/>`).join("")}</g>`).join("")}</g>`;
+  if(theme==="halloween")s+=garlandSVG("halloween",-4,W+4,11);
+  if(theme==="kyoto")s+=garlandSVG("kyoto",-4,110,11)+garlandSVG("kyoto",200,274,11,6);
+  if(theme==="christmas")s+=garlandSVG("christmas",-4,W+4,11)+`<g class="door-wreath"><circle cx="${G.door.x+G.door.w/2}" cy="${G.door.y+26}" r="8" fill="none" stroke="#2F5A43" stroke-width="4"/><circle cx="${G.door.x+G.door.w/2}" cy="${G.door.y+26}" r="8" fill="none" stroke="#3E7055" stroke-width="1.6" stroke-dasharray="2 3"/><path d="M${G.door.x+G.door.w/2-3} ${G.door.y+34} l3 -3 l3 3" fill="#C0392B"/></g>`;
+  /* pumpkins by the back counter and on the top shelf */
+  if(theme==="halloween")s+=[[92,160,9],[150,161,7],[226,161,6],[60,40,5.4]].map(([x,y,r])=>`<g><ellipse cx="${x}" cy="${y-r}" rx="${r*1.25}" ry="${r}" fill="#E8891D" stroke="${ink}" stroke-width="1"/><path d="M${x} ${y-2*r} v${r} M${x-r*.5} ${y-1.8*r} q-1 ${r*.8} 0 ${r*1.6} M${x+r*.5} ${y-1.8*r} q1 ${r*.8} 0 ${r*1.6}" stroke="#B4562A" stroke-width=".8" fill="none"/><path d="M${x} ${y-2*r} l1 -2.4" stroke="#5E8A47" stroke-width="1.4"/></g>`).join("");
+  return s;
+}
+function themeDressingFront(theme){
+  const R=CAFE_GEO.bar,B=CAFE_GEO.bCounter,ink="#463A54";let s="";
+  if(theme==="christmas")s+=garlandSVG("christmas",R.x+4,R.x+R.w-4,R.face+3,6);
+  if(theme==="spring")s+=`<g class="petals" fill="#F4B6C8" opacity=".85">${[[30,250],[90,282],[150,262],[210,290],[300,278],[250,258],[60,296]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.3" transform="rotate(${i*40} ${x} ${y})"/>`).join("")}</g>`;
+  if(theme==="halloween")s+=`<g>${[[B.w-12,B.top,5]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y-r}" rx="${r*1.25}" ry="${r}" fill="#E8891D" stroke="${ink}" stroke-width="1"/><path d="M${x} ${y-2*r} l1 -2.4" stroke="#5E8A47" stroke-width="1.4"/>`).join("")}</g>`;
+  if(theme==="kyoto")s+=`<g><rect x="${B.w-16}" y="${B.top-14}" width="9" height="14" rx="2" fill="#2E4A7A" stroke="${ink}" stroke-width=".8"/><path d="M${B.w-14} ${B.top-14} q-2 -8 3 -12 M${B.w-11} ${B.top-14} q4 -6 8 -6" stroke="#8A5A2E" stroke-width=".8" fill="none"/>${[[B.w-12,B.top-26],[B.w-5,B.top-20]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.4" fill="#F7D6E0" stroke="${ink}" stroke-width=".4"/>`).join("")}</g>`;
+  return s;
+}
+/* pendant lamps change with the theme: paper lanterns in Kyoto */
+function pendantSVG(theme,x,ink){
+  if(theme==="kyoto")return `<g class="pendant"><path d="M${x} 9 v6" stroke="${ink}" stroke-width=".9"/><ellipse cx="${x}" cy="23" rx="7" ry="8.4" fill="#FBF3E2" stroke="${ink}" stroke-width="1.1"/><path d="M${x-6} 20 h12 M${x-6.6} 24 h13.2 M${x-6} 28 h12" stroke="#E4D3B5" stroke-width=".8"/><rect x="${x-3}" y="13.6" width="6" height="2" fill="#8A5A2E"/><rect x="${x-3}" y="30.6" width="6" height="2" fill="#8A5A2E"/></g>`;
+  const c=theme==="spring"?"#F2C6D2":theme==="halloween"?"#2E2A36":theme==="christmas"?"#D8A521":theme==="foodtruck"?"#3E7055":"#3E7055";
+  return `<g class="pendant"><path d="M${x} 9 v10" stroke="${ink}" stroke-width="1"/><path d="M${x-9} 28 q9 -12 18 0 z" fill="${c}" stroke="${ink}" stroke-width="1.4"/><ellipse cx="${x}" cy="28.5" rx="3.6" ry="1.8" fill="#FFE7A8"/></g>`;
 }
 
 /* ---- the back of the café: walls, window, door, back bar, wall decor ---- */
 function cafeBackSVG(uid,ctx){
-  const {T,L,item,wallFill,floorFill}=ctx,G=CAFE_GEO,W=G.window,D=G.door;
-  const wood="#B37B47",woodD="#8A5A2E",ink="#463A54",trim=shade(T.counter,-.18);
+  const {T,L,item,wallFill,floorFill,theme}=ctx,G=CAFE_GEO,W=G.window,D=G.door,CW=CAFE_W;
+  const wood=theme==="kyoto"?"#6E4A2E":"#B37B47",woodD=theme==="kyoto"?"#4E331F":"#8A5A2E",ink="#463A54",trim=shade(T.counter,-.18);
   const windowI=item("window"),shelfI=item("shelf"),displayI=item("display"),wallart=item("wallart"),menuI=item("menu"),rugI=item("rug"),lightsI=item("lights"),lampI=item("lamp"),bunting=item("bunting");
-  const stained=windowI&&windowI.id==="window_stained";
-  let s=`<rect x="-320" width="${CAFE_W+640}" height="${G.wallBottom}" fill="${wallFill}"/>
-  <rect x="-320" y="${G.wallBottom}" width="${CAFE_W+640}" height="${CAFE_H-G.wallBottom}" fill="${floorFill}"/>
-  <g class="floor-lines" stroke="${ink}" stroke-width=".8" opacity=".09"><path d="M0 168 H360 M0 190 H360 M0 216 H360 M0 246 H360"/><path d="M90 150 L60 274 M180 150 V274 M270 150 L300 274"/></g>
-  <rect x="-320" y="${G.wallBottom-5}" width="${CAFE_W+640}" height="7" fill="${woodD}" stroke="${ink}" stroke-width="1.4"/>
-  <rect x="-320" width="${CAFE_W+640}" height="9" fill="${wood}" stroke="${ink}" stroke-width="1.6"/>
-  <path d="M-320 9 H680" stroke="${woodD}" stroke-width="2"/>
-  <rect x="122" y="9" width="5" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>
-  <rect x="311" y="9" width="6" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>`;
-  /* window */
-  s+=`<clipPath id="wv${uid}"><rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" rx="3"/></clipPath>
-  <clipPath id="dv${uid}"><rect x="${D.x+4}" y="${D.y+5}" width="${D.w-8}" height="${D.h-9}" rx="2"/></clipPath>`;
-  if(stained){
-    s+=decorImg("window_stained",W.x-2,W.y-6,W.w+4,W.h+12,{anchor:"middle"});
-  }else{
-    s+=`<rect x="${W.x-4}" y="${W.y-4}" width="${W.w+8}" height="${W.h+8}" rx="4" fill="${wood}" stroke="${ink}" stroke-width="2"/>
-    ${outsideViewSVG(W.x,W.y,W.w,W.h,T,L,uid,`wv${uid}`)}
-    <g stroke="${wood}" stroke-width="3"><path d="M${W.x+W.w/2} ${W.y} V${W.y+W.h} M${W.x} ${W.y+W.h*.48} H${W.x+W.w}"/></g>
-    <rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" rx="3" fill="none" stroke="${ink}" stroke-width="1.6"/>
-    <rect x="${W.x-7}" y="${W.y+W.h+2}" width="${W.w+14}" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>`;
-    if(windowI&&windowI.id==="window_awning")s+=decorImg("window_awning",W.x-14,W.y-17,W.w+28,W.h+26,{anchor:"top"});
+  const pavilion=theme==="foodtruck",stained=windowI&&windowI.id==="window_stained";
+  let s=`<rect x="-320" width="${CW+640}" height="${G.wallBottom}" fill="${wallFill}"/>
+  <rect x="-320" y="${G.wallBottom}" width="${CW+640}" height="${CAFE_H-G.wallBottom+80}" fill="${floorFill}"/>
+  <g class="floor-lines" stroke="${ink}" stroke-width=".8" opacity=".09"><path d="M-320 180 H650 M-320 206 H650 M-320 236 H650 M-320 270 H650"/><path d="M82 160 L52 300 M165 160 V300 M248 160 L278 300"/></g>`;
+  if(pavilion){
+    /* Sunny Park Pavilion: open sides onto the park instead of a back wall */
+    s+=`<clipPath id="pk${uid}"><rect x="-320" y="0" width="${CW+640}" height="${G.wallBottom-26}"/></clipPath>
+    <g clip-path="url(#pk${uid})">${outsideViewSVG(-60,0,CW+120,G.wallBottom-26,T,L,uid+"p",`pk${uid}`,"pavilion")}
+      <g class="cafe-window-day"><rect x="-320" y="${G.wallBottom-60}" width="${CW+640}" height="12" fill="#7FB7D8"/><path d="M130 ${G.wallBottom-60} q14 -12 28 0" fill="none" stroke="#C9B49A" stroke-width="2.4"/>
+      ${[[14,70],[300,64],[200,76]].map(([x,y])=>`<g><rect x="${x-1.4}" y="${y}" width="2.8" height="${G.wallBottom-26-y}" fill="#5A4636"/><circle cx="${x}" cy="${y-10}" r="16" fill="#6FA455"/><circle cx="${x-8}" cy="${y-2}" r="10" fill="#8CBF6A"/></g>`).join("")}</g></g>
+    <rect x="-320" y="${G.wallBottom-30}" width="${CW+640}" height="30" fill="#E9DCC0" stroke="${ink}" stroke-width="1.2"/>
+    <path d="M-320 ${G.wallBottom-22} H650" stroke="#CBB892" stroke-width="2"/>`;
   }
-  if(windowI&&windowI.id==="flowerbox")s+=decorImg("flowerbox",W.x-6,W.y+W.h-8,W.w+12,24);
-  /* glass door with the outside behind it; the leaf slides open */
-  s+=`<rect x="${D.x}" y="${D.y}" width="${D.w}" height="${D.h}" fill="${wood}" stroke="${ink}" stroke-width="2"/>
-  ${outsideViewSVG(D.x+4,D.y+5,D.w-8,D.h-9,T,L,uid+"d",`dv${uid}`)}
-  <g class="door-leaf"><rect x="${D.x+4}" y="${D.y+5}" width="${D.w-8}" height="${D.h-9}" fill="#BFE3EA" opacity=".28" stroke="#5C8A6E" stroke-width="2.4"/>
-    <path d="M${D.x+8} ${D.y+14} l8 -6 M${D.x+8} ${D.y+24} l14 -11" stroke="#FFF" stroke-width="1.6" opacity=".7"/>
-    <rect x="${D.x+7}" y="${D.y+62}" width="2.4" height="12" rx="1.2" fill="#D8A521" stroke="${ink}" stroke-width=".8"/></g>
-  <path d="M${D.x+D.w/2} ${D.y-1} v5" stroke="${ink}" stroke-width="1"/><path d="M${D.x+D.w/2-3} ${D.y+9} q3 -6 6 0 z" fill="#D8A521" stroke="${ink}" stroke-width="1" class="door-bell"/>`;
+  s+=`<rect x="-320" y="${G.wallBottom-5}" width="${CW+640}" height="7" fill="${woodD}" stroke="${ink}" stroke-width="1.4"/>
+  <rect x="-320" width="${CW+640}" height="9" fill="${wood}" stroke="${ink}" stroke-width="1.6"/>
+  <path d="M-320 9 H650" stroke="${woodD}" stroke-width="2"/>
+  <rect x="108" y="9" width="5" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>
+  <rect x="268" y="9" width="6" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>`;
+  if(pavilion)s+=`<path d="M-320 9 ${Array.from({length:86},(_,i)=>`q6 9 12 0`).join(" ")}" transform="translate(${-320+320} 0)" fill="#F4EAD8" stroke="${ink}" stroke-width="1"/>`;
+  /* window (indoor themes) */
+  s+=`<clipPath id="wv${uid}"><rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" rx="3"/></clipPath>
+  <clipPath id="dv${uid}"><rect x="${D.x+5}" y="${D.y+6}" width="${D.w-10}" height="${D.h-10}" rx="2"/></clipPath>`;
+  if(!pavilion){
+    if(stained)s+=decorImg("window_stained",W.x-2,W.y-6,W.w+4,W.h+12,{anchor:"middle"});
+    else{
+      s+=`<rect x="${W.x-4}" y="${W.y-4}" width="${W.w+8}" height="${W.h+8}" rx="4" fill="${wood}" stroke="${ink}" stroke-width="2"/>
+      ${outsideViewSVG(W.x,W.y,W.w,W.h,T,L,uid,`wv${uid}`,theme)}
+      <g stroke="${wood}" stroke-width="3"><path d="M${W.x+W.w/2} ${W.y} V${W.y+W.h} M${W.x} ${W.y+W.h*.48} H${W.x+W.w}"/></g>
+      ${theme==="kyoto"?`<g stroke="${wood}" stroke-width="1.2"><path d="M${W.x+W.w/4} ${W.y} V${W.y+W.h} M${W.x+W.w*.75} ${W.y} V${W.y+W.h} M${W.x} ${W.y+W.h*.24} H${W.x+W.w} M${W.x} ${W.y+W.h*.72} H${W.x+W.w}"/></g>`:""}
+      <rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" rx="3" fill="none" stroke="${ink}" stroke-width="1.6"/>
+      <rect x="${W.x-7}" y="${W.y+W.h+2}" width="${W.w+14}" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>`;
+      if(windowI&&windowI.id==="window_awning")s+=decorImg("window_awning",W.x-14,W.y-17,W.w+28,W.h+26,{anchor:"top"});
+    }
+    if(windowI&&windowI.id==="flowerbox")s+=decorImg("flowerbox",W.x-6,W.y+W.h-8,W.w+12,24);
+  }else if(windowI)s+=decorImg(windowI.id==="flowerbox"?"flowerbox":windowI.id,W.x,W.y+10,W.w,W.h-16,{anchor:windowI.id==="flowerbox"?"bottom":"middle"});
+  /* the big glass door (an open arch in the pavilion) */
+  if(pavilion){
+    s+=`<rect x="${D.x}" y="${D.y}" width="${D.w}" height="${D.h}" fill="none"/><path d="M${D.x} ${G.wallBottom} V${D.y+16} q${D.w/2} -16 ${D.w} 0 V${G.wallBottom}" fill="none" stroke="${wood}" stroke-width="5"/><path d="M${D.x} ${G.wallBottom} V${D.y+16} q${D.w/2} -16 ${D.w} 0 V${G.wallBottom}" fill="none" stroke="${ink}" stroke-width="1.2"/>`;
+  }else{
+    s+=`<rect x="${D.x}" y="${D.y}" width="${D.w}" height="${D.h}" fill="${wood}" stroke="${ink}" stroke-width="2"/>
+    ${outsideViewSVG(D.x+5,D.y+6,D.w-10,D.h-10,T,L,uid+"d",`dv${uid}`,theme)}
+    <g class="door-leaf"><rect x="${D.x+5}" y="${D.y+6}" width="${D.w-10}" height="${D.h-10}" fill="#BFE3EA" opacity=".26" stroke="${theme==="kyoto"?"#4E331F":"#5C8A6E"}" stroke-width="3"/>
+      <path d="M${D.x+10} ${D.y+18} l10 -8 M${D.x+10} ${D.y+30} l16 -13" stroke="#FFF" stroke-width="1.6" opacity=".7"/>
+      <rect x="${D.x+9}" y="${D.y+70}" width="3" height="15" rx="1.4" fill="#D8A521" stroke="${ink}" stroke-width=".8"/></g>
+    <path d="M${D.x+D.w/2} ${D.y-1} v5" stroke="${ink}" stroke-width="1"/><path d="M${D.x+D.w/2-3.4} ${D.y+10} q3.4 -7 6.8 0 z" fill="#D8A521" stroke="${ink}" stroke-width="1" class="door-bell"/>`;
+  }
   /* the barista's back bar: shelves, espresso machine, grinder, cups */
-  const purchasedShelf=shelfI?decorImg(shelfI.id,10,16,74,24):"";
+  const purchasedShelf=shelfI?decorImg(shelfI.id,8,18,72,26):"";
   s+=`<g class="backbar">
-    <rect x="6" y="38" width="88" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>
-    ${purchasedShelf||`<g stroke="${ink}" stroke-width="1.1"><rect x="14" y="25" width="10" height="13" rx="2" fill="#F4EAD8"/><rect x="28" y="22" width="11" height="16" rx="2" fill="#E9C9A0"/><rect x="43" y="26" width="10" height="12" rx="2" fill="#F4EAD8"/><path d="M60 38 q0 -10 8 -10 q8 0 8 10 z" fill="#7FA65A"/><path d="M80 38 l2 -8 l8 0 l2 8z" fill="#C86B4A"/></g>`}
-    <rect x="6" y="62" width="88" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>
-    <g stroke="${ink}" stroke-width="1.1">${[14,26,38,50].map((x,i)=>`<path d="M${x} 62 v-7 h9 v7" fill="#FFF"/><path d="M${x+9} 56 q3 0 3 3 q0 2 -3 2" fill="none"/>`).join("")}</g>
-    <rect x="2" y="110" width="118" height="${G.wallBottom-110}" fill="${trim}" stroke="${ink}" stroke-width="1.6"/>
-    <rect x="0" y="106" width="122" height="6" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.6"/>
+    <rect x="4" y="42" width="98" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>
+    ${purchasedShelf||`<g stroke="${ink}" stroke-width="1.1"><rect x="12" y="28" width="10" height="14" rx="2" fill="#F4EAD8"/><rect x="26" y="25" width="11" height="17" rx="2" fill="#E9C9A0"/><rect x="41" y="29" width="10" height="13" rx="2" fill="#F4EAD8"/><path d="M58 42 q0 -10 8 -10 q8 0 8 10 z" fill="#7FA65A"/><path d="M80 42 l2 -8 l8 0 l2 8z" fill="#C86B4A"/></g>`}
+    <rect x="4" y="68" width="98" height="5" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/>
+    <g stroke="${ink}" stroke-width="1.1">${[12,24,36,48,60].map(x=>`<path d="M${x} 68 v-7 h9 v7" fill="#FFF"/><path d="M${x+9} 62 q3 0 3 3 q0 2 -3 2" fill="none"/>`).join("")}</g>
+    <rect x="2" y="118" width="106" height="${G.wallBottom-118}" fill="${trim}" stroke="${ink}" stroke-width="1.6"/>
+    <rect x="0" y="114" width="110" height="6" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.6"/>
     <g class="espresso">
-      <rect x="8" y="72" width="54" height="34" rx="5" fill="#E8DCC4" stroke="${ink}" stroke-width="2"/>
-      <rect x="8" y="72" width="54" height="8" rx="4" fill="#C0392B" stroke="${ink}" stroke-width="1.4"/>
-      <path d="M12 68 h46" stroke="${ink}" stroke-width="1.2"/><g stroke="${ink}" stroke-width=".9" fill="#FFF"><rect x="14" y="63" width="7" height="5" rx="1"/><rect x="24" y="63" width="7" height="5" rx="1"/><rect x="34" y="63" width="7" height="5" rx="1"/></g>
-      <circle cx="54" cy="86" r="3.2" fill="#FFF" stroke="${ink}" stroke-width="1"/><path d="M54 86 l1.6 -1.6" stroke="${ink}" stroke-width=".8"/>
-      <path d="M15 84 h12 l-2 4 h-8 z M31 84 h12 l-2 4 h-8 z" fill="#6E6A72" stroke="${ink}" stroke-width="1"/>
-      <path d="M27 86.5 h7 M43 86.5 h6" stroke="#2E2A36" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M16 99 h8 l-1 5 q-3 1.6 -6 0 z M32 99 h8 l-1 5 q-3 1.6 -6 0 z" fill="#FFF" stroke="${ink}" stroke-width="1"/>
-      <rect x="11" y="104" width="44" height="2.4" rx="1" fill="#9A9AA6" stroke="${ink}" stroke-width=".7"/>
-      <path d="M58 92 l4 9" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
+      <rect x="6" y="80" width="54" height="34" rx="5" fill="#E8DCC4" stroke="${ink}" stroke-width="2"/>
+      <rect x="6" y="80" width="54" height="8" rx="4" fill="#C0392B" stroke="${ink}" stroke-width="1.4"/>
+      <path d="M10 76 h46" stroke="${ink}" stroke-width="1.2"/><g stroke="${ink}" stroke-width=".9" fill="#FFF"><rect x="12" y="71" width="7" height="5" rx="1"/><rect x="22" y="71" width="7" height="5" rx="1"/><rect x="32" y="71" width="7" height="5" rx="1"/></g>
+      <circle cx="52" cy="94" r="3.2" fill="#FFF" stroke="${ink}" stroke-width="1"/><path d="M52 94 l1.6 -1.6" stroke="${ink}" stroke-width=".8"/>
+      <path d="M13 92 h12 l-2 4 h-8 z M29 92 h12 l-2 4 h-8 z" fill="#6E6A72" stroke="${ink}" stroke-width="1"/>
+      <path d="M25 94.5 h7 M41 94.5 h6" stroke="#2E2A36" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M14 107 h8 l-1 5 q-3 1.6 -6 0 z M30 107 h8 l-1 5 q-3 1.6 -6 0 z" fill="#FFF" stroke="${ink}" stroke-width="1"/>
+      <rect x="9" y="112" width="44" height="2.4" rx="1" fill="#9A9AA6" stroke="${ink}" stroke-width=".7"/>
+      <path d="M56 100 l4 9" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
     </g>
-    <path class="steam" d="M62 96 q2 -4 0 -8 q-2 -4 1 -7" fill="none" stroke="#FFF" stroke-width="1.6" stroke-linecap="round"/>
-    <rect x="66" y="80" width="15" height="26" rx="3" fill="#2E2A36" stroke="${ink}" stroke-width="1.6"/><path d="M67 80 l2 -10 l9 0 l2 10z" fill="#6B4A36" stroke="${ink}" stroke-width="1.2"/>
-    ${displayI&&displayI.id==="shelf_kegs"?"":`<g stroke="${ink}" stroke-width="1"><rect x="86" y="96" width="9" height="10" rx="1.5" fill="#FFF"/><rect x="87" y="88" width="7" height="8" rx="1.5" fill="#FFF"/><rect x="88" y="81" width="5" height="7" rx="1.5" fill="#FFF"/></g>`}
+    <path class="steam" d="M60 104 q2 -4 0 -8 q-2 -4 1 -7" fill="none" stroke="#FFF" stroke-width="1.6" stroke-linecap="round"/>
+    <rect x="64" y="88" width="15" height="26" rx="3" fill="#2E2A36" stroke="${ink}" stroke-width="1.6"/><path d="M65 88 l2 -10 l9 0 l2 10z" fill="#6B4A36" stroke="${ink}" stroke-width="1.2"/>
+    ${displayI&&displayI.id==="shelf_kegs"?"":`<g stroke="${ink}" stroke-width="1"><rect x="86" y="104" width="9" height="10" rx="1.5" fill="#FFF"/><rect x="87" y="96" width="7" height="8" rx="1.5" fill="#FFF"/><rect x="88" y="89" width="5" height="7" rx="1.5" fill="#FFF"/></g>`}
   </g>`;
-  if(displayI&&displayI.id==="mug_rack")s+=decorImg("mug_rack",64,42,46,18);
-  if(displayI&&displayI.id==="shelf_kegs")s+=decorImg("shelf_kegs",83,82,38,25);
-  if(displayI&&displayI.id==="jukebox")s+=decorImg("jukebox",166,94,28,56);
-  /* wall art and the menu board on the right-hand wall, above the bar */
-  if(wallart)s+=wallart.id==="mural_market"?decorImg("mural_market",214,24,52,30,{anchor:"middle"}):decorImg(wallart.id,218,22,40,40,{anchor:"middle"});
-  s+=menuI?decorImg("menu_chalk",268,18,36,50,{anchor:"middle"}):`<g><rect x="272" y="22" width="30" height="40" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/><rect x="275" y="25" width="24" height="34" fill="#2E3A33"/><path d="M279 33 h16 M279 40 h12 M279 47 h14" stroke="#F4EAD8" stroke-width="1.2" opacity=".7"/></g>`;
-  /* wall plants and a pendant lamp (part of the base café) */
-  s+=`<g class="vines" stroke="${ink}" stroke-width=".9"><path d="M4 9 q4 18 0 30 q-4 12 2 26" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[5,16],[2,28],[6,40],[3,52]].map(([x,y])=>`<ellipse cx="${x+3}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(-30 ${x+3} ${y})"/>`).join("")}
-    <path d="M313 9 q-4 16 1 28 q4 12 -2 22" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[308,18],[314,30],[307,44],[313,56]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(25 ${x} ${y})"/>`).join("")}</g>`;
-  if(!lightsI)s+=[150,188].map(x=>`<g class="pendant"><path d="M${x} 9 v10" stroke="${ink}" stroke-width="1"/><path d="M${x-9} 28 q9 -12 18 0 z" fill="#3E7055" stroke="${ink}" stroke-width="1.4"/><ellipse cx="${x}" cy="28.5" rx="3.6" ry="1.8" fill="#FFE7A8"/></g>`).join("");
-  /* rug on the open floor (customers walk over it) */
-  if(rugI)s+=decorImg(rugI.id,112,232,112,30,{anchor:"middle"});
-  /* hanging decor: aurora behind, then strings */
-  if(lightsI&&lightsI.id==="aurora")s+=auroraSVG(uid,128,8,184,62);
-  if(bunting)s+=decorImg("bunting_rainbow",206,8,104,22,{anchor:"top"});
-  if(lightsI&&lightsI.id==="fairylights")s+=hangingLightsSVG("fairy",uid,{x0:128,x1:206,y:11,sag:5,count:8});
-  if(lightsI&&lightsI.id==="stars_paper")s+=decorImg("stars_paper",126,9,82,16,{anchor:"top"});
-  if(lightsI&&lightsI.id==="neon_open")s+=`<g class="lanternglow"><rect x="142" y="12" width="54" height="16" rx="7" fill="none" stroke="#F26BA8" stroke-width="2.4"/><text x="169" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#F26BA8" font-family="'Baloo 2',cursive">OPEN</text></g>`;
-  if(lampI&&lampI.id==="lantern_paper")s+=hangingLightsSVG("lantern",uid,{x0:8,x1:118,y:11,sag:6,count:5});
+  if(displayI&&displayI.id==="mug_rack")s+=decorImg("mug_rack",56,46,46,18);
+  if(displayI&&displayI.id==="shelf_kegs")s+=decorImg("shelf_kegs",72,90,38,25);
+  if(displayI&&displayI.id==="jukebox")s+=decorImg("jukebox",206,100,28,58);
+  /* wall art and the menu board between the window and the door */
+  if(wallart)s+=wallart.id==="mural_market"?decorImg("mural_market",200,30,62,32,{anchor:"middle"}):decorImg(wallart.id,204,24,38,44,{anchor:"middle"});
+  if(!(wallart&&wallart.id==="mural_market"))s+=menuI?decorImg("menu_chalk",242,22,26,52,{anchor:"middle"}):`<g><rect x="244" y="26" width="22" height="34" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/><rect x="246.5" y="28.5" width="17" height="29" fill="#2E3A33"/><path d="M249.5 36 h11 M249.5 42 h8 M249.5 48 h10" stroke="#F4EAD8" stroke-width="1.1" opacity=".7"/></g>`;
+  else if(menuI)s+=decorImg("menu_chalk",232,66,30,40,{anchor:"middle"});
+  /* wall plants (sunny), theme dressing, pendant lamps */
+  if(theme==="sunny"||theme==="foodtruck")s+=`<g class="vines" stroke="${ink}" stroke-width=".9"><path d="M4 9 q4 18 0 30 q-4 12 2 26" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[5,16],[2,28],[6,40],[3,52]].map(([x,y])=>`<ellipse cx="${x+3}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(-30 ${x+3} ${y})"/>`).join("")}
+    <path d="M270 9 q-4 16 1 28 q4 12 -2 22" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[265,18],[271,30],[264,44],[270,56]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(25 ${x} ${y})"/>`).join("")}</g>`;
+  s+=themeDressingBack(theme,ctx);
+  if(!lightsI)s+=[138,176].map(x=>pendantSVG(theme,x,ink)).join("");
+  if(rugI)s+=decorImg(rugI.id,86,262,104,30,{anchor:"middle"});
+  if(lightsI&&lightsI.id==="aurora")s+=auroraSVG(uid,112,8,160,62);
+  if(bunting)s+=decorImg("bunting_rainbow",196,10,72,18,{anchor:"top"});
+  if(lightsI&&lightsI.id==="fairylights")s+=hangingLightsSVG("fairy",uid,{x0:114,x1:198,y:12,sag:5,count:8});
+  if(lightsI&&lightsI.id==="stars_paper")s+=decorImg("stars_paper",112,10,86,16,{anchor:"top"});
+  if(lightsI&&lightsI.id==="neon_open")s+=`<g class="lanternglow"><rect x="130" y="12" width="50" height="16" rx="7" fill="none" stroke="#F26BA8" stroke-width="2.4"/><text x="155" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#F26BA8" font-family="'Baloo 2',cursive">OPEN</text></g>`;
+  if(lampI&&lampI.id==="lantern_paper")s+=hangingLightsSVG("lantern",uid,{x0:6,x1:104,y:12,sag:6,count:5});
   return s;
 }
 
 /* ---- in front of the queue: both counters and what stands on them ---- */
 function cafeFrontSVG(uid,ctx){
-  const {T,item,counterFill}=ctx,G=CAFE_GEO,B=G.bCounter,R=G.bar,ink="#463A54";
-  const panel=shade(T.counter,-.08),panelD=shade(T.counter,-.26),topEdge=shade(T.counter,.25);
+  const {T,item,counterFill,theme}=ctx,G=CAFE_GEO,B=G.bCounter,R=G.bar,ink="#463A54";
+  const panel=shade(T.counter,-.06),panelD=shade(T.counter,-.26),topEdge=theme==="sunny"?shade(T.counter,.25):"#F2E6D2";
   const counterI=item("counter"),displayI=item("display"),lampI=item("lamp"),stoolI=item("stool"),plantI=item("plant");
   const marble=counterI&&counterI.id==="counter_marble";
   const top=marble?counterFill:topEdge;
-  const boards=(x0,x1,y0,y1)=>{let p="";for(let x=x0+12;x<x1-6;x+=14)p+=`M${x} ${y0+4} V${y1-4} `;return `<path d="${p}" stroke="${panelD}" stroke-width="1.1" opacity=".55"/>`;};
-  let s=`<g class="barista-counter">
-    <rect x="${B.x}" y="${B.face}" width="${B.w-4}" height="${B.bottom-B.face}" fill="${panel}" stroke="${ink}" stroke-width="2"/>
-    ${boards(B.x,B.x+B.w-4,B.face,B.bottom)}
-    <rect x="${B.x}" y="${B.bottom-6}" width="${B.w-4}" height="6" fill="${panelD}" stroke="${ink}" stroke-width="1.4"/>
-    <path d="M${B.x} ${B.top} H${B.x+B.w} L${B.x+B.w} ${B.face} H${B.x} Z" fill="${top}" stroke="${ink}" stroke-width="2"/>
-    <path d="M${B.x+2} ${B.top+2} H${B.x+B.w-3}" stroke="#FFF" stroke-width="1.4" opacity=".55"/>
-  </g>
-  <g class="customer-bar">
-    <rect x="${R.x+4}" y="${R.face}" width="${R.w-8}" height="${R.bottom-R.face}" fill="${panel}" stroke="${ink}" stroke-width="2"/>
-    ${boards(R.x+4,R.x+R.w-4,R.face,R.bottom)}
-    <rect x="${R.x+4}" y="${R.bottom-5}" width="${R.w-8}" height="5" fill="${panelD}" stroke="${ink}" stroke-width="1.4"/>
-    <path d="M${R.x} ${R.top} H${R.x+R.w} L${R.x+R.w} ${R.face} H${R.x} Z" fill="${top}" stroke="${ink}" stroke-width="2"/>
-    <path d="M${R.x+2} ${R.top+2} H${R.x+R.w-3}" stroke="#FFF" stroke-width="1.4" opacity=".55"/>
-    <g stroke="${ink}" stroke-width=".8"><path d="M${R.x+12} ${R.top} q6 10 0 18 q-5 8 1 16" fill="none" stroke="#5E8A47" stroke-width="1.3"/>${[[R.x+14,R.top+6],[R.x+9,R.top+14],[R.x+15,R.top+24],[R.x+11,R.top+32]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="${i%2?"#6FA455":"#7FA65A"}" transform="rotate(${i%2?30:-30} ${x} ${y})"/>`).join("")}</g>
-  </g>`;
-  /* counter-top items on the barista counter's right end */
-  if(counterI&&counterI.id==="fountain_gold")s+=decorImg("fountain_gold",70,B.top-27,22,28);
-  if(displayI&&["cakedome","gumball","radio_retro"].includes(displayI.id))s+=decorImg(displayI.id,93,B.top-29,26,30);
-  if(lampI&&lampI.id!=="lantern_paper")s+=decorImg(lampI.id,3,B.top-27,22,28);
-  if(!lampI||lampI.id==="lantern_paper")s+=`<g><path d="M${R.x+R.w-16} ${R.top} h8 l-1.4 -9 q-2.6 -1.6 -5.2 0 z" fill="#F4EAD8" stroke="${ink}" stroke-width="1.1"/><circle cx="${R.x+R.w-12}" cy="${R.top-11}" r="3.4" fill="#F2F2F2" stroke="${ink}" stroke-width="1"/><circle cx="${R.x+R.w-14}" cy="${R.top-12}" r="1.2" fill="#F2B33D"/></g>`;
+  const boards=(x0,x1,y0,y1)=>{let p="";for(let x=x0+12;x<x1-6;x+=13)p+=`M${x} ${y0+4} V${y1-4} `;return `<path d="${p}" stroke="${panelD}" stroke-width="1.1" opacity=".55"/>`;};
+  const counter=(x,w,topY,face,bottom,cls)=>`<g class="${cls}">
+    <rect x="${x}" y="${face}" width="${w}" height="${bottom-face}" fill="${panel}" stroke="${ink}" stroke-width="2"/>
+    ${boards(x,x+w,face,bottom)}
+    <rect x="${x}" y="${bottom-6}" width="${w}" height="6" fill="${panelD}" stroke="${ink}" stroke-width="1.4"/>
+    <path d="M${x-3} ${topY} H${x+w+3} L${x+w+3} ${face} H${x-3} Z" fill="${top}" stroke="${ink}" stroke-width="2"/>
+    <path d="M${x-1} ${topY+2} H${x+w+1}" stroke="#FFF" stroke-width="1.4" opacity=".55"/></g>`;
+  let s=counter(B.x,B.w-4,B.top,B.face,B.bottom,"barista-counter")+counter(R.x+4,R.w-8,R.top,R.face,R.bottom,"customer-bar");
+  if(theme==="sunny"||theme==="foodtruck")s+=`<g stroke="${ink}" stroke-width=".8"><path d="M${R.x+R.w-14} ${R.top} q6 10 0 18 q-5 8 1 16" fill="none" stroke="#5E8A47" stroke-width="1.3"/>${[[R.x+R.w-12,R.top+6],[R.x+R.w-17,R.top+14],[R.x+R.w-11,R.top+24],[R.x+R.w-15,R.top+32]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="${i%2?"#6FA455":"#7FA65A"}" transform="rotate(${i%2?30:-30} ${x} ${y})"/>`).join("")}</g>`;
+  /* counter-top items on the barista counter */
+  if(counterI&&counterI.id==="fountain_gold")s+=decorImg("fountain_gold",66,B.top-27,22,28);
+  if(displayI&&["cakedome","gumball","radio_retro"].includes(displayI.id))s+=decorImg(displayI.id,82,B.top-29,26,30);
+  if(lampI&&lampI.id!=="lantern_paper")s+=decorImg(lampI.id,2,B.top-27,22,28);
+  if(!lampI||lampI.id==="lantern_paper")s+=`<g><path d="M${R.x+R.w-22} ${R.top} h8 l-1.4 -9 q-2.6 -1.6 -5.2 0 z" fill="#F4EAD8" stroke="${ink}" stroke-width="1.1"/><circle cx="${R.x+R.w-18}" cy="${R.top-11}" r="3.4" fill="#F2F2F2" stroke="${ink}" stroke-width="1"/><circle cx="${R.x+R.w-20}" cy="${R.top-12}" r="1.2" fill="#F2B33D"/></g>`;
+  s+=themeDressingFront(theme);
   /* stools in front of the customer bar */
-  const stoolXs=[R.x+20,R.x+R.w-46];
-  s+=stoolXs.map(x=>stoolI?decorImg(stoolI.id,x,R.bottom-40,28,52):
-    `<g class="stool"><rect x="${x+4}" y="${R.bottom-36}" width="3.6" height="44" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><rect x="${x+20}" y="${R.bottom-36}" width="3.6" height="44" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><path d="M${x+5} ${R.bottom-6} h17" stroke="#8A5A2E" stroke-width="2.4"/><ellipse cx="${x+14}" cy="${R.bottom-38}" rx="14" ry="5" fill="#3E7055" stroke="${ink}" stroke-width="1.6"/><path d="M${x} ${R.bottom-38} v2.4 q14 6 28 0 v-2.4" fill="#2F5A43" stroke="${ink}" stroke-width="1.2"/></g>`).join("");
-  if(plantI)s+=decorImg("plant_monstera",326,198,36,54);
+  const stoolXs=[R.x+28,R.x+R.w-58];
+  s+=stoolXs.map(x=>stoolI?decorImg(stoolI.id,x,R.bottom-36,30,56):
+    `<g class="stool"><rect x="${x+5}" y="${R.bottom-30}" width="3.8" height="46" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><rect x="${x+21}" y="${R.bottom-30}" width="3.8" height="46" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><path d="M${x+6} ${R.bottom+2} h18" stroke="#8A5A2E" stroke-width="2.4"/><ellipse cx="${x+15}" cy="${R.bottom-32}" rx="15" ry="5.2" fill="${theme==="sunny"||theme==="foodtruck"?"#3E7055":shade(T.counter,-.1)}" stroke="${ink}" stroke-width="1.6"/><path d="M${x} ${R.bottom-32} v2.6 q15 6.4 30 0 v-2.6" fill="${theme==="sunny"||theme==="foodtruck"?"#2F5A43":shade(T.counter,-.3)}" stroke="${ink}" stroke-width="1.2"/></g>`).join("");
+  if(plantI)s+=decorImg("plant_monstera",292,236,38,60);
   return s;
 }
 
 /* the café pet's bed sits on the floor in front of the barista counter */
 function cafeBedSVG(ctx){
   const pb=ctx.item("petbed");if(!pb)return "";
-  return decorImg(pb.id,CAFE_GEO.bed.x-32,CAFE_GEO.bed.y-30,64,34,{cls:"pet-furniture"});
+  return decorImg(pb.id,CAFE_GEO.bed.x-34,CAFE_GEO.bed.y-32,68,36,{cls:"pet-furniture"});
 }
 
 function cafeSceneContext(p,themeOverride){
@@ -318,7 +367,7 @@ function cafeScene(small,context="stage"){
 
 /* character box: full-body art is 320×500; CAFE_BOX is its height in
    design units at k = 1 (someone standing in the open area) */
-const CAFE_BOX=140, CHAR_ASPECT=320/500;
+const CAFE_BOX=150, CHAR_ASPECT=320/500;
 
 /* ============================================================
    Live stage: people and pets on the supplied joint rigs
@@ -382,7 +431,7 @@ function cafeDressPerson(a,svgText){
   a.waveSide=!a.holdr?"r":(!a.holdl?"l":null);
   a.bagSide=a.waveSide==="r"?(!a.holdl?"l":null):(a.waveSide==="l"&&!a.holdr?"r":null);
   if(a.waveSide){const s=a.waveSide,arm=J("arm-"+s),fore=J("fore-"+s);const out=(s==="r"?-1:1)*(a["mir"+s]?-1:1);
-    arm.classList.add("waver");arm.style.setProperty("--ra",out*140);if(fore){fore.classList.add("waverF");fore.style.setProperty("--wi",out);}
+    arm.classList.add("waver");arm.style.setProperty("--ra",out*40);if(fore){fore.classList.add("waverF");fore.style.setProperty("--wi",out);}
     a.el.style.setProperty("--tl",s==="r"?1:-1);}
   cafeSetFace(svg,a.face==="blink"?"normal":a.face);cafeBlinker(a);
 }
@@ -408,10 +457,10 @@ function cafeAct(a,cls,ms){
   a.el.classList.remove("idle","walk","wave","hop","nod","bow");void a.el.offsetWidth;a.el.classList.add(cls);
   if(cls==="wave"&&a.waveSide&&a.svg){const h=a.J("hand-"+a.waveSide);
     /* the hand turns back > side > open palm while it rises, and back again */
-    setTimeout(()=>cafeHandView(h,"edge"),300);setTimeout(()=>cafeHandView(h,"palm"),420);setTimeout(()=>cafeHandView(h,"edge"),1980);setTimeout(()=>cafeHandView(h,"relaxed"),2100);}
+    setTimeout(()=>cafeHandView(h,"edge"),220);setTimeout(()=>cafeHandView(h,"palm"),320);setTimeout(()=>cafeHandView(h,"edge"),1460);setTimeout(()=>cafeHandView(h,"relaxed"),1560);}
   clearTimeout(a.actT);a.actT=setTimeout(()=>{a.el.classList.remove(cls);if(!a.walk)a.el.classList.add("idle");},ms);
 }
-function cafeGreet(a,ms=2400){if(!a)return;if(a.waveSide&&!a.carrying)cafeAct(a,"wave",ms);else cafeAct(a,"nod",1150);}
+function cafeGreet(a,ms=1800){if(!a)return;if(a.waveSide&&!a.carrying)cafeAct(a,"wave",ms);else cafeAct(a,"nod",1150);}
 function cafeRemovePerson(a){if(!a)return;clearTimeout(a.blinkT);clearTimeout(a.ft);clearTimeout(a.actT);a.walk=null;a.el.remove();STAGE.actors.delete(a);}
 
 /* Walk through waypoints {x,feet,k,lane}. Speed is 0.55 body-heights a
@@ -423,7 +472,7 @@ function cafeWalk(a,pts,done,{fast=false}={}){
   const segs=[];let px=a.x,pf=a.feet,pk=a.k;
   for(const p of pts){const k=p.k??pk,len=Math.hypot(p.x-px,(p.feet-pf)*1.4);segs.push({x0:px,f0:pf,k0:pk,x1:p.x,f1:p.feet,k1:k,lane:p.lane,len});px=p.x;pf=p.feet;pk=k;}
   a.el.classList.remove("idle","wave","hop","nod","bow");a.el.classList.add("walk");
-  a.walk={segs,si:0,t:0,done,speed:CAFE_BOX*.55*(fast?1.45:1.12)};
+  a.walk={segs,si:0,t:0,done,speed:CAFE_BOX*.55*(fast?1.8:1.4)};
 }
 function cafeStepWalker(a,dt){
   const w=a.walk;if(!w)return;
@@ -611,7 +660,7 @@ function cafeStepJump(pt,dt){const j=pt.jump;if(!j)return;j.t=Math.min(1,j.t+dt/
 function cafeRemovePet(pt){if(!pt)return;petStop(pt);pt.jump=null;pt.el.remove();STAGE.pets.delete(pt);}
 
 /* ---------- one shared clock for walking, following and jumping ---------- */
-const PET_GAP=30,PET_SPEED=CAFE_BOX*.62;
+const PET_GAP=30,PET_SPEED=CAFE_BOX*.8;
 function cafeTick(now){
   STAGE.raf=0;if(!STAGE.mounted)return;
   const paused=typeof isSessionPaused==="function"&&isSessionPaused();
@@ -634,7 +683,7 @@ function cafeFollow(pt,dt){
   const a=pt.owner,target=a.s-PET_GAP;let moving=false;
   if(target>pt.s+.3){pt.s=Math.min(target,pt.s+PET_SPEED*dt*(pt.t?pt.t.spd:1));moving=true;}
   const pos=cafePathAt(a,Math.max(0,pt.s));const dx=pos.x-pt.x;if(Math.abs(dx)>.05)pt.dirX=Math.sign(dx);
-  const kk=Math.max(.78,Math.min(1.15,1+(pos.feet-CAFE_GEO.serve.feet)/(CAFE_GEO.exit.feet-CAFE_GEO.serve.feet)*.15-(pos.feet<180?.12:0)));
+  const kk=pos.feet<CAFE_GEO.serve.feet-30?.88:Math.min(1.15,1+Math.max(0,pos.feet-CAFE_GEO.serve.feet)/(CAFE_GEO.exit.feet-CAFE_GEO.serve.feet)*.15);
   pt.x=pos.x;pt.g=pos.feet;pt.box=CAFE_PBOX*kk;pt.lane=pos.lane==="f"?"f":"b";cafePetPlace(pt);
   if(!pt.shown&&pt.s>2){pt.shown=true;pt.el.classList.add("shown");}
   if(moving){pt.still=0;if(pt.move!=="walk")petPlay(pt,"walk");}
@@ -702,7 +751,7 @@ function cafeStageInit(){
   cafeStageTeardown();
   STAGE.box=document.getElementById("scenebox");if(!STAGE.box)return;
   STAGE.laneB=document.getElementById("laneB");STAGE.laneF=document.getElementById("laneF");STAGE.laneT=document.getElementById("laneT");STAGE.fx=document.getElementById("cafeFx");
-  STAGE.mounted=true;cafeMeasure();
+  STAGE.mounted=true;STAGE.nextDoor=0;cafeMeasure();
   if(typeof ResizeObserver==="function"){STAGE.ro=new ResizeObserver(()=>{if(!STAGE.box||!STAGE.box.isConnected){cafeStageTeardown();return;}
     cafeMeasure();STAGE.actors.forEach(cafePlace);STAGE.pets.forEach(cafePetPlace);if(STAGE.fallbackBarista)cafePlaceFallbackBarista();});STAGE.ro.observe(STAGE.box);}
   cafeMakeBarista();cafeMakePlayerPet();
@@ -805,14 +854,31 @@ function layoutQueue(){
     if(a.slot===i)return;
     const spot={...G.queue[i],lane:"b"};
     if(a.slot===undefined||a.slot==="stash"){
-      /* in through the glass door, a step inside, then along to the place */
-      Object.assign(a,{x:D.x,feet:D.feet,k:D.k,lane:"b"});cafePlace(a);a.el.classList.remove("waiting-offstage");
-      cafeOpenDoor();cafeTrackStart(a);
-      if(e.petActor){const pt=e.petActor;Object.assign(pt,{x:D.x,g:D.feet,s:0,shown:false,state:"follow",lane:"b"});pt.el.classList.remove("shown");cafePetPlace(pt);}
-      cafeWalk(a,[{x:D.x-16,feet:D.feet+5,k:.8,lane:"b"},spot]);
-    }else cafeWalk(a,[spot]);
+      /* through the glass door one at a time, never in a bunch */
+      a.slot=i;cafeEnter(e);return;
+    }
+    if(a.entering){a.slot=i;return;}
+    cafeWalk(a,[spot]);
     a.slot=i;
   });
+}
+const CAFE_DOOR_GAP=1500;
+function cafeEnter(e){
+  const a=e.actor,D=CAFE_GEO.doorIn,now=performance.now();
+  const wait=Math.max(0,(STAGE.nextDoor||0)-now);STAGE.nextDoor=now+wait+CAFE_DOOR_GAP;
+  a.entering=true;a.el.classList.add("waiting-offstage");
+  setTimeout(()=>{
+    if(!STAGE.mounted||!a.el.isConnected)return;
+    const S=SHIFT;if(!S)return;
+    const isCurrent=S.current===e,qi=S.queue.indexOf(e);
+    if(!isCurrent&&(qi<0||qi>=CAFE_GEO.queue.length)){a.entering=false;a.slot="stash";return;}
+    a.entering=false;Object.assign(a,{x:D.x,feet:D.feet,k:D.k,lane:"b"});cafePlace(a);a.el.classList.remove("waiting-offstage");
+    cafeOpenDoor();cafeTrackStart(a);
+    if(e.petActor){const pt=e.petActor;Object.assign(pt,{x:D.x,g:D.feet,s:0,shown:false,state:"follow",lane:"b"});pt.el.classList.remove("shown");cafePetPlace(pt);}
+    const step={x:D.x-14,feet:D.feet+12,k:.82,lane:"b"};
+    if(isCurrent&&e.goServe){cafeWalk(a,[step],()=>e.goServe());return;}
+    a.slot=qi;cafeWalk(a,[step,{...CAFE_GEO.queue[qi],lane:"b"}]);
+  },wait);
 }
 function attachPet(entry,pet){
   entry.pet=pet;const a=entry.actor;
@@ -862,12 +928,14 @@ function takeNext(){
   const a=entry.actor,G=CAFE_GEO;a.slot="serve";
   if(a.path===undefined)cafeTrackStart(a);
   /* round the end of the bar into the open area in front of the barista */
-  cafeWalk(a,[{x:G.bar.x-6,feet:172,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
+  entry.goServe=()=>cafeWalk(a,[{x:G.bar.x-10,feet:226,k:.95,lane:"f"},{...G.serve,lane:"f"}],()=>{
     if(!SHIFT||SHIFT.current!==entry)return;
     cafeFace(a,"happy",1500);cafeGreet(a);
     cafePetToBar(entry);
     panelArrival(entry);
   },{fast:true});
+  if(a.entering)return;   /* still outside: cafeEnter brings them straight to the counter */
+  entry.goServe();
 }
 /* the customer's pet catches up, then hops onto the end of the bar */
 function cafePetToBar(entry){
@@ -893,10 +961,10 @@ function cupSlide(entry,perfect,cb){
   const h=24,top=CAFE_GEO.counterTopY+1-h;
   cup.style.height=sy(h)+"px";
   cup.querySelectorAll(".foodartsprite,.foodartsprite img").forEach(n=>{n.style.height=sy(h)+"px";n.style.width=sy(h*52/49)+"px";n.style.flex="0 0 auto";});
-  cup.style.transform=`translate(${sx(64)}px,${sy(top)}px) scale(.7)`;
+  cup.style.transform=`translate(${sx(62)}px,${sy(top)}px) scale(.7)`;
   const d=dur(650);
-  requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(64)}px,${sy(top)}px)`;
-    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-30)}px,${sy(top)}px)`;
+  requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(62)}px,${sy(top)}px)`;
+    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-26)}px,${sy(top)}px)`;
       setTimeout(()=>{
         /* collected: the order leaves the counter and goes into the customer's hands */
         cup.style.transition="opacity .25s";cup.style.opacity="0";setTimeout(()=>cup.remove(),300);
@@ -935,7 +1003,7 @@ function playDebut(u){
     if(!c){ departDebutDone(); return; }
     const a=makeActor(c,null),entry={cust:c,actor:a,node:a.el};hydrateActorVisual(entry);
     a.el.classList.remove("waiting-offstage");cafeOpenDoor();cafeTrackStart(a);const G=CAFE_GEO;
-    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.84,lane:"b"},{x:G.bar.x-6,feet:172,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
+    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.88,lane:"b"},{x:G.bar.x-10,feet:226,k:.95,lane:"f"},{...G.serve,lane:"f"}],()=>{
       spawnBurst($("#stage"));cafeFace(a,"happy",2600);cafeGreet(a);
       popEmote(entry,"🎉");
       const pnl=$("#panel");
@@ -1073,7 +1141,7 @@ function reactActivePlayerPetToAnswer(correct){
   const b=cafeBpetOf(el);
   if(b&&b.svg){b.stroll=null;b.busy=true;petPlay(b,correct?"jump":"sad",true);clearTimeout(b._actT);
     b._actT=setTimeout(()=>{b.busy=false;if(Math.abs(b.x-b.home.x)>1){cafeStartStroll(b);b.stroll.legs=[{...b.home}];}else petPlay(b,"idle",true);schedulePlayerPetIdle();},correct?1500:1850);
-    playerPetEmote(el,correct?"😊":"💭");return;}
+    return;}
   showPlayerPetMood(el,pet,correct?"good":"bad",1450);
   animatePlayerPet(el,correct?"wiggle":"look");
   playerPetEmote(el,correct?"😊":"💭");

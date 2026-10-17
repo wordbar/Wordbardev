@@ -2992,7 +2992,7 @@ function resolveAnswer(entry,q,answerText){
   }
   persist();
   setExpr(entry,correct?"delighted":"sad"); setBarista(correct?"delighted":"happy");
-  popEmote(entry,correct?"😊":"😕");
+  /* S13b: the faces now show the reaction; no emoji pop-up */
   if(entry.pet){AudioKit.pet(entry.pet.species,correct);cafeCustomerPetReact(entry,correct);}
   updateTopbar();
   const fresh=checkAchievements();
@@ -3089,7 +3089,7 @@ function renderLadder(entry,q){
     if(solved)p._lifetimeCorrect=(p._lifetimeCorrect||0)+1;
     noteResult(solved);persist();
     setExpr(entry,solved?"delighted":"sad");setBarista(solved?"delighted":"happy");
-    popEmote(entry,solved?"😊":"😕");cafeCustomerPetReact(entry,solved);updateTopbar();
+    cafeCustomerPetReact(entry,solved);updateTopbar();
     const fresh=checkAchievements();
     const advance=()=>{
       if(!SHIFT||SHIFT!==S||S.ended) return;
@@ -3200,7 +3200,6 @@ function finishTicket(entry){
   setExpr(entry,perfect?"delighted":"neutral");
   setBarista(perfect?"delighted":"happy"); updateTopbar();
   cupSlide(entry,perfect,()=>{
-    popEmote(entry,perfect?"✨":"🙂");
     if(perfect) spawnBurst($("#stage"));
     const dep=perfect?c.lines.departGood[rnd(c.lines.departGood.length)]:c.lines.departOk[rnd(c.lines.departOk.length)];
     const pnl=$("#panel"); if(!pnl)return;
