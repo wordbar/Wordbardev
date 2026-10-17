@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<script>/* S10b: count script errors before analytics.js loads; only a number is kept, never a message. */window.__wbEarlyErrors=0;addEventListener("error",function(e){if(!e||!e.target||e.target===window)window.__wbEarlyErrors++},true);addEventListener("unhandledrejection",function(){window.__wbEarlyErrors++});</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FBF3E2">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="open-app-hint.css?v=batchS10e">
+<script src="open-app-hint.js?v=batchS11a" data-app="WordBar"></script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="WordBar">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=85">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon-180.png?v=85">
+<link rel="apple-touch-icon" sizes="167x167" href="icon-167.png?v=85">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png?v=85">
+<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png?v=85">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png?v=85">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=85">
+<title>WordBar — The Vocabulary Juice Bar (ages 6–11)</title>
+<meta name="description" content="A cosy juice-bar vocabulary game for children aged 6-11, built for UK 11+ exam preparation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="pet-pop.css?v=batchS12d">
+<style>
+:root{
+  --paper:#FBF3E2; --card:#FFFDF6; --ink:#463A54; --ink-soft:#6E6180;
+  --berry:#D8547A; --berry-deep:#B23A5F; --leaf:#7FA65A; --leaf-deep:#5C8140;
+  --sun:#F2B33D; --sun-deep:#D89A22; --cocoa:#8A5A44; --sky:#9CCBDB;
+  --cream:#FFF6E3; --shadow:rgba(70,58,84,.18);
+  --ok:#5C8140; --warn:#C25B2E;
+  --fs:1; /* text size multiplier */
+  --wall:#F6E3C2; --floor:#E5C89A; --counter:#C98A55; --accentA:#D8547A; --accentB:#7FA65A;
+  --radius:22px;
+  /* Build 86c: #app already pads itself by the safe-area insets, so any
+     child sized at 100dvh/100svh made the page taller than the screen by
+     exactly that amount (visible as bottom clipping / a small unwanted
+     scroll in iPhone standalone PWA mode). Screens subtract this. */
+  --safe-v:calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  font-size:calc(16px * var(--fs));
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Nunito',Verdana,system-ui,sans-serif;
+  background:var(--paper); color:var(--ink);
+  background-image:radial-gradient(rgba(138,90,68,.05) 1.5px, transparent 1.6px);
+  background-size:26px 26px;
+  overscroll-behavior:none;
+}
+body.easyread{font-family:Verdana,'Trebuchet MS',sans-serif; letter-spacing:.04em; word-spacing:.12em;}
+body.easyread p, body.easyread .qtext, body.easyread .opt{line-height:1.75;}
+h1,h2,h3,.display{font-family:'Baloo 2','Comic Sans MS','Nunito',sans-serif;}
+button{font-family:inherit;color:inherit;touch-action:manipulation;}
+[role="button"],.swatch,.chip,.custtab,.avpick,.linky{touch-action:manipulation;}
+#app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative;
+  /* iPhone PWA: keep the UI clear of the notch, rounded corners and
+     home indicator when running full-screen from the home screen */
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);}
+@media(min-width:560px){#app{border-left:3px solid rgba(70,58,84,.12);border-right:3px solid rgba(70,58,84,.12);}}
+
+/* ---------- felt buttons & cards ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45em;
+  border:3px solid var(--ink); border-radius:18px; cursor:pointer;
+  background:var(--card); padding:.7em 1.2em; font-weight:800; font-size:1rem;
+  box-shadow:0 4px 0 var(--ink); transition:transform .08s, box-shadow .08s;
+  text-align:center; user-select:none; min-height:48px;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
+.btn.primary{background:var(--berry);color:#fff;}
+.btn.leaf{background:var(--leaf);color:#fff;}
+.btn.sun{background:var(--sun);}
+.btn.ghost{background:transparent;box-shadow:none;border-color:rgba(70,58,84,.35);}
+.btn.small{font-size:.85rem;padding:.45em .9em;min-height:40px;border-width:2.5px;box-shadow:0 3px 0 var(--ink);}
+.btn:disabled{opacity:.45;pointer-events:none;}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible,select:focus-visible{outline:3px dashed var(--berry);outline-offset:3px;}
+.card{
+  background:var(--card); border:3px solid var(--ink); border-radius:var(--radius);
+  box-shadow:0 5px 0 var(--shadow); padding:16px;
+}
+.chip{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:.15em .7em;font-size:.75rem;font-weight:800;background:var(--cream);}
+.chip.easy{background:#DFF0CE;} .chip.core{background:#FFE9B8;} .chip.stretch{background:#F8D3DF;}
+.chip.vip{background:#F2B33D;} .chip.secret{background:#463A54;color:#fff;} .chip.regular{background:#DCEFF4;}
+
+/* ---------- layout ---------- */
+.screen{flex:1;display:flex;flex-direction:column;padding:14px;gap:12px;animation:screenIn .25s ease;}
+@keyframes screenIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.topbar{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.menutopactions{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
+.topbar .title{font-size:1.15rem;font-weight:800;font-family:'Baloo 2','Comic Sans MS',sans-serif;}
+.tipbadge{display:inline-flex;align-items:center;gap:.35em;font-weight:800;background:var(--sun);border:3px solid var(--ink);border-radius:999px;padding:.25em .8em;box-shadow:0 3px 0 var(--shadow);}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.spread{justify-content:space-between;}
+.stack{display:flex;flex-direction:column;gap:10px;}
+.center{text-align:center;}
+.muted{color:var(--ink-soft);}
+.small{font-size:.85rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+hr.felt{border:none;border-top:3px dashed rgba(70,58,84,.25);margin:6px 0;}
+
+/* ---------- café scene ---------- */
+#scene{width:100%;display:block;border:3px solid var(--ink);border-radius:var(--radius);background:var(--wall);box-shadow:0 5px 0 var(--shadow);}
+.queue{display:flex;gap:6px;align-items:center;min-height:34px;flex-wrap:wrap;}
+.queue .qhead{width:34px;height:34px;border:2.5px solid var(--ink);border-radius:50%;overflow:hidden;background:var(--cream);}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+
+/* ---------- speech & question ---------- */
+.bubble{
+  position:relative;background:#fff;border:3px solid var(--ink);border-radius:18px;
+  padding:12px 14px;box-shadow:0 4px 0 var(--shadow);font-size:1rem;
+}
+.bubble:before{content:"";position:absolute;top:-14px;left:34px;border:8px solid transparent;border-bottom-color:var(--ink);}
+.bubble:after{content:"";position:absolute;top:-9px;left:37px;border:5px solid transparent;border-bottom-color:#fff;}
+.qtext{font-size:1.08rem;font-weight:700;line-height:1.55;}
+.qword{font-family:'Baloo 2','Comic Sans MS',sans-serif;font-weight:800;color:var(--berry-deep);font-size:1.2em;}
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  border:3px solid var(--ink);border-radius:16px;background:var(--card);
+  padding:.75em 1em;font-weight:700;font-size:1.02rem;cursor:pointer;text-align:left;
+  box-shadow:0 4px 0 var(--shadow);transition:transform .07s;
+  display:flex;align-items:center;gap:.6em;min-height:52px;
+}
+.opt:active{transform:translateY(2px);}
+.opt .key{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;background:var(--cream);}
+.opt.correct{background:#DFF0CE;border-color:var(--leaf-deep);animation:pulseOk .5s;}
+.opt.wrong{background:#F8D3DF;border-color:var(--berry-deep);animation:shakeNo .4s;}
+.opt.dim{opacity:.4;pointer-events:none;text-decoration:line-through;}
+.opt:disabled{cursor:default;}
+@keyframes pulseOk{0%{transform:scale(1);}40%{transform:scale(1.04);}100%{transform:scale(1);}}
+@keyframes shakeNo{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+.speakbtn{width:44px;height:44px;border-radius:50%;border:3px solid var(--ink);background:var(--sky);box-shadow:0 3px 0 var(--shadow);cursor:pointer;font-size:1.2rem;flex-shrink:0;}
+.speakbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--shadow);}
+
+/* explanation panel */
+.explain{background:var(--cream);border:3px solid var(--ink);border-radius:16px;padding:12px 14px;box-shadow:0 4px 0 var(--shadow);}
+.explain .exword{font-family:'Baloo 2','Comic Sans MS',sans-serif;font-weight:800;font-size:1.15rem;}
+
+/* ---------- ladder ---------- */
+.ladderword{display:flex;gap:8px;justify-content:center;margin:6px 0;}
+.ladderword .cell{width:52px;height:56px;border:3px solid var(--ink);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;background:var(--card);box-shadow:0 3px 0 var(--shadow);font-family:'Baloo 2','Comic Sans MS',sans-serif;}
+.ladderword .cell.hot{background:var(--sun);border-style:dashed;animation:bob 1.6s infinite;}
+.ladderword .cell.ghost{opacity:.5;width:40px;height:44px;font-size:1.1rem;box-shadow:none;}
+.letteropts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.letteropts .opt{width:56px;justify-content:center;min-height:56px;font-size:1.3rem;}
+
+/* ---------- drink & celebration ---------- */
+.drinkstage{display:flex;align-items:center;justify-content:center;min-height:130px;}
+.confetti{position:fixed;top:-12px;font-size:1.2rem;animation:fall linear forwards;z-index:60;pointer-events:none;}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.9;}}
+.spotlight{position:fixed;inset:0;pointer-events:none;z-index:55;background:radial-gradient(circle at 50% 45%, transparent 15%, rgba(70,58,84,.35) 60%);animation:spot 1.6s ease forwards;}
+@keyframes spot{from{opacity:0}30%{opacity:1}to{opacity:0}}
+.tipfly{position:absolute;font-weight:800;color:var(--sun-deep);text-shadow:0 1px 0 #fff;animation:tipUp 1s ease forwards;pointer-events:none;font-size:1.2rem;z-index:40;}
+@keyframes tipUp{from{transform:translateY(0);opacity:1;}to{transform:translateY(-46px);opacity:0;}}
+
+/* stars */
+.stars{font-size:2.2rem;letter-spacing:.15em;}
+.stars .dimstar{opacity:.25;}
+
+/* ---------- shop ---------- */
+.shopgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.shopitem{border:3px solid var(--ink);border-radius:16px;background:var(--card);padding:10px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;box-shadow:0 4px 0 var(--shadow);}
+.shopitem .thumb{width:74px;height:64px;}
+.shopitem.owned{background:#EFF7E6;}
+.tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
+.tabbar .btn{white-space:nowrap;}
+.tabbar .btn.active{background:var(--ink);color:#fff;}
+
+/* ---------- forms (grown-ups) ---------- */
+input[type=text],input[type=number],textarea,select{
+  font-family:inherit;font-size:1rem;border:3px solid var(--ink);border-radius:12px;
+  padding:.55em .7em;background:#fff;width:100%;color:var(--ink);
+}
+textarea{min-height:64px;resize:vertical;}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.85rem;}
+.wordrow{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:2px dashed rgba(70,58,84,.2);}
+.wordrow .wname{font-weight:800;flex:1;}
+.supportchips{display:flex;gap:4px;flex-wrap:wrap;}
+.supportchips .chip{font-size:.62rem;padding:.05em .5em;}
+
+/* toggle */
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:2px dashed rgba(70,58,84,.15);}
+.switch{width:56px;height:32px;border:3px solid var(--ink);border-radius:999px;background:#ddd;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s;}
+.switch .knob{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transition:left .15s;}
+.switch.on{background:var(--leaf);}
+.switch.on .knob{left:26px;}
+
+/* profile picker */
+.avgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.avcard{border:3px solid var(--ink);border-radius:16px;background:var(--card);padding:8px;text-align:center;cursor:pointer;box-shadow:0 4px 0 var(--shadow);}
+.avcard.sel{background:#FFE9B8;border-color:var(--sun-deep);}
+.avcard svg{width:100%;height:80px;}
+.coursebadge{display:inline-flex;align-items:center;justify-content:center;gap:.3em;border:2px solid var(--ink);border-radius:999px;padding:.12em .65em;background:#E7F3D9;font-size:.7rem;font-weight:800;line-height:1.35;white-space:nowrap;}
+.coursebadge.course-everyday{background:#DCEFF4;}
+.menucourse{display:flex;justify-content:center;margin-top:-5px;}
+.coursechoices{display:grid;gap:12px;margin:4px 0;}
+.coursechoice{display:grid;grid-template-columns:58px 1fr;grid-template-rows:auto auto auto;gap:2px 10px;align-items:center;text-align:left;padding:14px;min-height:112px;}
+.coursechoice .courseicon{grid-row:1/4;font-size:2.4rem;text-align:center;}
+.coursechoice b{font-family:'Baloo 2','Comic Sans MS',sans-serif;font-size:1.18rem;}
+.coursechoice small{line-height:1.35;}
+.coursechoice .coursegate{font-size:.7rem;font-weight:800;color:var(--berry-deep);}
+.coursehero{font-size:3.6rem;margin-top:10vh;}
+.courseload .coursebadge{align-self:center;}
+
+/* dashboard bars */
+.bar{height:20px;border:2.5px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff;display:flex;}
+.bar span{height:100%;display:block;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;font-weight:700;}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;border:2px solid var(--ink);vertical-align:-2px;margin-right:4px;}
+
+/* toast */
+#toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:.7em 1.2em;border-radius:14px;font-weight:700;z-index:80;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center;}
+#toast.show{opacity:1;}
+
+/* ---- gallery pets: gentle idle bob (staggered per pet) ---- */
+.galpet{display:inline-block;transform-origin:50% 90%;}
+@keyframes galpetidle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-2.5px) rotate(-1.6deg)}60%{transform:translateY(0.5px) rotate(1.4deg)}}
+.galpet.excited{animation:pethop .85s ease}
+.galpet.excited2{animation:petwiggle .85s ease}
+.gtile.petlive{cursor:pointer}
+body.reduce .galpet{animation:none}
+
+/* ---- +10 coin listen bonus in the answer popup ---- */
+.listenbonus{display:inline-block;margin-left:.4em;font-weight:800;color:var(--sun-deep);min-width:3.2em}
+.listenbonus.pop{animation:bonuspop .8s ease}
+@keyframes bonuspop{0%{transform:scale(.4);opacity:0}35%{transform:scale(1.35);opacity:1}100%{transform:scale(1);opacity:1}}
+
+/* ---- library page navigation ---- */
+.pagerow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0}
+.pagerow .pageinfo{font-size:.85rem;text-align:center;flex:1}
+
+/* ---- earned trophies get a soft shine ---- */
+.trophy.got .tricon{animation:trophyshine 3.4s ease-in-out infinite}
+@keyframes trophyshine{0%,86%,100%{transform:rotate(0) scale(1);filter:none}90%{transform:rotate(-8deg) scale(1.12);filter:drop-shadow(0 0 4px rgba(242,179,61,.8))}94%{transform:rotate(6deg) scale(1.08)}}
+body.reduce .trophy.got .tricon{animation:none}
+.trophy .tdate{display:block;opacity:.6;font-size:.68rem;margin-top:2px}
+
+/* overlay modal */
+.overlay{position:fixed;inset:0;background:rgba(70,58,84,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:70;}
+.modal{max-width:440px;width:100%;max-height:86dvh;overflow:auto;}
+
+/* reduced motion */
+body.reduce *{animation:none!important;transition:none!important;}
+body.reduce .queue .qhead{animation:none!important;}
+
+.charstage{display:flex;justify-content:center;position:relative;}
+.charstage svg{display:block;}
+.charsvg{display:block;line-height:0;}
+/* ---- blinking eyes & pet reactions ---- */
+.blink{transform-box:fill-box;transform-origin:50% 62%;animation:blinkAnim 4.6s infinite}
+/* Build 86d: blinking restored on all on-stage customers (86c had limited
+   it to the served one). layoutQueue() caps the stage at 3 waiting + 1
+   serving and dehydrateActorVisual() strips the rest, so this is at most
+   four blinking groups plus barista and pet. Battery Saver still turns
+   them all off via `body.psave .blink`. */
+@keyframes blinkAnim{0%,93.5%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.06)}97.5%{transform:scaleY(1)}}
+body.reduce .blink{animation:none}
+.petwrap{cursor:pointer}
+.petwrap.excited{animation:pethop .85s ease}
+.petwrap.excited2{animation:petwiggle .85s ease}
+@keyframes pethop{0%{transform:translateY(0) rotate(0)}28%{transform:translateY(-16px) rotate(-9deg)}52%{transform:translateY(0) rotate(7deg)}74%{transform:translateY(-7px) rotate(-5deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes petwiggle{0%{transform:rotate(0) scale(1)}20%{transform:rotate(-13deg) scale(1.12)}40%{transform:rotate(11deg) scale(1.12)}60%{transform:rotate(-8deg) scale(1.06)}80%{transform:rotate(6deg) scale(1.02)}100%{transform:rotate(0) scale(1)}}
+body.reduce .petwrap.excited,body.reduce .petwrap.excited2{animation:none}
+.arrive{animation:arriveIn .5s ease;}
+@keyframes arriveIn{from{transform:translateX(70px);opacity:0;}to{transform:none;opacity:1;}}
+.leaveL{animation:leaveOut .5s ease forwards;}
+@keyframes leaveOut{to{transform:translateX(-90px);opacity:0;}}
+.bounce{animation:happyBounce .55s ease;}
+@keyframes happyBounce{0%,100%{transform:translateY(0);}35%{transform:translateY(-12px);}65%{transform:translateY(-4px);}}
+.slump{animation:sadSlump .6s ease;}
+@keyframes sadSlump{0%,100%{transform:rotate(0);}40%{transform:rotate(-3deg) translateY(4px);}}
+.foottap{}
+@keyframes tapFoot{0%,100%{transform:rotate(0);}50%{transform:rotate(1.5deg);}}
+footer.tiny{text-align:center;font-size:.7rem;color:var(--ink-soft);padding:8px 0 14px;}
+/* ---- supplementary UI styles ---- */
+.logo{font-family:'Baloo 2',cursive;font-size:3rem;margin:.4em 0 0;color:var(--ink)}
+.logo span{color:var(--berry)}
+.tag{margin:0 0 1.2em;opacity:.75;font-style:italic}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:18px}
+.felt.big{font-size:1.15rem;padding:14px 26px}
+.felt.big.primary{background:var(--berry);color:#fff}
+.felt.mini{font-size:.9rem;padding:7px 12px}
+.felt.sel{outline:4px solid var(--sun);outline-offset:2px}
+.linky{background:none;border:none;color:var(--ink);opacity:.75;text-decoration:underline;font:inherit;cursor:pointer;padding:6px}
+.linky.red{color:#B23A3A}
+.iconb{background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;font-size:1.05rem;padding:6px 10px;cursor:pointer;box-shadow:2px 2px 0 rgba(70,58,84,.25)}
+.bartitle{font-family:'Baloo 2',cursive;font-size:1.15rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;background:var(--sun);border:2px solid var(--ink);border-radius:999px;padding:1px 9px;font-size:.78rem;margin-left:6px}
+.note{background:#FFF6E0;border:2px dashed var(--cocoa);border-radius:12px;padding:9px 13px;font-size:.9rem;max-width:480px;margin:6px auto}
+.avlist{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px}
+/* ---- avatar customizer ---- */
+.custpick .custart{font-size:2rem;line-height:1.6}
+.custpreview{margin:4px auto 8px;overflow:hidden;border-radius:16px}
+.custpreview svg{transition:transform .35s ease}
+.custrow{width:100%;max-width:420px;text-align:left;margin:3px 0}
+.custrow>small{font-weight:800;opacity:.75;display:block;margin-bottom:2px}
+.swrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.swatch{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);cursor:pointer;padding:0}
+.swatch.sel{outline:3px solid var(--leaf-deep);outline-offset:1.5px}
+.chip{font-size:.82rem;padding:.3em .7em;min-height:34px}
+.chip.sel{outline:3px solid var(--leaf-deep);background:#EFF7E6}
+.lashchip{display:inline-flex;align-items:center;gap:5px}
+.avrow{display:flex;align-items:center;gap:8px}
+.avrow .avcard{flex:1}
+.avdel{flex:0 0 auto;font-size:1.05rem;opacity:.75}
+.avcard{display:flex;align-items:center;gap:14px;text-align:left;padding:10px 16px}
+.avface{flex:0 0 auto}
+.avgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:520px}
+.avpick{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px}
+.avpick b{font-size:1.02rem}
+.avpick small{opacity:.7;font-size:.68rem;line-height:1.2}
+.namebox{margin:6px 0}
+.namebox label{font-size:1.05rem;font-weight:800}
+/* v30: style-first avatar builder with a full-body preview in the
+   flexible lower stage. Option panels are deliberately wider and have
+   enough breathing room for selected outlines, so hair colours, eye
+   shapes and lashes never look clipped on iPhone. */
+.customize-screen{gap:5px;padding:7px 11px calc(8px + env(safe-area-inset-bottom));min-height:0;overflow:hidden}
+.customize-screen h2{margin:0;font-size:1.28rem;line-height:1.05}
+.custintro{font-size:.69rem;line-height:1.12;color:var(--ink-soft);font-weight:800;margin:-1px 0 1px}
+.custtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;width:100%;max-width:470px}
+.custtab{height:39px;border:2px solid var(--ink);border-radius:11px;background:var(--card);font:inherit;font-weight:800;padding:1px 1px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;line-height:1;min-width:0;overflow:hidden}
+.custtab span{font-size:.76rem;line-height:1;flex:0 0 auto}.custtab small{font-size:.56rem;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.custtab.on{background:#EFF7E6;outline:3px solid var(--leaf-deep);outline-offset:1px}
+.custpanels{width:100%;max-width:470px;height:clamp(214px,34dvh,310px);min-height:0;display:block;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:3px 4px 8px;scrollbar-gutter:stable}
+.custpanels .custrow{max-width:none;margin:0;text-align:center;display:flex;flex-direction:column;gap:9px;min-height:100%;height:auto;justify-content:flex-start}
+.custpanels .custrow[hidden]{display:none!important}
+.custpanels .custrow[data-panel="more"]{padding-bottom:10px}
+.optgroup{width:100%}
+.optgroup>small{font-size:.72rem;font-weight:800;display:block;margin:0 0 4px;color:var(--ink-soft);line-height:1.02}
+.optgroup>small b{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--sun);color:var(--ink);font-size:.68rem;margin-right:3px}
+.custpanels .swrow{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;align-items:center}
+.custpanels .chip{min-height:34px;font-size:.67rem;padding:.24em .5em;border-radius:11px}
+.stylegroup .swrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:365px;width:100%;margin:0 auto}
+.stylegroup .chip{width:100%;min-height:32px;padding:.18em .3em}
+.colourgroup .swrow{flex-wrap:nowrap;gap:5px;max-width:350px;width:100%;margin:0 auto;justify-content:space-between}
+.colorchoice{--choice:#777;width:34px;height:34px;min-width:34px;border-radius:50%;border:2.5px solid var(--ink);cursor:pointer;padding:0;background:var(--choice);position:relative}
+.colorchoice span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.colorchoice.sel{outline:3px solid var(--leaf-deep);outline-offset:2px}
+.eyechip,.glasschip{display:inline-flex;align-items:center;gap:3px;flex-direction:column;min-width:72px}
+.eyechip span,.glasschip span{font-size:.63rem;line-height:1}
+.eyeshapegroup .swrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:350px;width:100%;margin:0 auto}
+.eyeshapegroup .eyechip{width:100%;min-width:0;min-height:52px;justify-content:center}
+.glasschip .noglasses{font-size:1.25rem;line-height:18px}
+.lashgroup .swrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:300px;width:100%;margin:0 auto}
+.lashchip{display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:40px}.lashchip span{font-size:.66rem}
+.custstage{width:100%;max-width:470px;flex:1 1 auto;min-height:116px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;position:relative;padding-top:2px}
+.custpreview{width:132px;height:196px;margin:0;display:flex;align-items:flex-start;justify-content:center;overflow:hidden;border-radius:16px;flex:0 0 auto}
+.custpreview svg{width:120px;height:auto;display:block;transition:none!important;transform:translateY(16px)!important}
+.custfooter{width:100%;max-width:470px;margin-top:0;flex:0 0 auto}
+.custfooter .namebox{margin:0 0 4px}
+.custfooter .namebox label{font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px}
+.custfooter .namebox input{font-size:16px;padding:6px 8px;max-width:156px;border-width:2.5px;border-radius:11px}
+.custactions{display:flex;align-items:center;justify-content:center;gap:9px}
+.custactions .felt.big{font-size:.88rem;padding:8px 12px;min-height:40px}
+.custactions .linky{min-height:38px;padding:4px}
+
+/* v30 new-barista picker: use the available vertical space instead of
+   leaving a large empty lower half. The grid grows on tall iPhones and
+   scales down only when the viewport is genuinely short. */
+.pickscreen{gap:9px;padding:14px 13px calc(2px + env(safe-area-inset-bottom));min-height:0;overflow:hidden}
+.pickscreen:not(.customize-screen){justify-content:space-between}
+.pickscreen h2{margin:0 0 2px;font-size:1.42rem;line-height:1.05}
+.pickscreen .avgrid{gap:8px;max-width:490px;width:100%;height:clamp(410px,58dvh,490px);min-height:410px;grid-template-rows:repeat(3,minmax(0,1fr));flex:0 0 auto}
+.pickscreen .avpick{min-height:0;height:100%;padding:8px 4px 6px;gap:3px;border-width:2.5px;border-radius:15px;justify-content:center}
+.pickscreen .avpick svg{width:clamp(60px,8.5dvh,78px)!important;height:auto!important;display:block;margin:auto}
+.pickscreen .custpick .custart{font-size:2.35rem;line-height:1.25}
+.pickscreen .avpick b{font-size:1.02rem;line-height:1.04}
+.pickscreen .avpick small{display:block;opacity:.72;font-size:.65rem;line-height:1.1;max-height:2.2em;overflow:hidden;padding:0 3px}
+.pickscreen>.namebox{margin:2px 0}
+.pickscreen>.namebox label{font-size:.98rem;line-height:1.1}
+.pickscreen>.namebox input{font-size:1.04rem;padding:8px 11px;max-width:225px;border-width:2.5px;border-radius:12px}
+.pickscreen>.felt.big{font-size:1.03rem;padding:10px 18px;min-height:46px;margin:0}
+.pickscreen>.linky{padding:2px;min-height:30px}
+
+@media(max-width:350px){
+  .custpanels{height:204px;min-height:204px;padding-left:2px;padding-right:2px}
+  .custpanels .chip{font-size:.63rem}.stylegroup .swrow{gap:4px}.colorchoice{width:30px;height:30px;min-width:30px}
+  .custpreview{width:112px;height:162px}.custpreview svg{width:102px;transform:translateY(14px)!important}
+  .pickscreen .avpick b{font-size:.9rem}.pickscreen .avpick small{font-size:.56rem}
+}
+@media(max-height:720px) and (max-width:430px){
+  .customize-screen{gap:3px;padding-top:4px}.custintro{font-size:.64rem}.custtab{height:37px}
+  .custpanels{height:218px;min-height:218px}.custstage{min-height:88px;align-items:flex-end}.custpreview{height:130px;width:98px}.custpreview svg{width:88px;transform:translateY(14px)!important}
+  .custfooter .namebox input{padding:5px 8px}.custactions .felt.big{min-height:38px;padding:6px 10px}
+  .pickscreen{gap:5px;padding-top:6px}.pickscreen h2{font-size:1.25rem}.pickscreen .avgrid{gap:5px;height:clamp(340px,55dvh,390px);min-height:340px}
+  .pickscreen .avpick{padding:4px 2px}.pickscreen .avpick svg{width:clamp(49px,7.5dvh,62px)!important}.pickscreen .avpick b{font-size:.88rem}.pickscreen .avpick small{font-size:.55rem}
+  .pickscreen>.namebox input{padding:6px 9px}.pickscreen>.felt.big{min-height:40px;padding:7px 14px}
+}
+@media(max-height:620px) and (max-width:430px){
+  .custintro{display:none}.custpanels{height:202px;min-height:202px}.custpanels .custrow{gap:6px}.custstage{min-height:58px}.custpreview{height:90px;width:74px}.custpreview svg{width:68px;transform:translateY(6px)!important}
+  .pickscreen .avgrid{height:300px;min-height:300px}.pickscreen .avpick svg{width:42px!important}.pickscreen .avpick b{font-size:.78rem}.pickscreen .avpick small{display:none}
+}
+
+/* Build 61 definitive avatar customizer layout.
+   The previous flex layout allowed the selection panel to shrink while
+   the preview stage absorbed the spare height. This grid gives the
+   upper selection area a protected row, visibly highlights it, and
+   keeps the preview in a separate non-overlapping row. */
+.customize-screen{
+  --cust-selection-h:clamp(332px,41dvh,370px);
+  --cust-preview-h:142px;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto minmax(0,var(--cust-selection-h)) var(--cust-preview-h) auto;
+  align-content:start;
+  justify-items:center;
+  isolation:isolate;
+  overflow:hidden;
+}
+.customize-screen>h2,.customize-screen>.custintro,.customize-screen>.custtabs,.customize-screen>.custpanels,.customize-screen>.custstage,.customize-screen>.custfooter{width:100%;max-width:470px;min-width:0}
+.customize-screen .custpanels{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  flex:none!important;
+  position:relative;
+  z-index:3;
+  box-sizing:border-box;
+  overflow-x:hidden;
+  overflow-y:auto;
+  background:rgba(255,248,231,.82);
+  border:2px solid rgba(160,106,78,.34);
+  border-radius:16px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75);
+  padding:8px 7px 10px;
+}
+.customize-screen .custpanels .custrow{height:auto;min-height:0;gap:8px}
+.customize-screen .custstage{
+  height:var(--cust-preview-h)!important;
+  min-height:var(--cust-preview-h)!important;
+  flex:none!important;
+  position:relative;
+  z-index:1;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  overflow:hidden;
+}
+.customize-screen .custpreview{width:112px;height:138px;align-items:flex-start;overflow:visible}
+.customize-screen .custpreview svg{width:102px;transform:translateY(7px)!important}
+.customize-screen .custfooter{position:relative;z-index:4}
+@media(max-height:760px) and (max-width:430px){
+  .customize-screen{--cust-selection-h:294px;--cust-preview-h:102px;gap:3px;padding-top:4px}
+  .customize-screen .custintro{font-size:.63rem}
+  .customize-screen .custpreview{width:90px;height:102px}.customize-screen .custpreview svg{width:82px;transform:translateY(5px)!important}
+  .customize-screen .custpanels{padding-top:6px;padding-bottom:7px}
+}
+@media(max-height:620px) and (max-width:430px){
+  .customize-screen{--cust-selection-h:238px;--cust-preview-h:76px;gap:2px}
+  .customize-screen .custintro{display:none}
+  .customize-screen .custtab{height:35px}
+  .customize-screen .custpanels .custrow{gap:5px}
+  .customize-screen .custpreview{width:68px;height:72px}.customize-screen .custpreview svg{width:62px;transform:translateY(3px)!important}
+  .customize-screen .custfooter .namebox{margin-bottom:2px}
+}
+
+/* Build 83 Kitchen art — full 25-recipe menu, recipe-specific progress,
+   and lightweight café integration. */
+.kitchenmenustats{width:100%;max-width:470px;display:flex;justify-content:space-between;gap:8px;font-weight:900}
+.kitchenmenustats span{background:#FFF8E7;border:2px solid var(--ink);border-radius:999px;padding:5px 10px;font-size:.78rem}
+.kitchentabs{width:100%;max-width:470px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.kitchentabs .tab{font-size:.68rem;min-height:42px;padding:5px 3px;white-space:normal;line-height:1.05}
+.kitchenfoodgrid{width:100%;max-width:470px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+.kitchenfoodcard{display:grid;grid-template-columns:64px 1fr;grid-template-rows:1fr auto;gap:6px 8px;align-items:center;padding:9px;text-align:left;min-width:0}
+.kitchenfoodcard.locked{background:#F6F0EA}
+.kitchenfoodart,.kitchenlockedart{width:62px;height:62px;display:grid;place-items:center;border-radius:13px;background:#FFF8E7;border:2px solid rgba(70,58,84,.22);grid-row:1/3}
+.kitchenfoodart svg,.kitchenfoodart img{width:58px;height:auto;display:block}
+.kitchenlockedart{font-size:1.9rem;filter:grayscale(.7);opacity:.72}
+.kitchenfoodcopy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.kitchenfoodcopy h3{margin:0;font-size:.9rem;line-height:1.05;overflow-wrap:anywhere}
+.kitchenfoodcopy small{font-size:.62rem;line-height:1.2;color:var(--ink-soft)}
+.kitchenbadge{font-size:.62rem;font-weight:900;color:#6A5C76}
+.kitchenfoodcard>button{grid-column:2;justify-self:stretch;font-size:.68rem;min-height:32px;padding:5px 6px}
+.kitchensteppreview{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px auto;max-width:360px}
+.kitchensteppreview span{display:grid;place-items:center;aspect-ratio:1;border:2px solid var(--ink);border-radius:10px;background:#FFF8E7;font-size:1.1rem;overflow:hidden}
+.kitchensteppreview img{width:78%;height:78%;object-fit:contain;display:block}
+.kitchenstep{min-width:0;overflow:hidden}
+.kitchenstep.done{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.kitchenstep.done span{font-size:1rem;line-height:1}
+.kitchenstep img{width:24px;height:24px;object-fit:contain;display:block;flex:0 0 auto}
+.kitchenstep.done small{font-size:.42rem;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.kitchenreveal{width:120px;height:100px;margin:0 auto 6px;display:grid;place-items:center;border-radius:20px;background:#FFF8E7;border:3px solid var(--ink);box-shadow:4px 4px 0 rgba(70,58,84,.14)}
+.kitchenreveal svg{width:96px;height:auto}
+.kitchenreveal .foodartsprite{transform:scale(1.7)}
+@media(max-width:360px){.kitchenfoodgrid{grid-template-columns:1fr}.kitchentabs .tab{font-size:.6rem}.kitchenfoodcard{grid-template-columns:58px 1fr}.kitchenfoodart,.kitchenlockedart{width:56px;height:56px}.kitchenfoodart svg,.kitchenfoodart img{width:52px}}
+.kitchenmenu,.kitchenchallenge{gap:10px}
+.kitchencard{width:100%;max-width:460px;padding:14px;text-align:left}
+.kitchencard h3{margin:0 0 5px}
+.kitchenlock{display:flex;align-items:center;gap:12px}
+.kitchencloche{font-size:2.4rem;line-height:1;filter:grayscale(.2)}
+.kitchenrules{font-size:.82rem;line-height:1.35;opacity:.82}
+.kitchenstatus{width:100%;max-width:470px;display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center;font-weight:800}
+.kitchenstatus span{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:6px 8px;font-size:.76rem}
+.kitchenprogress{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;width:100%;max-width:450px}
+.kitchenstep{aspect-ratio:1;border:2px solid var(--ink);border-radius:10px;background:#FFF8E7;display:grid;place-items:center;font-weight:900}
+.kitchenstep.done{background:#EAF5DD;box-shadow:inset 0 0 0 3px #9DBA72}
+.kitchenlab{width:100%;max-width:460px;padding:15px;text-align:center}
+.kitchenlab h3{margin:0 0 6px}
+.kitchencluehead{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:.76rem;font-weight:900;color:var(--ink-soft)}
+.kitchencluehead .masterybadge{margin:auto;color:var(--ink)}
+.kitchenprompt{margin:8px 0 10px;text-align:left;padding:10px 12px;border:2px dashed #A06A4E;border-radius:14px;background:#FFF8E7;font-weight:800;line-height:1.35}
+.kitchenanswer{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.kitchenanswer .slot{width:32px;height:38px;border:2px solid var(--ink);border-radius:10px;background:#fff;display:grid;place-items:center;font-size:1.1rem;font-weight:900;text-transform:lowercase}
+.kitchenanswer .slot.fill{background:#EFF7E6}
+.kitchenanswer .slot.hint-crossed{background:#E6F2C8;box-shadow:inset 0 0 0 3px #E4BC54}
+.kitchenanswer button.slot{font:inherit;padding:0;color:var(--ink);cursor:pointer}
+.kitchenanswer .slot.returnable{box-shadow:inset 0 -3px 0 rgba(70,58,84,.18)}
+.kitchenanswer .slot.returnable:active{transform:translateY(1px)}
+.kitchenlab[data-kitchen-mode="scramble"] .kitchentiles{background:#FFF8E7;border-radius:13px;padding:7px}
+.kitchenlab[data-kitchen-mode="path"]{padding-bottom:13px}
+.kitchenpathgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;width:min(100%,264px);margin:0 auto 9px;padding:8px;border:2px solid #A06A4E;border-radius:15px;background:#FFF8E7;touch-action:none;user-select:none;-webkit-user-select:none}
+.kitchenpathcell{position:relative;aspect-ratio:1;min-width:0;min-height:48px;border:2px solid var(--ink);border-radius:12px;background:#F6F0FF;color:var(--ink);font:inherit;font-size:1.08rem;font-weight:900;text-transform:lowercase;cursor:pointer;display:grid;place-items:center;padding:0}
+.kitchenpathcell.selected{background:#DDEFD1;box-shadow:inset 0 0 0 3px #7FA85F;transform:none}
+.kitchenpathcell.hinted{background:#FFF1B8;box-shadow:inset 0 0 0 3px #E4BC54}
+.kitchenpathcell.hinted.selected{background:#E6F2C8;box-shadow:inset 0 0 0 3px #7FA85F,0 0 0 2px #E4BC54}
+.kitchenpathcell small{position:absolute;right:3px;top:2px;width:15px;height:15px;border-radius:50%;background:#F4B942;color:#463A54;display:grid;place-items:center;font-size:.52rem;line-height:1;font-weight:900}
+.kitchenpathcell:focus-visible{outline:3px solid #2B78C5;outline-offset:2px}
+.kitchentiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;width:100%;max-width:390px;margin:0 auto 8px}
+.kitchentile{min-height:48px;border-radius:12px;padding:0;border:2px solid var(--ink);background:#F6F0FF;font:inherit;font-size:1.1rem;font-weight:900;text-transform:lowercase;cursor:pointer}
+.kitchentile.used{opacity:.16;pointer-events:none}
+.kitchenlab .custactions{flex-wrap:wrap}
+.kitchenfeedback{min-height:2.4em;font-weight:800;color:var(--ink-soft)}
+.kitchenresult{width:100%;max-width:450px;padding:18px;text-align:center}
+.kitchenexit{min-width:58px;padding:5px 10px;font-weight:900}
+.kitchenprogresslabel{width:100%;max-width:450px;text-align:center;font-weight:900;font-size:.78rem;color:var(--ink);background:#FFF8E7;border:2px dashed #A06A4E;border-radius:10px;padding:4px 8px}
+.kitchenchefbubble{display:inline-block;max-width:100%;margin:1px auto 6px;padding:5px 9px;border:2px solid rgba(70,58,84,.28);border-radius:12px;background:#FFF8E7;font-size:.76rem;font-weight:900;line-height:1.2}
+.kitchenloading{width:100%;max-width:420px;padding:22px 18px;text-align:center}
+.kitchenloadingchef{font-size:3rem;line-height:1;margin-bottom:5px}
+.kitchenloading h2{margin:.25em 0}
+.kitchenloadingtools{font-size:1.45rem;letter-spacing:.06em;margin:10px 0}
+.kitchenloadingtools span{display:inline-block;animation:kitchenDot .48s ease-in-out infinite alternate}
+.kitchenloadingtools span:nth-child(2){animation-delay:.14s}
+@keyframes kitchenDot{from{opacity:.25;transform:translateY(1px)}to{opacity:1;transform:translateY(-2px)}}
+.kitchenunlockanim{position:relative;width:140px;height:118px;margin:0 auto 5px;display:grid;place-items:center}
+.kitchenunlockanim .kitchenreveal{margin:0}
+.unlocklock{position:absolute;z-index:3;font-size:2.5rem;animation:kitchenLockOpen .72s ease both}
+.unlockspark{position:absolute;z-index:4;font-size:2rem;animation:kitchenSpark .85s ease .3s both}
+.unlockdish{animation:kitchenDishReveal .72s cubic-bezier(.2,.8,.2,1) .35s both}
+@keyframes kitchenLockOpen{0%,45%{opacity:1;transform:scale(1) rotate(0)}65%{transform:scale(1.15) rotate(-8deg)}100%{opacity:0;transform:scale(.65) rotate(14deg)}}
+@keyframes kitchenSpark{0%{opacity:0;transform:scale(.4)}45%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.7)}}
+@keyframes kitchenDishReveal{0%{opacity:0;transform:translateY(10px) scale(.72)}100%{opacity:1;transform:translateY(0) scale(1)}}
+/* Build 86g-phase9: each completed cooking step lands with a pop, and the
+   chef bubble pops in with the cheer. Both are switched off wholesale by the
+   existing reduce/psave rules below, and the emoji burst is never created at
+   all in those modes (see kitchenCelebrateStep). */
+.kitchenstep.justdone{animation:kitchenStepPop .62s ease}
+@keyframes kitchenStepPop{0%{transform:scale(1)}30%{transform:scale(1.28) rotate(-6deg)}58%{transform:scale(1.08) rotate(4deg)}100%{transform:scale(1)}}
+.kitchenchefbubble.cheer{animation:kitchenCheerPop .5s ease}
+@keyframes kitchenCheerPop{0%{transform:scale(.82);opacity:.35}45%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}}
+body.reduce .confetti,body.psave .confetti{display:none!important}
+body.reduce .kitchenloadingtools span,body.psave .kitchenloadingtools span,body.reduce .unlocklock,body.reduce .unlockspark,body.reduce .unlockdish,body.psave .unlocklock,body.psave .unlockspark,body.psave .unlockdish{animation:none!important;opacity:1;transform:none}
+body.reduce .unlocklock,body.psave .unlocklock{display:none}
+body.reduce .unlockspark,body.psave .unlockspark{display:none}
+@media(max-width:350px){.kitchenstatus{grid-template-columns:1fr 1fr}.kitchenstatus span:first-child{grid-column:1/-1}.kitchenstatus span{font-size:.7rem}.kitchenstep{border-radius:8px}.kitchentiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.kitchenanswer .slot{width:28px;height:34px;font-size:1rem}.kitchentile{min-height:44px;font-size:1rem;border-radius:10px}.kitchenpathgrid{width:min(100%,232px);gap:5px;padding:6px}.kitchenpathcell{min-height:44px;font-size:1rem;border-radius:10px}}
+
+
+.kitchenpathwrap{position:relative;width:min(100%,264px);margin:0 auto 9px}
+.kitchenpathwrap .kitchenpathgrid{width:100%;margin:0}
+.kitchenpathlines{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);pointer-events:none;z-index:4;overflow:visible}
+.kitchenpathlines polyline{fill:none;stroke:#5E8E42;stroke-width:.10;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+.kitchenpathcell span,.kitchenpathcell small{position:relative;z-index:5}
+.kitchentiles.conveyorbelt{position:relative;padding:10px 8px;background:repeating-linear-gradient(90deg,#D8D1C8 0 18px,#C5BDB3 18px 36px);border:3px solid var(--ink);border-radius:14px;box-shadow:inset 0 5px 0 rgba(255,255,255,.35),inset 0 -5px 0 rgba(70,58,84,.12)}
+.kitchentiles.conveyorbelt .kitchentile{position:relative;z-index:1;background:#FFF8E7}
+.kitchentiles.conveyorbelt.belt-step{animation:conveyorNudge .28s ease}
+@keyframes conveyorNudge{0%{background-position:0 0}45%{transform:translateX(-7px);background-position:-18px 0}100%{transform:translateX(0);background-position:-36px 0}}
+@media(max-width:350px){.kitchenpathwrap{width:min(100%,232px)}.kitchenpathlines{inset:6px;width:calc(100% - 12px);height:calc(100% - 12px)}}
+
+/* Build 67: larger child-friendly Conveyor/Scramble targets. On short
+   phones, recover height from surrounding spacing rather than shrinking
+   the interactive letters below 44 CSS px. */
+@media(max-height:700px) and (max-width:430px){
+  .kitchenchallenge{gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  .kitchenlab{padding:10px 11px}
+  .kitchenlab h3{margin-bottom:3px;font-size:1rem}
+  .kitchenprompt{margin:5px 0 6px;padding:7px 9px;line-height:1.22}
+  .kitchenanswer{margin:3px 0 6px;gap:4px}
+  .kitchentiles{gap:5px;margin-bottom:5px}
+  .kitchentile{min-height:44px;font-size:1rem}
+  .kitchenhintbar{margin-top:2px;gap:4px}
+  .kitchenlab .custactions{gap:6px}
+  .kitchenlab .custactions .felt.big{min-height:38px;padding:6px 9px}
+}
+
+
+@media(max-height:700px) and (max-width:430px){
+  .kitchenprogresslabel{font-size:.68rem;padding:2px 6px}
+  .kitchenchefbubble{font-size:.68rem;margin-bottom:3px;padding:3px 7px}
+  .kitchenloading{padding:16px 14px}.kitchenloadingchef{font-size:2.5rem}
+}
+
+/* Build 63 Kitchen tutorial: compact, static and fully skippable. */
+.kitchentutorial{width:100%;max-width:460px;padding:16px;text-align:center}
+.kitchentutorial h2{margin:.2em 0 .35em}
+.kitchentutorial .tutorialdots{display:flex;justify-content:center;gap:7px;margin:7px 0 12px}
+.kitchentutorial .tutorialdots span{width:10px;height:10px;border:2px solid var(--ink);border-radius:50%;background:#fff}
+.kitchentutorial .tutorialdots span.on{background:var(--sun)}
+.kitchentutorial .kitchenprompt{margin-top:10px}
+.kitchentutorial .tutorialhint{font-size:.78rem;color:var(--ink-soft);font-weight:800;min-height:2.4em;margin:5px 0}
+.kitchentutorial .custactions{margin-top:10px;flex-wrap:wrap}
+.kitchentutorial .skiprow{margin-top:8px}
+.kitchenbestcard{margin-top:10px}
+
+/* Build 63 Kitchen power-saving rules: keep state changes,
+   but remove decorative motion and costly transitions in existing low-
+   motion modes. */
+body.reduce .kitchenchallenge *,body.reduce .kitchenmenu *,body.psave .kitchenchallenge *,body.psave .kitchenmenu *{animation:none!important;transition:none!important}
+body.psave .kitchenreveal,body.psave .kitchenfoodart,body.psave .kitchenstep.done{box-shadow:none!important;filter:none!important}
+.kitchentile:focus-visible,.kitchenanswer button.slot:focus-visible,.kitchentabs .tab:focus-visible,.kitchenfoodcard button:focus-visible{outline:3px solid #2B78C5;outline-offset:2px}
+
+.namebox input,.gateinput{font:inherit;font-size:1.1rem;padding:10px 14px;border:3px solid var(--ink);border-radius:14px;background:#fff;max-width:240px;text-align:center}
+.curator{margin-top:10px}
+.bubble.big{max-width:460px;font-size:1.02rem}
+.scenewrap{position:relative;border:3px solid var(--ink);border-radius:18px;overflow:hidden;margin:10px 0;box-shadow:4px 4px 0 rgba(70,58,84,.2)}
+.scenewrap.small .cafesvg{display:block}
+.cafesvg{width:100%;display:block}
+.standhere{position:absolute;bottom:2px;right:18px}
+.standhere.left{right:auto;left:14px}
+.custspot{position:absolute;bottom:2px;left:42%;}
+.petspot{position:absolute;bottom:0;left:16%}
+/* v12: compact one-screen menu — 3-col grid, emoji-over-label */
+.menubtns.compact3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.menubtns.compact3 .modepick{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.menubtns.compact3 .felt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;padding:8px 4px;font-size:.86rem;line-height:1.15;text-align:center}
+.menubtns.compact3 .modepick .felt{min-height:52px;font-size:.9rem}
+.menubtns.compact3 .bemoji{font-size:1.25rem;line-height:1}
+.gallerygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin:8px 0 14px}
+.gtile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;text-align:center;cursor:pointer}
+.gtile small{font-size:.72rem;line-height:1.15;color:var(--ink,#463A54)}
+.gtile.locked{opacity:.75;cursor:default}
+.gtile .gq{width:52px;height:64px;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#B9AEC6;background:repeating-linear-gradient(45deg,#EFE9E0,#EFE9E0 6px,#E6DFD4 6px,#E6DFD4 12px);border-radius:10px}
+.gprog{margin:8px 0}
+.debut{text-align:center;padding:14px 10px;animation:popin .4s}
+.debut b{font-size:1.02rem}
+.debut .debutname{font-size:1.2rem;font-weight:800;margin:6px 0 2px}
+.debut .debutpet{margin:6px auto 2px}
+.debut .joined{display:block;margin-top:8px;color:#7A7288}
+@keyframes popin{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.waitbadge.danger{background:#C0392B;color:#FFF;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.achievepop.unlockpop{background:linear-gradient(135deg,#FDF3D8,#F8E3EC)}
+.menubtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 2px 20px}
+.menubtns .felt{width:100%;font-size:1.08rem;min-height:58px;padding:12px 8px}
+.menubtns .modepick{grid-column:1 / -1}
+.menubtns .modepick .felt{font-size:1.18rem;min-height:62px}
+.menubtns #modereview{grid-column:1 / -1}
+.tierpill{font-size:.72rem;border:2px solid var(--ink);border-radius:999px;padding:1px 8px;vertical-align:middle;background:#EDE6F2}
+.tierpill.easy{background:#DFF0D0}.tierpill.core{background:#FDEBC8}.tierpill.stretch{background:#F4D8E2}
+.tierpill.vip{background:var(--sun)}.tierpill.secret{background:#D9CBEE}
+.ticket{margin:8px 0;padding:10px 14px}
+.prog{font-weight:700;font-size:.92rem}
+.queuedots{letter-spacing:3px;color:var(--berry);font-size:1.3rem}
+.qcard{padding:16px;margin-bottom:20px}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.qcount{flex:1;font-size:.85rem;opacity:.85}
+.masterybadge{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:2px solid var(--ink);border-radius:999px;padding:2px 7px;font-size:.66rem;font-weight:900;line-height:1.2;background:#E4DCCB}
+.masterybadge.learning{background:#DCEBF2}.masterybadge.confident{background:#DFF0D0}.masterybadge.mastered{background:var(--sun)}
+.custmini{flex:0 0 auto}
+.powrow{margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+.custsay{font-style:italic;margin-top:6px;opacity:.92}
+.petline{color:var(--cocoa);font-size:.88rem;margin-top:4px}
+.replies{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.reply{font-size:.92rem;padding:8px 13px}
+.speakbtn.inline{margin-top:8px}
+.ladderpath{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0;font-family:'Baloo 2',cursive;font-size:1.05rem}
+.rung{border:3px solid var(--ink);border-radius:10px;padding:4px 10px;background:#fff}
+.rung.done{background:var(--leaf);color:#fff}
+.rung.next{background:var(--sun)}
+.rung.goal{background:var(--berry);color:#fff}
+.larrow{opacity:.6}.larrow.faint{opacity:.3}
+.lopt{font-family:'Baloo 2',cursive;letter-spacing:2px}
+.drinkcard{display:flex;align-items:center;gap:14px;padding:12px 16px;margin:10px 0}
+.drinkcard.sparkle{background:#FFF9E4}
+.tipline{font-family:'Baloo 2',cursive;font-size:1.3rem;margin:8px 0;text-align:center}
+.stars{font-size:3rem;display:flex;gap:10px;justify-content:center;margin:8px 0}
+.star{color:#D8D2C6;transform:scale(.6);display:inline-block}
+.star.lit{color:var(--sun);animation:starpop .5s forwards}
+@keyframes starpop{60%{transform:scale(1.3) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+body.reduce .star.lit{animation:none;transform:scale(1)}
+.summary{width:100%;max-width:420px;padding:14px 18px;text-align:left}
+.srow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1.5px dashed rgba(70,58,84,.2)}
+.srow.total{border-bottom:none;font-size:1.12rem;margin-top:4px}
+.srow.bonus{border-bottom:none;color:var(--leaf)}
+.pbbanner{background:var(--sun);border:3px solid var(--ink);border-radius:14px;padding:9px 16px;font-weight:800;box-shadow:3px 3px 0 rgba(70,58,84,.25)}
+.tabbar{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:999px;padding:7px 15px;font:inherit;font-weight:700;cursor:pointer}
+.tab.on{background:var(--ink);color:var(--paper)}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding-bottom:24px}
+.shopitem{display:flex;flex-direction:column;gap:5px;padding:12px;text-align:center;align-items:center}
+.shopitem.owned{background:#F2F7EA}
+.shopitem small{opacity:.7;font-size:.76rem}
+.shoptier{font-size:.68rem;line-height:1.2}
+.emptyshop{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;padding:22px 16px;margin-top:10px}
+.emptyshop small{max-width:330px;color:var(--ink-soft)}
+.swatch{width:44px;height:44px;border-radius:12px;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.buy:disabled{opacity:.45}
+.legend{display:flex;gap:12px;align-items:center;font-size:.85rem;margin:8px 0;flex-wrap:wrap}
+.dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+.dot.m,.seg.m{background:var(--sun)}.dot.c,.seg.c{background:var(--leaf)}
+.dot.l,.seg.l{background:var(--sky)}.dot.n,.seg.n{background:#E4DCCB}
+.tierrow{display:flex;align-items:center;gap:10px;margin:7px 0}
+.tierrow b{width:64px;text-transform:capitalize}
+.bar{flex:1;display:flex;height:16px;border:2.5px solid var(--ink);border-radius:999px;overflow:hidden;background:#E4DCCB}
+.seg{display:block;min-width:0}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 14px}
+.chip{border:2.5px solid var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-weight:700;cursor:pointer;background:#fff}
+.chip.m{background:var(--sun)}.chip.c{background:#DFF0D0}.chip.l{background:#DCEBF2}
+.missedrecap{width:100%;max-width:430px;padding:8px 12px;text-align:left}
+.missedrecap summary{cursor:pointer;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.missedrecap summary span{background:#DCEBF2;border:2px solid var(--ink);border-radius:999px;padding:0 7px;font-size:.72rem}
+.missedlist{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.missedrow{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:8px;padding-top:7px;border-top:1.5px dashed rgba(70,58,84,.2)}
+.missedrow small{line-height:1.3}
+.reviewstreakfinish{width:100%;max-width:430px;background:#FFF3C7;border:2.5px solid #D8A521;border-radius:14px;padding:7px 12px;font-size:.88rem}
+.setcard{padding:14px 16px;margin-bottom:12px}
+.setcard h3{margin:0 0 8px}
+.faqscreen{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+.faqintro{margin:4px 0 12px;text-align:center}
+.faqgroup{margin:0 0 18px}
+.faqgroup h2{font-size:1.02rem;margin:0 0 7px;padding-left:3px;color:var(--ink-soft)}
+.faqitem{padding:0;margin:0 0 7px;overflow:hidden}
+.faqitem summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:10px 13px;cursor:pointer;font-weight:900;list-style:none;text-align:left}
+.faqitem summary::-webkit-details-marker{display:none}
+.faqitem summary:focus-visible{outline:3px solid var(--sky);outline-offset:-3px;border-radius:12px}
+.faqchev{font-size:1.25rem;line-height:1;transition:transform .18s ease;flex:0 0 auto}
+.faqitem[open] .faqchev{transform:rotate(180deg)}
+.faqanswer{border-top:2px dashed rgba(70,58,84,.18);padding:10px 13px 12px;background:rgba(255,255,255,.5)}
+.faqanswer p{margin:0;line-height:1.45}
+body.reduce .faqchev,body.psave .faqchev{transition:none}
+.setrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;gap:12px}
+.setrow select{font:inherit;padding:6px 8px;border:2.5px solid var(--ink);border-radius:10px;background:#fff}
+.switch{width:56px;height:30px;border-radius:999px;border:3px solid var(--ink);background:#D8D2C6;position:relative;cursor:pointer}
+.switch .knob{position:absolute;top:1px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transition:left .18s}
+.switch.on{background:var(--leaf)}
+.switch.on .knob{left:26px}
+body.reduce .switch .knob{transition:none}
+.themegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.themebtn{display:flex;flex-direction:column;gap:4px;align-items:center;padding:10px}
+.themebtn:disabled{opacity:.55}
+.thswatch{width:42px;height:28px;border-radius:8px;border:3px solid}
+.growbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.growbtns input{font:inherit;padding:8px 10px;border:2.5px solid var(--ink);border-radius:12px;flex:1;min-width:140px}
+.wordtable{display:flex;flex-direction:column;gap:8px;padding-bottom:26px}
+.wordrow{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;align-items:center}
+.wordrow.dim{opacity:.6}
+.types{opacity:.6}
+.rowbtns{display:flex;flex-direction:column;gap:2px;flex:0 0 auto}
+.wform{display:flex;flex-direction:column;gap:9px;padding-bottom:30px}
+.wform h4{margin:10px 0 0;color:var(--berry)}
+.fitem{display:flex;flex-direction:column;font-size:.88rem;font-weight:700;gap:3px}
+.fitem input,.fitem select{font:inherit;font-weight:400;padding:9px 11px;border:2.5px solid var(--ink);border-radius:12px;background:#fff}
+.twinkle{animation:tw 1.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:.25}}
+.shimmer{animation:shim 2.4s ease-in-out infinite}
+@keyframes shim{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+body.reduce .twinkle,body.reduce .shimmer{animation:none}
+@media(min-width:560px){/* v12: compact one-screen menu — 3-col grid, emoji-over-label */
+.menubtns.compact3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.menubtns.compact3 .modepick{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.menubtns.compact3 .felt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;padding:8px 4px;font-size:.86rem;line-height:1.15;text-align:center}
+.menubtns.compact3 .modepick .felt{min-height:52px;font-size:.9rem}
+.menubtns.compact3 .bemoji{font-size:1.25rem;line-height:1}
+.gallerygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin:8px 0 14px}
+.gtile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;text-align:center;cursor:pointer}
+.gtile small{font-size:.72rem;line-height:1.15;color:var(--ink,#463A54)}
+.gtile.locked{opacity:.75;cursor:default}
+.gtile .gq{width:52px;height:64px;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#B9AEC6;background:repeating-linear-gradient(45deg,#EFE9E0,#EFE9E0 6px,#E6DFD4 6px,#E6DFD4 12px);border-radius:10px}
+.gprog{margin:8px 0}
+.debut{text-align:center;padding:14px 10px;animation:popin .4s}
+.debut b{font-size:1.02rem}
+.debut .debutname{font-size:1.2rem;font-weight:800;margin:6px 0 2px}
+.debut .debutpet{margin:6px auto 2px}
+.debut .joined{display:block;margin-top:8px;color:#7A7288}
+@keyframes popin{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.waitbadge.danger{background:#C0392B;color:#FFF;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.achievepop.unlockpop{background:linear-gradient(135deg,#FDF3D8,#F8E3EC)}
+.menubtns{grid-template-columns:1fr 1fr 1fr}.menubtns .modepick,.menubtns #modereview{grid-column:1 / -1}}
+/* ---- persistent shift stage ---- */
+.shiftscreen{display:flex;flex-direction:column;height:100dvh;max-height:100dvh;height:calc(100dvh - var(--safe-v));max-height:calc(100dvh - var(--safe-v));overflow:hidden;padding:10px 12px 12px;gap:8px}
+/* Height is capped by the screen WIDTH as well as dvh: installed as a
+   home-screen PWA there is no Safari toolbar, dvh grows, and a purely
+   dvh-sized box became taller than the 360x200 cafe art's aspect — the
+   "slice" fit then scaled the art up and cropped its sides. The width
+   cap keeps the box at (or under) the art's own aspect so nothing is
+   ever cut off. (36px ~= app side padding + borders.) */
+.stage{position:relative;flex:0 0 auto;height:min(calc((100vw - 36px)*0.556),clamp(230px,36dvh,330px));border:3px solid var(--ink);border-radius:18px;overflow:hidden;margin:4px 0;box-shadow:4px 4px 0 rgba(70,58,84,.2);background:var(--paper)}
+.stage .bg{position:absolute;inset:0}
+.stage .bg svg{width:100%;height:100%;display:block}
+.barista{position:absolute;left:12%;bottom:0;transform:translateX(-50%);z-index:6}
+#lane{position:absolute;inset:0;pointer-events:none}
+.actor{position:absolute;bottom:0;transform:translateX(-50%);z-index:9;will-change:transform}
+/* Only the next three Rush waiters are drawn. Overflow actors stay in
+   queue state but cannot cover or clip the customer who is actually next. */
+.actor.queue-offstage{visibility:hidden;opacity:0;pointer-events:none}
+.actor .charwrap{position:relative;display:inline-block}
+.actor .shadow{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:58px;height:8px;background:radial-gradient(ellipse at center,rgba(0,0,0,.28),rgba(0,0,0,0) 70%);z-index:-1}
+.actor .emoteslot{position:absolute;left:50%;top:2px;width:0;height:0}
+/* The lane ignores taps so actors never block the UI — but pets must
+   be tappable, so they explicitly opt back in (pointer-events:auto),
+   sit above the character sprite (z-index) and carry 8px of padding
+   as an invisible bigger touch target for small fingers. */
+.petwrap{position:absolute;left:100%;bottom:-6px;margin-left:-24px;padding:8px;pointer-events:auto;cursor:pointer;z-index:12}
+.emote{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font-size:22px;animation:pop 1.3s ease forwards;pointer-events:none;white-space:nowrap}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-70%) scale(.7)}18%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-150%) scale(1.15)}}
+body.reduce .emote{animation-duration:.45s}
+#cup{position:absolute;left:40%;bottom:96px;transform:translateX(-50%);z-index:11;opacity:0;pointer-events:none;transition:opacity .2s;display:flex;gap:2px;align-items:flex-end}
+.foodartsprite{position:relative;width:52px;height:49px;display:inline-grid;place-items:center;flex:0 0 52px}
+.foodartsprite img{width:52px;height:49px;object-fit:contain;display:block}
+.foodartsprite.perfect::after{content:"✦";position:absolute;right:-1px;top:-8px;color:#F2B33D;font-size:13px;line-height:1;text-shadow:0 1px 0 #fff}
+.panel{padding:12px 14px;margin-top:0;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.panel .qhead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.panel .arrival b{font-size:1.05rem}
+.waitmsg{opacity:.6;font-style:italic;text-align:center;padding:24px 0}
+.drinkline{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.result .tipline{margin:8px 0}
+
+/* ============================================================
+   NEW FEATURE STYLES — modes, ambient particles, personality
+   movement, achievements/kraken ladder, word info panel,
+   leaderboard, danger-zone settings.
+   Ambient/light layers are deliberately kept BELOW the actor
+   layer (z-index) or blended so they never visually hide a
+   customer — the fix for the z-order issue found in the earlier
+   standalone preview.
+   ============================================================ */
+
+/* ---- mode picker on the menu ---- */
+.modepick{display:flex;gap:10px;flex-wrap:wrap}
+.modepick .felt{flex:1 1 45%}
+.krakenbadge{background:var(--cream);border:2.5px dashed var(--cocoa);border-radius:14px;padding:7px 14px;font-size:.88rem;text-align:center;margin:2px auto 4px;max-width:420px}
+
+/* ---- ambient particle layers (theme-specific, CSS/SVG only) ---- */
+.ambientlayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.scenewrap .ambientlayer{position:absolute}
+.mote{position:absolute;bottom:-6px;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,rgba(255,235,180,.9),rgba(255,235,180,0));animation:motefloat 7s linear infinite}
+@keyframes motefloat{0%{transform:translateY(0);opacity:0}10%{opacity:.8}90%{opacity:.5}100%{transform:translateY(-140px);opacity:0}}
+.petal{position:absolute;top:-8px;width:8px;height:8px;border-radius:60% 0 60% 0;background:#F0A8C0;animation:petalfall 6.5s ease-in infinite}
+@keyframes petalfall{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.9}100%{transform:translateY(160px) rotate(200deg) translateX(18px);opacity:0}}
+.snowflake{position:absolute;top:-8px;width:5px;height:5px;border-radius:50%;background:#FFF;animation:snowfall 8s linear infinite}
+@keyframes snowfall{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.9}100%{transform:translateY(170px) translateX(-14px);opacity:0}}
+.ember{position:absolute;bottom:-6px;width:4px;height:6px;border-radius:50%;background:radial-gradient(circle,#F2B33D,#E8891D 70%,transparent);animation:emberrise 5.5s ease-in infinite}
+@keyframes emberrise{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-150px) translateX(10px);opacity:0}}
+.maple{position:absolute;top:-8px;width:9px;height:9px;background:#C25B2E;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:maplefall 7.5s ease-in infinite}
+@keyframes maplefall{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.9}100%{transform:translateY(165px) rotate(260deg) translateX(-16px);opacity:0}}
+.lanternglow{animation:lanternpulse 3s ease-in-out infinite}
+@keyframes lanternpulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+body.reduce .mote,body.reduce .petal,body.reduce .snowflake,body.reduce .ember,body.reduce .maple,body.reduce .lanternglow{animation:none!important}
+
+/* ---- Battery saver (Settings → Comfort): a light 80/20 mode.
+   It removes decorative always-running effects, disables customer
+   wrapper idles, and JS stops the automatic player-pet idle timer.
+   Short answer, serving, reward and user-tap feedback remains so play
+   still feels immediate and lively. ---- */
+body.psave .ambientlayer{display:none!important}
+body.psave .warmwash{display:none!important}
+body.psave .queue .qhead{animation:none!important}
+body.psave .foottap{animation:none!important}
+body.psave .blink{animation:none!important}
+body.psave .galpet{animation:none!important}
+body.psave .trophy.got .tricon{animation:none!important}
+body.psave .petwrap{animation:none!important}
+body.psave .steam,body.psave .steamline{animation:none!important}
+body.psave .twinkle,body.psave .shimmer,body.psave .lanternglow{animation:none!important}
+body.psave .actor .charwrap{animation:none!important}
+body.psave .playerpetbody{will-change:auto}
+
+/* ---- automatic café lighting (Build 40) ----
+   Static opacity swaps only: no polling animation, filters or moving
+   light layers. The phone-clock boundary is handled in JS and these
+   elements change only at 06:00 / 20:01 or when the setting changes. */
+.cafe-window-day,.cafe-window-night,.cafe-day-detail,.cafe-night-detail,.cafe-night-wash,.cafe-night-lights{transition:opacity .35s ease}
+.cafe-window-day,.cafe-day-detail{opacity:1}
+.cafe-window-night,.cafe-night-detail,.cafe-night-wash,.cafe-night-lights{opacity:0}
+body.cafe-night .cafe-window-day,body.cafe-night .cafe-day-detail{opacity:0}
+body.cafe-night .cafe-window-night,body.cafe-night .cafe-night-detail,body.cafe-night .cafe-night-lights{opacity:1}
+body.cafe-night .cafe-night-wash{opacity:var(--night-opacity,.15)}
+body.reduce .cafe-window-day,body.reduce .cafe-window-night,body.reduce .cafe-day-detail,body.reduce .cafe-night-detail,body.reduce .cafe-night-wash,body.reduce .cafe-night-lights{transition:none}
+
+/* ---- warm light wash over the stage (soft-light blend, never opaque) ---- */
+/* Build 86c: mix-blend-mode:soft-light forced WebKit to read back the
+   backdrop and flatten every layer beneath it on each frame, so any
+   particle or blink under the stage triggered a full re-composite. The
+   plain translucent gradient below is visually near-identical (opacity
+   lowered from .55 to .34 to compensate for the lost soft-light
+   falloff) and composites normally. */
+.stage .warmwash{position:absolute;inset:0;pointer-events:none;z-index:20;
+  background:radial-gradient(120% 90% at 14% 8%, rgba(255,214,140,.34), rgba(255,214,140,0) 55%)}
+
+/* ---- customer idle sway + blink (subtle, shared by all) ---- */
+/* 2026: all customers & pets stand STABLE — the continuous idle
+   motions (sway, personality bounce/shy/cool drift, queue bob, foot
+   tap, gallery pet wobble) were applied inconsistently and read as
+   "floating". One-shot feedback (arrive, serve bounce, pet tap
+   reactions) and facial blinks are kept. */
+.charwrap.sway{transform-origin:50% 100%}
+.actor.pers-mysterious .charwrap{opacity:.96} /* translucency kept; idle drift removed with the other personality motions */
+@keyframes charsway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
+body.reduce .charwrap.sway{animation:none}
+
+/* ---- personality movement variants (reuse the one animation
+   system; each customer just gets a different idle rhythm/scale
+   so the café feels populated by characters, not repeats) ---- */
+@keyframes persbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes persshy{0%,100%{transform:rotate(-2deg) scale(.99)}50%{transform:rotate(0) scale(1)}}
+@keyframes perscool{0%,100%{transform:rotate(-.6deg)}50%{transform:rotate(.6deg) translateY(-1px)}}
+@keyframes persbrisk{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes persformal{0%,100%{transform:rotate(0)}50%{transform:rotate(.8deg)}}
+@keyframes persmyst{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-2px) rotate(.5deg)}}
+body.reduce .actor .charwrap{animation:none!important}
+.petwrap{cursor:pointer}
+.petwrap:active{transform:scale(.92)}
+
+/* ---- word info panel (definition + phonetic + pronounce, shown
+   after answering, alongside the teaching explanation) ---- */
+.wordinfo{background:#fff;border:2.5px dashed var(--cocoa);border-radius:12px;padding:8px 12px;margin:8px 0;font-size:.94rem}
+.wordinfo b{font-family:'Baloo 2',cursive;font-size:1.05rem;color:var(--berry-deep)}
+.answerinfo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#EFF7E6;border:2.5px solid var(--leaf-deep);border-radius:12px;padding:8px 12px;margin:8px 0}
+.answerinfo b{flex:1 1 180px;overflow-wrap:anywhere}
+.phon{opacity:.65;font-style:italic;margin-left:4px}
+.worddef{margin-top:3px}
+.replyline{font-style:italic;opacity:.85;margin-top:8px}
+.growthbanner{background:#EFF7E6;border:3px solid var(--leaf-deep);border-radius:14px;padding:9px 16px;font-weight:700;max-width:420px;margin:4px auto}
+
+/* ---- achievement pop / celebration ---- */
+.achievepop{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-30px);opacity:0;
+  background:var(--ink);color:#fff;border-radius:16px;padding:10px 18px;display:flex;gap:12px;align-items:center;
+  box-shadow:0 6px 0 rgba(0,0,0,.25);z-index:90;transition:transform .35s ease,opacity .35s ease;max-width:88vw}
+.achievepop.show{transform:translate(-50%,0);opacity:1}
+.achievepop.kraken{background:var(--berry-deep)}
+.achieveicon{font-size:1.8rem}
+
+/* ---- trophy shelf ---- */
+.krakenladder{padding:14px 16px;margin-bottom:14px}
+.ladderrow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1.5px dashed rgba(70,58,84,.15);opacity:.45}
+.ladderrow.reached{opacity:1;font-weight:700}
+.lemoji{font-size:1.3rem;width:30px;text-align:center}
+.ltitle{flex:1}
+.lcount{opacity:.7;font-size:.85rem}
+.trophygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.trophy{padding:12px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.trophy.locked{opacity:.5}
+.tricon{font-size:1.7rem}
+.trophy small{opacity:.75;font-size:.78rem}
+
+/* ---- danger zone (reset progress) ---- */
+.setcard.danger{border-color:#B23A3A;background:#FFF3F0}
+.setcard.danger h3{color:#B23A3A}
+.reddanger{background:#B23A3A;color:#fff}
+
+/* ============================================================
+   BEAUTIFY PASS — patience bar (replaces lives), select-then-
+   serve, popup answer reveal (Normal mode only — Time Challenge
+   uses a quick flash instead), consolidated top bar, bar/coffee-
+   machine scene art, celebration + impatience emoji layer.
+   ============================================================ */
+
+/* ---- consolidated in-session top bar ---- */
+.nowserv{display:flex;align-items:center;gap:6px;min-width:0;flex:1;justify-content:center;font-size:1rem}
+.nowserv b{font-family:'Baloo 2',cursive;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;font-size:1.05rem}
+#stopbar .tipbadge{font-size:1.05rem;padding:.3em .85em}
+.waitbadge{display:inline-flex;align-items:center;gap:.25em;background:var(--cream);border:2.5px solid var(--ink);border-radius:999px;padding:.22em .7em;font-size:.88rem;font-weight:800;white-space:nowrap}
+.morebtn{border:2.5px solid var(--ink);border-radius:12px;background:var(--card);font:inherit;font-weight:800;font-size:.95rem;padding:.4em .8em;cursor:pointer;box-shadow:0 3px 0 var(--shadow);min-height:42px}
+.morebtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--shadow)}
+.moremenu{position:absolute;top:100%;right:8px;background:#fff;border:2.5px solid var(--ink);border-radius:12px;
+  box-shadow:0 8px 20px var(--shadow);z-index:55;display:none;min-width:180px;overflow:hidden}
+.moremenu.open{display:block}
+.moremenu button{display:block;width:100%;text-align:left;border:none;background:#fff;padding:11px 14px;font:inherit;
+  font-size:.85rem;border-bottom:1.5px dashed rgba(70,58,84,.15);cursor:pointer}
+.moremenu button:last-child{border-bottom:none}
+.moremenu button:active{background:var(--cream)}
+/* Narrow phones (≤360px): the single-row top bar crushed the
+   current-customer name to a few pixels (QA finding) — let it wrap
+   into two tidy rows instead, with the name row given full width. */
+@media(max-width:360px){
+  #stopbar{flex-wrap:wrap;row-gap:4px}
+  #stopbar .nowserv{order:5;flex:1 1 100%;justify-content:flex-start}
+  #stopbar .nowserv b{max-width:46vw}
+  #stopbar .tipbadge{font-size:.95rem;padding:.25em .65em}
+  .waitbadge{font-size:.8rem;padding:.18em .5em}
+  .morebtn{font-size:.85rem;padding:.32em .6em;min-height:38px}
+}
+
+/* ---- 2x2 option grid (was a stacked list) ---- */
+.opts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+.opts.small{grid-template-columns:1fr}
+.opts.small .opt{white-space:normal;overflow-wrap:anywhere;word-break:normal;padding:.7em .85em}
+/* QA v21 P1: many 11+ answers are phrases, not single words — on a
+   narrow phone two forced columns can wrap into tall, hard-to-scan
+   buttons. Below ~380px, stack to one column regardless of the
+   question's own "small" flag. */
+@media (max-width:380px){ .opts{grid-template-columns:1fr!important} }
+.opt{min-height:60px;text-align:center;justify-content:center;font-size:1rem;line-height:1.25}
+.opt.selected{outline:3px solid var(--leaf-deep);background:#EFF7E6}
+
+/* ---- patience bar (replaces the old heart-lives display) ---- */
+.patwrap{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.patlabel{font-size:.85rem;font-weight:800;color:var(--ink);white-space:nowrap;flex:0 0 auto}
+.patmeter{flex:1;height:22px;background:#EDE6E0;border:3px solid var(--ink);border-radius:999px;display:flex;gap:2px;padding:3px;overflow:hidden;box-shadow:0 2px 0 var(--shadow)}
+.patseg{flex:1;border-radius:3px;background:linear-gradient(180deg,var(--leaf),var(--leaf-deep));transition:opacity .15s}
+.patseg.empty{opacity:.15}
+#stopbar [hidden]{display:none!important}
+.patseg.low{background:linear-gradient(180deg,var(--sun),var(--sun-deep))}
+.patseg.crit{background:linear-gradient(180deg,#E8891D,#B23A2E)}
+body.reduce .patseg{transition:none}
+
+/* ---- serve button ---- */
+.ctrl{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.servebtn{width:100%;min-height:58px;font-size:1.25rem;border-radius:20px}
+.servebtn:disabled{opacity:.4}
+/* greeting bubble that stays on screen with the first question */
+.custsay.greet{font-style:italic;background:var(--cream);border:2.5px dashed var(--cocoa);border-radius:12px;padding:7px 11px;margin:6px 0 8px;font-size:.95rem}
+.ansline{background:#DFF0CE;border:2.5px solid var(--leaf-deep);border-radius:12px;padding:8px 12px;font-weight:700;margin-bottom:8px}
+/* ---- compact one-screen session summary ---- */
+.endscreen{gap:8px;padding:10px 14px;justify-content:center;min-height:100dvh}
+.endscreen h2{margin:.1em 0;font-size:1.5rem}
+.endscreen .stars{margin:0}
+.endscreen .stars .star{font-size:2.1rem}
+.endscreen .summary{padding:8px 14px;width:100%;max-width:430px}
+.endscreen .summary .srow{padding:5px 0}
+.endscreen .growthbanner,.endscreen .pbbanner{padding:7px 12px;margin:0;font-size:.92rem}
+.endscreen .note{padding:6px 10px;margin:0;font-size:.82rem}
+.endbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:430px;margin-top:4px}
+.endbtns .felt.big{width:100%;min-height:58px;font-size:1.05rem;padding:10px 6px}
+
+/* ---- popup answer reveal (Normal mode) — native <dialog> ---- */
+dialog.reveal{border:3px solid var(--ink);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.3);padding:0;
+  max-width:min(90vw,420px);width:100%}
+dialog.reveal::backdrop{background:rgba(70,58,84,.45)}
+.dlghead{padding:12px 16px;font-weight:800;font-family:'Baloo 2',cursive;font-size:1.1rem;border-bottom:2.5px dashed rgba(70,58,84,.2)}
+.dlghead.good{color:var(--leaf-deep)}
+.dlghead.okay{color:var(--berry-deep)}
+.dlgbody{padding:12px 16px;font-size:.92rem;line-height:1.4;max-height:50vh;overflow:auto}
+.dlgfoot{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:2.5px dashed rgba(70,58,84,.2)}
+.closingtxt{font-size:.75rem;color:var(--ink-soft);flex:1}
+.dlgbtns{display:flex;gap:6px;flex:0 0 auto}
+.sharedlg .sharechoices{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0}
+.sharedlg .sharechoices .felt{min-height:48px;text-align:left;justify-content:flex-start}
+.pausebtn,.closebtn{border:2.5px solid var(--ink);border-radius:12px;background:#fff;padding:6px 12px;font-weight:700;font-size:.82rem}
+.pausebtn.paused{background:var(--sun)}
+
+/* ---- Time Challenge quick flash (no popup — right/wrong indicator only) ---- */
+.flashcard{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;
+  font-size:4.5rem;pointer-events:none;animation:flashpop .5s ease forwards}
+.flashcard.good{color:var(--leaf-deep)}
+.flashcard.bad{color:var(--berry-deep)}
+@keyframes flashpop{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+body.reduce .flashcard{animation:flashpopReduced .5s ease forwards}
+@keyframes flashpopReduced{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+
+/* ---- impatience + celebration emoji layer ---- */
+.impatient-emote{position:absolute;transform:translate(-50%,-100%);font-size:20px;animation:impatientPulse 1s ease infinite;pointer-events:none}
+@keyframes impatientPulse{0%,100%{transform:translate(-50%,-100%) scale(1)}50%{transform:translate(-50%,-100%) scale(1.25)}}
+body.reduce .impatient-emote{animation:none}
+.burst{position:absolute;font-size:22px;pointer-events:none;animation:burstFly 1.1s ease forwards;z-index:35}
+@keyframes burstFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--bx,0px)),calc(-50% - 70px)) scale(1)}}
+body.reduce .burst{animation:none;display:none}
+
+/* ---- machinebox (theme-aware bar + coffee machine) ---- */
+.machinebox{filter:drop-shadow(0 2px 0 rgba(70,58,84,.25))}
+.steam{animation:steamup 2.6s ease-in-out infinite;opacity:0}
+.steam.s2{animation-delay:1.3s}
+@keyframes steamup{0%{opacity:0;transform:translateY(0)}25%{opacity:.7}80%{opacity:.25}100%{opacity:0;transform:translateY(-14px)}}
+body.reduce .steam{animation:none;opacity:.35}
+
+/* ---- POSITION FIX ----
+   The base .actor/.barista/#cup rules above (bottom:0 / 96px) were
+   calibrated for the older, lower counter drawing. The new scene
+   art (bar + coffee machine) sits higher in the frame, so people
+   need to stand higher too — otherwise they float on the floor
+   below the counter instead of standing at it. Expressed as % of
+   stage height (not fixed px) so it stays correct regardless of
+   exact viewport size, matching the SVG's own proportions (the
+   counter's floor-front-edge sits at 25% up from the bottom of the
+   200-unit viewBox; its serving surface at 34%). A very slight
+   per-slot vertical stagger on the waiting queue keeps it from
+   reading as one perfectly flat line. */
+.barista{left:11%!important;bottom:25%!important}
+.actor{bottom:25%!important}
+.actor[data-q="0"]{bottom:calc(25% + 2px)}
+.actor[data-q="1"]{bottom:calc(25% + 5px)}
+.actor[data-q="2"]{bottom:calc(25% + 8px)}
+#cup{bottom:34%!important}
+
+/* Build 46 Food Truck grounding. Standard cafés retain their existing
+   counter-height positions. Truck customers stand on the foreground
+   lawn; the barista stands on the same foreground lawn, while the
+   serving tray travels at a comfortable hand height. */
+.theme-foodtruck .actor{bottom:4%!important}
+.theme-foodtruck .actor[data-q="0"]{bottom:calc(4% + 1px)!important}
+.theme-foodtruck .actor[data-q="1"]{bottom:calc(4% + 3px)!important}
+.theme-foodtruck .actor[data-q="2"]{bottom:calc(4% + 5px)!important}
+.theme-foodtruck .barista{left:11%!important;bottom:4%!important}
+.theme-foodtruck #cup{bottom:31%!important}
+
+/* ---- music track picker ---- */
+.tracklist{display:flex;flex-direction:column;gap:6px}
+.trackrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tracksel.sel{background:var(--sun);border-color:var(--sun-deep)}
+
+/* ---- daily word-of-the-day banner ---- */
+.dailyword{background:#EFF7E6;border-color:var(--leaf-deep)}
+
+
+/* ---- Build 41/54: permanent player-owned café pet ----
+   The live pet is a single overlay above its static bed/basket. In
+   normal mode occasional idles use transform/opacity only; Battery
+   Saver removes the automatic idle scheduler entirely. */
+.playerpetspot{position:absolute;left:var(--pet-left,18%);bottom:var(--pet-bottom,12%);transform:translateX(-50%) scale(var(--pet-scale,1));transform-origin:50% 100%;z-index:8;pointer-events:auto;cursor:pointer;width:62px;height:60px;display:flex;align-items:flex-end;justify-content:center;outline:none;-webkit-tap-highlight-color:transparent}
+.playerpetspot:focus-visible{filter:drop-shadow(0 0 3px #FFF) drop-shadow(0 0 2px var(--berry))}
+.playerpetbody{position:relative;display:inline-block;transform-origin:50% 92%;will-change:transform}
+.playerpettag{position:absolute;right:1px;top:2px;width:16px;height:16px;border:1.8px solid #463A54;border-radius:50%;background:#FFF6E3;color:#D8547A;font:bold 11px/14px system-ui;text-align:center;box-shadow:1px 1px 0 rgba(70,58,84,.18)}
+.playerpetemote{position:absolute;left:50%;top:0;opacity:0;font-size:21px;pointer-events:none;white-space:nowrap;transform:translate(-50%,-70%)}
+.playerpetemote.show{animation:playerPetEmote var(--pet-emote-duration,1.2s) ease forwards}
+@keyframes playerPetEmote{0%{opacity:0;transform:translate(-50%,-45%) scale(.7)}18%,72%{opacity:1}100%{opacity:0;transform:translate(-50%,-135%) scale(1.1)}}
+.pet-hop .playerpetbody{animation:playerPetHop 1.15s ease}
+.pet-wiggle .playerpetbody{animation:playerPetWiggle 1.25s ease}
+.pet-look .playerpetbody{animation:playerPetLook 1.45s ease}
+.pet-stretch .playerpetbody{animation:playerPetStretch 1.55s ease}
+.pet-sleep .playerpetbody{animation:playerPetSleep 1.8s ease}
+.pet-roll .playerpetbody{transform-origin:50% 58%;animation:playerPetRoll 2.35s ease-in-out}
+.pet-wave .playerpetbody{animation:playerPetWave 1.65s ease-in-out}
+.pet-yawn .playerpetbody{animation:none}
+.pet-hop .playerpetbody,.pet-wiggle .playerpetbody,.pet-look .playerpetbody,.pet-stretch .playerpetbody,.pet-sleep .playerpetbody,.pet-roll .playerpetbody,.pet-wave .playerpetbody,.pet-yawn .playerpetbody{animation-iteration-count:var(--pet-action-count,1)}
+@keyframes playerPetHop{0%,100%{transform:translateY(0) rotate(0)}38%{transform:translateY(-58px) rotate(-5deg)}62%{transform:translateY(0) rotate(4deg)}80%{transform:translateY(-14px) rotate(-2deg)}}
+@keyframes playerPetWiggle{0%,100%{transform:translateX(0) rotate(0) scale(1)}16%{transform:translateX(-14px) rotate(-18deg) scale(1.10)}34%{transform:translateX(15px) rotate(17deg) scale(1.12)}52%{transform:translateX(-12px) rotate(-15deg) scale(1.10)}70%{transform:translateX(11px) rotate(13deg) scale(1.08)}86%{transform:translateX(-5px) rotate(-6deg) scale(1.03)}}
+@keyframes playerPetLook{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-9deg) scale(1.08)}55%{transform:rotate(9deg) scale(1.08)}78%{transform:rotate(0) scale(1.06)}}
+@keyframes playerPetStretch{0%,100%{transform:scale(1)}40%{transform:scale(1.08,.9) translateY(4px)}70%{transform:scale(.98,1.06) translateY(-4px)}}
+@keyframes playerPetSleep{0%,100%{transform:scale(1)}35%,75%{transform:scale(1.03,.91) translateY(9px)}}
+@keyframes playerPetRoll{0%,100%{transform:translateX(0) rotate(0deg)}10%{transform:translateX(8px) rotate(90deg)}20%{transform:translateX(16px) rotate(180deg)}30%{transform:translateX(24px) rotate(270deg)}40%{transform:translateX(32px) rotate(360deg)}48%,52%{transform:translateX(36px) rotate(450deg)}60%{transform:translateX(32px) rotate(360deg)}70%{transform:translateX(24px) rotate(270deg)}80%{transform:translateX(16px) rotate(180deg)}90%{transform:translateX(8px) rotate(90deg)}}
+@keyframes playerPetWave{0%,100%{transform:translateX(0) rotate(0) scale(1)}16%{transform:translateX(-5px) rotate(-14deg) scale(1.04)}30%{transform:translateX(8px) rotate(16deg) scale(1.06)}45%,72%{transform:translateX(-6px) rotate(-14deg) scale(1.05)}84%{transform:translateX(5px) rotate(8deg) scale(1.03)}}
+body.reduce .playerpetbody,body.reduce .playerpetemote{animation:none!important}
+body.reduce .playerpetemote.show{opacity:1;transform:translate(-50%,-95%)}
+.scenewrap .playerpetspot.pet-preview{z-index:5}
+.gallerypetstatus{margin:8px 0 4px}
+.gallerypetart{appearance:none;border:0;background:transparent;color:inherit;font:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;cursor:pointer}
+.gtile.activepet{background:#FFF3C7;border-color:#D8A521;box-shadow:0 0 0 2px rgba(216,165,33,.22) inset}
+.petpick{font-size:.66rem;line-height:1.05;padding:5px 6px;min-height:34px;width:100%;white-space:normal}
+.petitempill{font-size:.62rem;margin-left:4px;background:#FFF3C7}
+.shopownedlabel{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:5px 8px;border:2px solid var(--leaf-deep);border-radius:10px;background:#EFF7E6;font-size:.76rem;font-weight:800}
+@media(max-width:350px){.actor .petwrap svg{width:39px!important;height:auto!important}.playerpetspot{width:56px}.petpick{font-size:.59rem;padding:4px 3px}}
+
+
+/* ---- Pet review streak, learning celebrations and Food Truck ---- */
+.petmoodbadge{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:-2px 0 5px}
+.reviewstreakbadge{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:999px;background:#FFF3C7;padding:3px 8px;font-size:.66rem;font-weight:900}
+.reviewpetnudge{max-width:430px;margin:0 auto!important;text-align:center}
+.petfinish{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0;padding:8px 12px;background:#FFF3C7;border-color:#D8A521;text-align:left}
+.petfinish svg{display:block;flex:none}
+.parentsummarygrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.parentmetric{padding:13px 10px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.parentmetric span{font-size:.76rem;color:var(--ink-soft);font-weight:800}
+.parentmetric b{font-family:'Baloo 2','Comic Sans MS','Nunito',sans-serif;font-size:1.35rem}
+.playerpetemote{font-weight:900;text-shadow:0 1px 0 #FFF,1px 0 0 #FFF,-1px 0 0 #FFF}
+.standhere.foodtruck-barista{right:18px;left:auto;bottom:2px}
+.foodtruck-scene .foodtruck-body{filter:drop-shadow(0 2px 0 rgba(70,58,84,.22))}
+.theme-foodtruck .playerpetspot.pet-preview{z-index:9}
+@media(max-width:350px){.petfinish{padding:7px 8px}.standhere.foodtruck-barista{right:12px;left:auto;bottom:2px}}
+
+/* Release 38: paged Gallery renders only the active cast page. */
+.gallerytabs .tab{flex:1;min-width:132px}
+.gallerytabs .tab small{font-size:.72rem;opacity:.8}
+.gallerypagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 2px}
+.gallerypagehead h3{margin:0}
+#galleryPageInfo{font-size:.84rem;font-weight:700;opacity:.72;white-space:nowrap}
+.gallerypager{margin:8px 0 24px}
+
+/* Release 36: freeze decorative motion while the app is backgrounded. */
+html.session-paused *,html.session-paused *::before,html.session-paused *::after{animation-play-state:paused!important}
+
+/* Build 63 local analytics and avatar visual QA. */
+.kitchenanalyticsgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0}
+.metric-card{border:2px solid var(--ink);border-radius:13px;background:#FFF8E7;padding:8px;text-align:center}
+.metric-card small{display:block;font-size:.66rem}.viz-stat-value{font-size:1.35rem;font-weight:900}
+.avatarqa{max-width:900px}.avatarqatabs{flex-wrap:wrap}.avatarqatabs .tab{min-width:120px;flex:1}
+.avatarqagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:8px;margin:10px 0 24px}
+.avatarqatile{display:flex;min-height:150px;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px;text-align:center;overflow:hidden}
+.avatarqatile>div{height:112px;display:flex;align-items:flex-end;justify-content:center}.avatarqatile small{font-size:.63rem;line-height:1.1}
+.actor .charwrap[data-hydrated="0"]{width:84px;height:110px}
+@media(max-width:520px){.kitchenanalyticsgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.avatarqagrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+body.reduce .kitchentiles.conveyorbelt.belt-step,body.psave .kitchentiles.conveyorbelt.belt-step{animation:none!important}
+
+
+/* Build 67: retain the preferred menu scale and refine Kitchen usability. */
+.mainmenu-screen .modepick.with-kitchen{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.mainmenu-screen .modepick.with-kitchen .felt{min-height:60px!important;font-size:.96rem!important}
+.mainmenu-screen .modepick.with-kitchen .bemoji{font-size:1.55rem!important}
+.mainmenu-screen .menubtns.compact3>.felt .bemoji{font-size:1.4rem!important}
+.mainmenu-screen .menubtns.compact3>.felt{min-height:62px}
+.kitchendrinkcard .kitchendrinkart svg{width:48px;height:62px}
+.kitchenprogress{align-items:stretch}
+.kitchenstep,.kitchenstep.done,.kitchenstep.inactive{box-sizing:border-box;aspect-ratio:auto!important;height:clamp(64px,17vw,74px);min-height:64px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:visible;padding:2px 1px}
+.kitchenstep span,.kitchenstep.done span,.kitchenstep.inactive span{font-size:1rem;line-height:1;flex:0 0 auto}
+.kitchenstep img,.kitchenstep.done img,.kitchenstep.inactive img{width:29px;height:29px;object-fit:contain;display:block;flex:0 0 auto}
+.kitchenstep small,.kitchenstep.done small,.kitchenstep.inactive small{display:block;font-size:clamp(.38rem,1.7vw,.48rem);line-height:1.05;white-space:normal;width:100%;max-width:100%;overflow:visible;text-overflow:clip;text-align:center;overflow-wrap:normal;word-break:normal}
+.kitchenstep.inactive{background:#DED9D1;color:#776F7F;border-color:#776F7F;box-shadow:none;filter:grayscale(1)}
+.kitchenstep.inactive span,.kitchenstep.inactive img,.kitchenstep.inactive small{opacity:.38}
+.kitchenstep.inactive small{opacity:.68}
+.kitchenstep.done{background:#EAF5DD;color:var(--ink);filter:none}
+.kitchenanswer .slot.clue{background:#FFF0B8;border-color:#C48B18;color:#6A4B00;box-shadow:inset 0 0 0 2px rgba(242,179,61,.34)}
+.kitchenanswer .slot.clue::after{content:none}
+.kitchenanswer .slot{position:relative}
+.kitchenhintbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:6px;margin-top:4px}
+.kitchenhintnote{font-size:.67rem;line-height:1.15;color:var(--ink-soft);font-weight:800;text-align:left}
+.kitchentile.used{opacity:.18;pointer-events:none}
+.kitchentile.used.last-selected{opacity:.72;pointer-events:auto;background:#FFE6AE;box-shadow:inset 0 0 0 3px #D89A22;cursor:pointer}
+@media(max-width:350px){
+  .mainmenu-screen .modepick.with-kitchen .felt,.mainmenu-screen .reviewspellrow .felt{min-height:56px!important}
+  .kitchenstep,.kitchenstep.done,.kitchenstep.inactive{height:62px;min-height:62px}
+  .kitchenstep img,.kitchenstep.done img,.kitchenstep.inactive img{width:25px;height:25px}
+  .kitchenhintbar{grid-template-columns:1fr 1fr}.kitchenhintnote{grid-column:1/-1;text-align:center}
+  .kitchenanswer .slot.clue::after{display:none}
+}
+@media(max-height:650px) and (max-width:430px){
+  .kitchenstep,.kitchenstep.done,.kitchenstep.inactive{height:54px;min-height:54px}
+  .kitchenstep img,.kitchenstep.done img,.kitchenstep.inactive img{width:21px;height:21px}
+  .kitchenstep small,.kitchenstep.done small,.kitchenstep.inactive small{display:block;font-size:.36rem;line-height:1}
+}
+
+
+@media(max-height:760px) and (max-width:430px){
+  .kitchenchallenge{gap:4px;padding:6px 9px calc(6px + env(safe-area-inset-bottom))}
+  .kitchenchallenge .topbar{min-height:34px}
+  .kitchenstatus{gap:4px}.kitchenstatus span{padding:4px 5px;font-size:.68rem;border-radius:8px}
+  .kitchenprogress{gap:3px}.kitchenstep,.kitchenstep.done,.kitchenstep.inactive{height:58px;min-height:58px;border-radius:8px}
+  .kitchenstep img,.kitchenstep.done img,.kitchenstep.inactive img{width:23px;height:23px}
+  .kitchenstep small,.kitchenstep.done small,.kitchenstep.inactive small{display:block;font-size:.37rem;line-height:1}
+  .kitchenlab{padding:8px 9px}.kitchenlab h3{margin-bottom:2px;font-size:.96rem}
+  .kitchencluehead{font-size:.69rem}
+  .kitchenprompt{margin:4px 0 5px;padding:6px 8px;font-size:.78rem;line-height:1.16}
+  .kitchenanswer{margin:2px 0 5px;gap:3px}.kitchenanswer .slot{width:28px;height:32px;font-size:.96rem;border-radius:8px}
+  .kitchentiles{gap:4px;margin-bottom:4px}.kitchentile{min-height:44px;font-size:1rem}
+  .kitchentiles.conveyorbelt{padding:6px}
+  .kitchenpathwrap{width:min(100%,218px);margin-bottom:4px}.kitchenpathgrid{gap:4px;padding:5px}.kitchenpathcell{min-height:44px;font-size:1rem}
+  .kitchenpathlines{inset:5px;width:calc(100% - 10px);height:calc(100% - 10px)}
+  .kitchenhintbar{margin-top:1px;gap:4px}.kitchenhintnote{display:none}.kitchenhintbar .felt{min-height:38px;padding:5px 7px;font-size:.72rem}
+  .kitchenlab .custactions{gap:4px;margin-top:4px}.kitchenlab .custactions .felt.big{min-height:36px;padding:5px 8px;font-size:.78rem}
+}
+
+.kitchenchallenge{height:100dvh;min-height:100dvh;height:calc(100dvh - var(--safe-v));min-height:calc(100dvh - var(--safe-v));box-sizing:border-box;overflow:hidden;animation:none!important}
+
+/* Build 68: compact one-screen main menu and clearer fixed-letter clues. */
+.mainmenu-screen{min-height:100dvh;height:100dvh;min-height:calc(100dvh - var(--safe-v));height:calc(100dvh - var(--safe-v));overflow:hidden;padding:8px 12px 10px;gap:5px}
+.mainmenu-screen .topbar{min-height:44px}
+.mainmenu-screen .tipbadge{padding:.18em .65em}
+.mainmenu-screen .iconb{width:42px;height:42px;font-size:1rem}
+.mainmenu-screen .scenewrap{height:min(25dvh,205px);margin:1px 0;flex:0 0 auto}
+.mainmenu-screen .scenewrap .cafesvg{width:100%;height:100%;display:block}
+.mainmenu-screen .standhere svg{max-height:88%;width:auto}
+.mainmenu-screen .dailyword{margin:0 auto;padding:6px 10px;font-size:.78rem;line-height:1.2;width:100%}
+.mainmenu-screen .dailyword small{font-size:.72rem;line-height:1.15}
+.mainmenu-screen .dailyword .speakbtn{width:34px;height:34px;font-size:.9rem;border-width:2px}
+.mainmenu-screen .menubtns.compact3{gap:5px;padding:0 2px 4px}
+.mainmenu-screen .menubtns.compact3 .modepick{gap:5px}
+.mainmenu-screen .modepick.with-kitchen .felt{min-height:60px!important;padding:6px 4px!important;font-size:.94rem!important}
+.mainmenu-screen .modepick.with-kitchen .bemoji{font-size:1.55rem!important}
+.mainmenu-screen .menubtns.compact3>.felt{min-height:58px;padding:6px 4px;font-size:.84rem}
+.mainmenu-screen .menubtns.compact3>.felt .bemoji{font-size:1.45rem!important}
+.mainmenu-screen #modereview{min-height:58px!important}
+.kitchentile.hint-locked{opacity:.28!important;pointer-events:none!important;background:#FFF0B8!important;border-style:dashed}
+@media(max-height:760px) and (max-width:430px){
+  .mainmenu-screen{padding-top:6px;gap:4px}
+  .mainmenu-screen .reviewpetnudge{display:none}
+  .mainmenu-screen .scenewrap{height:min(21dvh,160px)}
+  .mainmenu-screen .dailyword{padding:5px 8px;font-size:.73rem}
+  .mainmenu-screen .modepick.with-kitchen .felt,.mainmenu-screen .reviewspellrow .felt{min-height:44px!important}
+  .mainmenu-screen .menubtns.compact3>.felt,.mainmenu-screen #modereview{min-height:42px!important}
+  .mainmenu-screen .menubtns.compact3{gap:4px}.mainmenu-screen .menubtns.compact3 .modepick{gap:4px}.mainmenu-screen .reviewspellrow{gap:4px}
+}
+@media(max-height:850px) and (max-width:430px){.mainmenu-screen .reviewpetnudge{display:none}}
+@media(max-height:680px) and (max-width:430px){
+  .mainmenu-screen .scenewrap{height:min(18dvh,132px)}
+  .mainmenu-screen .dailyword small{display:none}
+  .mainmenu-screen .modepick.with-kitchen .felt,.mainmenu-screen .menubtns.compact3>.felt,.mainmenu-screen .reviewspellrow .felt{min-height:39px!important}
+  .mainmenu-screen .bemoji{font-size:1rem!important}
+}
+
+/* Build 77: reclaim the unused lower space on iPhone. The café preview
+   keeps its natural visual height, while menu destinations use large,
+   three-column tiles in the requested learning-first order. */
+.mainmenu-screen .scenewrap{height:clamp(184px,27dvh,220px)}
+.mainmenu-screen .menucluster{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;min-width:0;border-top:2px solid rgba(70,58,84,.15);padding-top:3px}
+.mainmenu-screen .menuclusterlabel{font-size:.68rem;line-height:1;font-weight:900;letter-spacing:.035em;color:var(--ink-soft);padding-left:2px}
+.mainmenu-screen .menuclustergrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
+.mainmenu-screen .managecluster .menuclustergrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mainmenu-screen .menuclustergrid .felt{position:relative;min-width:0;min-height:58px;padding:6px 3px;font-size:.8rem;line-height:1.05}
+.mainmenu-screen .menuclustergrid .bemoji{font-size:1.55rem!important}
+.mainmenu-screen .adultmenu{background:#F1EAF6}
+.mainmenu-screen .adultmenu .adultlock{position:absolute;right:5px;top:4px;font-size:.64rem;line-height:1}
+.mainmenu-screen #modereview{grid-column:1/-1;width:100%;min-height:52px!important;padding-inline:16px;flex-direction:row;gap:10px}
+@media(max-width:350px){
+  .mainmenu-screen .menuclustergrid{gap:3px}
+  .mainmenu-screen .menuclustergrid .felt{font-size:.7rem;padding-inline:1px}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1.3rem!important}
+}
+@media(max-height:760px) and (max-width:430px){
+  .mainmenu-screen .scenewrap{height:clamp(176px,26dvh,202px)}
+  .mainmenu-screen .menucluster{gap:2px;padding-top:2px}
+  .mainmenu-screen .menuclusterlabel{font-size:.6rem}
+  .mainmenu-screen .menuclustergrid{gap:4px}
+  .mainmenu-screen .menuclustergrid .felt{min-height:48px!important;font-size:.72rem;padding:4px 2px}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1.25rem!important}
+  .mainmenu-screen #modereview{min-height:44px!important}
+}
+@media(max-height:680px) and (max-width:430px){
+  .mainmenu-screen .scenewrap{height:190px}
+  .mainmenu-screen .menuclusterlabel{font-size:.56rem}
+  .mainmenu-screen .menuclustergrid .felt{min-height:44px!important;font-size:.68rem}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1.12rem!important}
+  .mainmenu-screen #modereview{min-height:42px!important}
+}
+@media(max-height:620px) and (max-width:430px){
+  .mainmenu-screen .scenewrap{height:154px}
+  .mainmenu-screen .menuclustergrid .felt{min-height:42px!important}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1rem!important}
+  .mainmenu-screen #modereview{min-height:39px!important}
+}
+
+/* Build 78: Safari can change the dynamic viewport height when its
+   address bar expands or collapses. The old max-height menu rules then
+   crossed a breakpoint after a game and made the same iPhone menu look
+   narrower. These final rules keep the menu geometry stable. The café
+   uses the exact width/aspect calculation used by the live game stage;
+   only genuinely narrow phones receive the smaller layout. */
+.mainmenu-screen{
+  min-height:100svh;
+  height:100svh;
+  min-height:calc(100svh - var(--safe-v));
+  height:calc(100svh - var(--safe-v));
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:none;
+}
+.mainmenu-screen::-webkit-scrollbar{display:none}
+.mainmenu-screen .scenewrap{
+  height:min(calc((100vw - 36px)*0.556),clamp(230px,36dvh,330px));
+  margin:1px 0;
+}
+.mainmenu-screen .menucluster{gap:3px;padding-top:3px}
+.mainmenu-screen .menuclusterlabel{
+  font-size:.78rem;
+  line-height:1.05;
+  letter-spacing:.025em;
+}
+.mainmenu-screen .menuclustergrid{gap:5px}
+.mainmenu-screen .menuclustergrid .felt{
+  min-height:55px!important;
+  padding:5px 3px;
+  font-size:.79rem;
+}
+.mainmenu-screen .menuclustergrid .bemoji{font-size:1.55rem!important}
+.mainmenu-screen .modepick.with-kitchen .felt{
+  min-height:54px!important;
+  padding:5px 4px!important;
+  font-size:.92rem!important;
+}
+.mainmenu-screen .modepick.with-kitchen .bemoji{font-size:1.5rem!important}
+.mainmenu-screen #modereview{
+  min-height:52px!important;
+  font-size:.92rem;
+}
+.mainmenu-screen #modereview .bemoji{font-size:1.5rem!important}
+
+@media(max-width:375px){
+  .mainmenu-screen{padding:6px 10px 8px;gap:4px}
+  .mainmenu-screen .topbar{min-height:42px}
+  .mainmenu-screen .modepick.with-kitchen .felt,.mainmenu-screen .reviewspellrow .felt{min-height:48px!important;font-size:.84rem!important}
+  .mainmenu-screen .modepick.with-kitchen .bemoji{font-size:1.38rem!important}
+  .mainmenu-screen #modereview{min-height:48px!important;font-size:.86rem}
+  .mainmenu-screen #modereview .bemoji{font-size:1.4rem!important}
+  .mainmenu-screen .menuclusterlabel{font-size:.72rem}
+  .mainmenu-screen .menuclustergrid{gap:4px}
+  .mainmenu-screen .menuclustergrid .felt{min-height:50px!important;font-size:.72rem;padding:4px 2px}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1.4rem!important}
+  .mainmenu-screen .adultmenu .adultlock{font-size:.6rem;right:4px;top:3px}
+}
+
+/* Build 79: one immutable café-stage geometry for menu and gameplay.
+   It is derived only from the device width (and the app's 520px cap),
+   never dvh/svh, so Safari toolbar expansion and returning from a
+   completed session cannot resize the café or its actors. The same
+   lower alignment is used by both SVGs, keeping the machine and scene
+   crop identical before, during and after play. */
+:root{--wordbar-cafe-height:min(calc((100vw - 36px)*.556),269px)}
+.stage,
+.mainmenu-screen .scenewrap{
+  height:var(--wordbar-cafe-height)!important;
+  min-height:var(--wordbar-cafe-height);
+  max-height:var(--wordbar-cafe-height);
+  flex:0 0 var(--wordbar-cafe-height);
+}
+.mainmenu-screen .scenewrap .cafesvg,
+.stage .bg .cafesvg{width:100%;height:100%;display:block}
+
+/* The preview composition is identical in all six themes: barista on
+   the right, pet and bed to the left. Food Truck no longer overrides
+   this and therefore cannot stack them in its lower-left corner. */
+.mainmenu-screen .standhere,
+.mainmenu-screen .standhere.foodtruck-barista{right:18px;left:auto;bottom:2px}
+
+/* Build 81: the first-visit word becomes a small scene chip instead of
+   a separate menu row. Its appearance/disappearance therefore cannot
+   resize or push the café/navigation after the first session. */
+.mainmenu-screen .dailywordchip{position:absolute;top:8px;right:8px;z-index:12;max-width:44%;min-height:32px;padding:4px 9px;border:2px solid var(--ink);border-radius:999px;background:rgba(255,248,231,.94);color:var(--ink);box-shadow:2px 2px 0 rgba(70,58,84,.2);font:inherit;font-size:.72rem;line-height:1;display:flex;align-items:center;gap:5px;cursor:pointer}
+.mainmenu-screen .dailywordchip b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* The serving actor owns the foreground while at the counter. This
+   protects its attached pet from later queue actors without lifting the
+   actor above the cup/food service layer (z-index 11). */
+.actor.serving{z-index:10}
+.actor.serving .petwrap{left:98%;bottom:-6px;margin-left:-20px;z-index:20}
+.achievepop{pointer-events:none}
+.achievepop.trophy-summary{background:#67537A}
+.achievepop.unlock-summary{background:linear-gradient(135deg,#6A547C,#9A5B78)}
+
+/* ============================================================
+   Build 86d: Kitchen legibility.
+
+   The Kitchen screen was tuned for the smallest phones and then applied
+   everywhere, so on a normal handset the prompt, clue labels and letter
+   tiles were far smaller than they needed to be while roughly a third of
+   the screen sat empty below the Check button.
+
+   Gated at min-height:600px on purpose. Every existing Kitchen
+   compaction rule is written `(max-height:<=760px) and (max-width:430px)`,
+   so short phones (iPhone SE and similar, whose Safari viewport is around
+   550px) never reach this block and keep their current tuned layout
+   untouched. Only devices with genuine spare vertical room get the
+   larger type.
+   ============================================================ */
+@media (min-height:600px){
+  /* Safety valve: this screen is overflow:hidden, so if a future recipe
+     or a large text-size setting pushes past the viewport, let it scroll
+     rather than clip the Check button out of reach. */
+  .kitchenchallenge{overflow-y:auto;overflow-x:hidden}
+
+  /* --- status / progress strip --- */
+  .kitchenstatus span{font-size:.8rem;padding:6px 9px}
+  .kitchenprogresslabel{font-size:.8rem;padding:5px 9px}
+  .kitchenstep.done small{font-size:.5rem}
+  .kitchenstep img{width:27px;height:27px}
+  .kitchenstep.done span{font-size:1.1rem}
+
+  /* --- the question itself: the main complaint --- */
+  .kitchenchefbubble{font-size:.78rem;padding:5px 10px;margin:1px auto 6px}
+  .kitchenlab{padding:13px 14px 13px}
+  .kitchenlab h3{font-size:1rem;line-height:1.22;margin:0 0 7px}
+  .kitchencluehead{font-size:.8rem;gap:7px}
+  .kitchenprompt{font-size:1.06rem;line-height:1.38;padding:11px 13px;margin:8px 0 10px}
+
+  /* --- answer slots and letter sources --- */
+  .kitchenanswer{gap:5px;margin:7px 0 10px}
+  .kitchenanswer .slot{width:34px;height:42px;font-size:1.22rem}
+  .kitchentile{min-height:56px;font-size:1.38rem}
+  .kitchentiles{gap:8px;margin:0 auto 10px}
+  .kitchenpathgrid{width:min(100%,286px);gap:8px}
+  .kitchenpathcell{min-height:56px;font-size:1.36rem}
+  .kitchenpathcell small{width:17px;height:17px;font-size:.58rem}
+  .kitchenfeedback{font-size:.86rem}
+
+  /* --- action bar: hints tucked up against the controls, both larger,
+         and Check given clear visual priority as the primary action --- */
+  .kitchenhintbar{gap:7px;margin-top:6px}
+  .kitchenhintbar .felt{min-height:44px;font-size:.84rem;padding:7px 9px}
+  .kitchenlab .custactions{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.5fr;
+    gap:7px;
+    margin-top:6px;
+    align-items:stretch;
+  }
+  .kitchenlab .custactions .felt.big{
+    min-height:50px;
+    font-size:.98rem;
+    padding:8px 8px;
+    width:100%;
+  }
+  .kitchenlab .custactions .felt.big.primary{font-size:1.04rem}
+}
+
+/* ============================================================
+   Build 86c: short-viewport (landscape phone) compaction.
+
+   Every earlier max-height rule is gated `and (max-width:430px)`, so
+   none of them fire on a landscape phone (844x390, 932x430) — the
+   viewport is short but far too WIDE to match. The result was a 269px
+   cafe plus topbar inside a ~390px screen, leaving the question panel
+   a ~80px scroll strip.
+
+   Deliberately gated on `orientation:landscape` rather than on height
+   alone. Build 79 fixed the cafe geometry to width-only so that Safari
+   toolbar expansion could not resize the stage mid-session; a portrait
+   phone can never match `orientation:landscape`, so that guarantee is
+   preserved exactly. The 520px ceiling also keeps every tablet out
+   (iPad landscape is 744-834px tall).
+   ============================================================ */
+@media (orientation:landscape) and (max-height:520px){
+  /* .stage / .scenewrap heights are set !important from this variable,
+     so the variable is the only correct override point. */
+  :root{--wordbar-cafe-height:min(calc((100vw - 36px)*.556),148px)}
+
+  .shiftscreen{padding:6px 10px 8px;gap:5px}
+  .shiftscreen .topbar{min-height:34px}
+  .panel{padding:8px 11px}
+  .opt{min-height:46px;font-size:.95rem;line-height:1.2}
+  .qtext{font-size:1rem;line-height:1.3}
+  .patmeter{height:16px}
+
+  .mainmenu-screen{padding:6px 10px 8px;gap:4px}
+  .mainmenu-screen .topbar{min-height:36px}
+  .mainmenu-screen .menuclustergrid .felt{min-height:44px!important;font-size:.78rem}
+  .mainmenu-screen .modepick.with-kitchen .felt,.mainmenu-screen .reviewspellrow .felt{min-height:46px!important;font-size:.86rem!important}
+  .mainmenu-screen .reviewpetnudge{display:none}
+
+  /* The Kitchen screen has no inner scroll container, so on a short
+     viewport its own overflow:hidden could strand content. Give it a
+     scroll fallback rather than clipping. */
+  .kitchenchallenge{overflow-y:auto;overflow-x:hidden;padding:6px 9px calc(6px + env(safe-area-inset-bottom))}
+  .kitchenstep,.kitchenstep.done,.kitchenstep.inactive{height:52px;min-height:52px}
+  .kitchentile{min-height:44px}
+  .kitchenpathcell{min-height:42px}
+
+  /* Avatar screens are overflow:hidden at full height; let them scroll
+     rather than clip the Save button out of reach. */
+  .customize-screen,.pickscreen{overflow-y:auto;overflow-x:hidden}
+  /* .customize-screen .custpanels is height:100%!important inside a grid
+     row, so the row variables are the only working hook here. */
+  .customize-screen{--cust-selection-h:clamp(140px,34dvh,210px);--cust-preview-h:96px;gap:3px}
+  .customize-screen .custintro{display:none}
+  .customize-screen .custpreview{width:74px;height:88px}
+  .pickscreen .avgrid{height:auto;min-height:0}
+  .pickscreen .avpick small{display:none}
+}
+
+/* Review + spelling games row.
+   This row is a grid ITEM of .menubtns (2 columns on phones), so it must
+   span both columns exactly like .modepick does — without grid-column it
+   only receives half the width, which squeezed "Pet Pop" onto two lines.
+   Columns use minmax(0,1fr) so a long label ("Vocabulary") cannot push
+   its own column wider than its share, mirroring .modepick.with-kitchen. */
+.reviewspellrow{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0}
+.mainmenu-screen .reviewspellrow{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));padding:0}
+.mainmenu-screen .reviewspellrow.spellcols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mainmenu-screen .reviewspellrow #modereview{grid-column:auto;width:auto;padding-inline:8px;min-height:60px!important}
+.reviewspellrow .felt{display:flex;align-items:center;justify-content:center;gap:7px;min-height:60px!important;padding:6px 4px!important;font-size:.94rem!important}
+.reviewspellrow .bemoji{font-size:1.55rem!important}
+.reviewspelllabel{display:grid;line-height:1.05;min-width:0}.reviewspellrow small{display:block;font-size:.68em;opacity:.78;margin-top:3px;font-weight:800}
+.petpop-screen{padding:0!important;gap:0!important;overflow:hidden;background:#fffdf6;min-height:calc(100dvh - var(--safe-v));height:calc(100dvh - var(--safe-v));max-height:calc(100dvh - var(--safe-v))}
+.petpop-screen #pet-pop-main{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate}
+.petpop-loading,.petpop-loaderror{min-height:calc(100dvh - var(--safe-v));justify-content:center}
+.spellingtrophysection{scroll-margin-top:8px}.spellingtrophygrid .spellingtrophy{position:relative}.trophyprogress{width:100%;height:10px;border:2px solid #59445e;border-radius:99px;overflow:hidden;background:#fff;margin-top:6px}.trophyprogress span{display:block;height:100%;background:linear-gradient(90deg,#7fbd6d,#f2b33d);border-radius:inherit}.spellingtrophy.locked .tricon{filter:none;opacity:.75}.tprogress{font-weight:900;color:#6a4b65}
+@media(max-width:360px){.mainmenu-screen .reviewspellrow{gap:5px}.mainmenu-screen .reviewspellrow .felt{min-height:58px!important;gap:1px;flex-direction:column;padding:4px 2px!important;font-size:.82rem!important}.reviewspellrow .bemoji{font-size:1.3rem!important}.reviewspellrow small{display:none}}
+
+/* S9a: WordBar Dictation as the third button in the spelling row */
+.mainmenu-screen .reviewspellrow.spellcols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.reviewspellrow.spellcols-3 .felt{gap:5px}
+.dictationlink.offline{opacity:.55}
+/* S9a: Voice settings like WordBar Dictation */
+.voiceblock{display:grid;gap:4px;margin:4px 0 6px}
+.voiceblock .voicenote{margin:0 2px 4px;font-size:.84rem;line-height:1.35}
+.voiceblock .voicenote:empty{display:none}
+.voiceblock input[type=range]{flex:1;max-width:60%;min-height:40px}
+.voiceblock .voicebtns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* S9b: pause sheet, read-aloud, carry on, intros */
+.pausebtn{font-size:1.1rem;min-width:44px;min-height:40px}
+.pausedlg .dlgbody{display:grid;gap:6px}
+.pausedlg .psresume{width:100%;min-height:54px;font-size:1.15rem}
+.pausedlg .psrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;margin-top:4px}
+.pausedlg .psconfirm{border:2px dashed rgba(70,58,84,.3);border-radius:14px;padding:8px 10px;background:var(--cream)}
+.pausedlg .psconfirm p{margin:0 0 6px}
+.pausedlg .psconfirm[hidden]{display:none}
+.qhead .readq{margin-left:auto;border:2px solid var(--ink);border-radius:999px;background:var(--cream);min-width:40px;min-height:36px;font-size:1rem;cursor:pointer;flex-shrink:0}
+.qhead .readq:disabled{opacity:.5}
+.resumecard{position:absolute;left:8px;right:8px;bottom:8px;z-index:13;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border:2px solid var(--ink);border-radius:16px;background:rgba(255,248,231,.96);box-shadow:0 3px 0 var(--shadow)}
+.resumecard .resumetext{display:flex;flex-direction:column;flex:1;min-width:0;line-height:1.15}
+.resumecard .resumetext small{color:var(--ink-soft);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resumecard .resumebtns{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0}
+.resumecard .felt.mini{min-height:36px;padding:5px 14px}
+.resumecard .resumetext b{font-size:.92rem;white-space:nowrap}
+.resumecard .linky{font-size:.78rem;white-space:nowrap;padding:2px 4px;min-height:24px}
+.introdlg .introlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.introdlg .introlist li{display:flex;gap:10px;align-items:flex-start}
+.introdlg .introlist li span:first-child{font-size:1.3rem;line-height:1.2}
+.introdlg .sharebox{display:inline-block;border:1.5px solid currentColor;border-radius:4px;padding:0 3px;font-size:.85em}
+/* S9c: in-app sheets, Undo toast, look editor, Wardrobe, Try on */
+#toast.withaction{pointer-events:auto;display:flex;align-items:center;gap:10px;width:max-content;white-space:nowrap}
+#toast .toastact{border:2px solid #fff;border-radius:999px;background:transparent;color:#fff;font:inherit;font-weight:800;padding:.2em .8em;min-height:34px;cursor:pointer}
+.avmore{flex:0 0 auto;font-size:1.05rem;font-weight:900;letter-spacing:1px;min-width:48px}
+dialog.wbsheet .dlgbody{display:grid;gap:8px;max-height:70vh}
+dialog.wbsheet .wbsheetbtn{width:100%;min-height:50px;font-size:1.05rem;margin:0}
+dialog.wbsheet .wbsheetcancel{width:100%;min-height:44px;background:var(--cream);margin:0}
+dialog.wbsheet .wbsheetsub{margin:0}
+dialog.wbsheet p{margin:0}
+dialog.wbsheet .typenamelabel{display:grid;gap:6px;font-weight:700}
+dialog.wbsheet .typenamelabel input{font-size:16px}
+dialog.wbsheet .psrow{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+dialog.wbsheet .psrow .felt.mini{flex:1;min-height:44px}
+dialog.wbsheet .felt.mini:disabled{opacity:.45}
+.mainmenu-screen .standhere.editable{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.editlook-screen .custstage{position:relative}
+.editlook-screen .stagebtn{position:absolute;bottom:8px;z-index:2;min-height:36px;padding:4px 10px;font-size:.78rem}
+.editlook-screen .stagebtn.surprise{left:4px}
+.editlook-screen .stagebtn.oldlook{right:4px}
+.eyeshapegroup.hasorig .swrow{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}
+.eyechip .origeye{font-size:1.1rem;line-height:20px;height:20px;display:block}
+.custpanels .wardshop{margin-top:10px;padding-top:8px;border-top:1.5px solid rgba(70,58,84,.15);display:flex;flex-direction:column;gap:6px}
+.custpanels .wardshophead{margin:0}
+.custpanels .wardnote{margin:0 0 2px;font-size:.7rem;color:var(--ink-soft)}
+.custpanels .weargroup{display:flex;align-items:center;gap:8px;text-align:left;border-bottom:1.5px dashed rgba(70,58,84,.15);padding-bottom:6px}
+.custpanels .weargroup .weartitle{flex:0 0 84px;font-weight:800;color:var(--ink-soft);font-size:.72rem}
+.custpanels .weargroup .swrow{gap:5px;justify-content:flex-start;flex:1}
+.custpanels .wearchip{display:inline-flex;align-items:center;gap:5px}
+.custpanels .wearchip .weardot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink);flex:0 0 auto}
+.custpanels .wearchip.sel{background:var(--leaf-soft,#DCEFD3);box-shadow:inset 0 0 0 2px var(--leaf-deep,#3E7A3A)}
+.custpanels .wardrobeempty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px;text-align:center}
+.custpanels .wardrobeempty small{color:var(--ink-soft)}
+.tryonbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 4px;padding:6px 8px 6px 12px;border:2px solid var(--ink);border-radius:14px;background:var(--cream);font-size:.86rem}
+.tryonbar .tryonbtns{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.shopitem .linky.tryon{display:block;margin:4px auto 0;font-size:.78rem;min-height:30px}
+.shoplookbtn{display:block;margin:6px auto 2px;min-height:40px}
+.mybaristarow{display:flex;align-items:center;gap:12px}
+.mybaristaart{width:58px;height:70px;overflow:hidden;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:center}
+.mybaristabtns{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mybaristabtns span{display:flex;gap:6px;flex-wrap:wrap}
+/* S9e: 5 editor tabs, more options, colour rows that wrap (7 per row) */
+.customize-screen .custtabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.customize-screen .custtab{flex-direction:column;gap:1px;padding:1px 0}
+.customize-screen .custtab span{font-size:.74rem}
+.customize-screen .custtab small{font-size:.54rem;max-width:100%}
+.custpanels .colourgroup .swrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));justify-items:center;gap:6px 0;max-width:370px;flex-wrap:wrap}
+.lashgroup .swrow,.browgroup .swrow,.cheekgroup .swrow{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:350px;width:100%;margin:0 auto}
+.lashgroup .lashchip,.browchip{flex-direction:column;gap:2px;min-height:46px;width:100%;min-width:0;display:inline-flex;align-items:center;justify-content:center}
+.browchip span,.lashchip span{font-size:.64rem;line-height:1}
+.cheekgroup .chip{width:100%;min-height:36px}
+.glassgroup .swrow{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;max-width:360px;width:100%;margin:0 auto}
+.glassgroup .glasschip{width:100%;min-width:0;min-height:48px;justify-content:center;padding:.2em .1em}
+.glassgroup .glasschip svg{width:34px;height:18px}
+.custpanels [data-hijab-group][hidden],.custpanels [data-frame-group][hidden]{display:none}
+/* S9e: fixed grid rows per part, so hiding the intro line on short phones
+   can never shift the option panel into the wrong (unlimited) row */
+.customize-screen>h2{grid-row:1}.customize-screen>.custintro{grid-row:2}.customize-screen>.custtabs{grid-row:3}
+.customize-screen>.custpanels{grid-row:4}.customize-screen>.custstage{grid-row:5}.customize-screen>.custfooter{grid-row:6}
+@media(max-width:350px){.editlook-screen .stagebtn{font-size:.68rem;padding:3px 6px;min-height:32px;bottom:4px}.editlook-screen .stagebtn.surprise{left:0}.editlook-screen .stagebtn.oldlook{right:0}}
+/* S9f: soft, rounded "felt" buttons everywhere, matching the answer cards.
+   :where() keeps this at zero specificity, so every existing rule for a
+   particular button (answer cards, menu colours, primary, danger, locked,
+   selected …) still wins; it only replaces the phone's default grey box. */
+:where(button.felt,a.felt){border:2.5px solid var(--ink);border-radius:16px;background:var(--card);color:var(--ink);
+  box-shadow:0 3px 0 var(--shadow);transition:transform .08s,box-shadow .08s}
+:where(button.felt,a.felt):active{transform:translateY(2px);box-shadow:0 1px 0 var(--shadow)}
+:where(button.felt.mini){border-width:2px;border-radius:13px;box-shadow:0 2px 0 var(--shadow)}
+:where(button.felt):disabled{opacity:.5;box-shadow:none;transform:none;cursor:default}
+/* S9g: the main menu keeps its previous (S9e) tile look. Zero specificity
+   and placed after the felt rule, so menu colours (locked lavender etc.)
+   still apply. */
+:where(.mainmenu-screen button.felt){border:revert;border-radius:revert;background:revert;color:revert;box-shadow:revert;transition:revert}
+:where(.mainmenu-screen button.felt):active{transform:revert;box-shadow:revert}
+/* S9g: more space between main-menu tiles when there is room (set by spaceMenu) */
+.mainmenu-screen.spaced .menubtns.compact3{row-gap:var(--mg)}
+.mainmenu-screen.spaced .menubtns.compact3 .modepick,
+.mainmenu-screen.spaced .reviewspellrow,
+.mainmenu-screen.spaced .menuclustergrid{row-gap:var(--mg);column-gap:min(var(--mg),10px)}
+.mainmenu-screen.spaced .menucluster{padding-top:calc(var(--mg) - 2px);gap:calc(var(--mg) / 2)}
+/* S9g: "snug" tiles, only used when a phone needs room for the extra gaps */
+.mainmenu-screen.snug .menuclustergrid .felt,.mainmenu-screen.snug .modepick.with-kitchen .felt,.mainmenu-screen.snug .reviewspellrow .felt{min-height:46px!important;padding-top:3px!important;padding-bottom:3px!important}
+.mainmenu-screen.snug .reviewspellrow #modereview{min-height:46px!important;padding-top:3px!important;padding-bottom:3px!important}
+.mainmenu-screen.snug .menubtns .bemoji{font-size:1.3rem!important}
+.mainmenu-screen.snug #modereview .bemoji{font-size:1.3rem!important}
+.custpanels .swatch.colorchoice{border-radius:50%}
+.custpanels .chip,.customize-screen .custtab{border-radius:14px}
+/* Maya, the host on the welcome screen */
+.welcome-screen .hostmaya{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%}
+.welcome-screen .hostmaya:focus-visible{outline:3px solid var(--leaf-deep);outline-offset:4px}
+.welcome-screen .hostmaya.hop{animation:mayaHop .42s ease-out}
+@keyframes mayaHop{0%{transform:translateY(0)}35%{transform:translateY(-10px) rotate(-2deg)}70%{transform:translateY(0) rotate(1deg)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.welcome-screen .hostmaya.hop{animation:none}}
+
+/* S11a: interface language — EN | 繁 | 简 (main menu and "Who's serving today?") */
+.langrow{display:flex;justify-content:flex-end;margin:2px 0 4px}
+.screen.center .langrow{align-self:stretch;width:100%}
+.lang-switch{display:inline-flex;flex-shrink:0;border:2px solid #463A54;border-radius:999px;background:#FFF6E3;padding:2px;gap:2px;box-shadow:0 2px 0 rgba(70,58,84,.25)}
+.lang-switch .lang-btn{min-width:40px;min-height:34px;padding:3px 9px;border:0;border-radius:999px;background:transparent;color:#463A54;font:inherit;font-weight:800;font-size:.95rem;line-height:1;cursor:pointer}
+.lang-switch .lang-btn[aria-pressed="true"]{background:#B23A5F;color:#fff}
+.lang-switch .lang-btn:focus-visible{outline:3px solid #3B8FE0;outline-offset:1px}
+/* S11a: Chinese labels in settings rows stay on one line (no "語/音" stacking) */
+:root[data-ui^="zh"] .setrow>label,:root[data-ui^="zh"] .setrow>span:first-child{white-space:nowrap;flex-shrink:0}
+:root[data-ui^="zh"] .setrow select{min-width:0;max-width:62%}
+/* S11c: the main menu fits one screen again. The language switch shares the
+   course-badge row (no row of its own) and the menu tiles are a little more
+   compact on taller phones. Smaller phones keep their existing rules. */
+.mainmenu-screen .menucourse{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:6px;margin-top:-2px;min-height:30px}
+.mainmenu-screen .menucourse .coursebadge{grid-column:2}
+.mainmenu-screen .menucourse .menulang{grid-column:3;justify-self:end;display:flex}
+.mainmenu-screen .lang-switch{padding:1px;gap:1px}
+.mainmenu-screen .lang-switch .lang-btn{position:relative;min-height:30px;min-width:36px;padding:2px 8px;font-size:.84rem}
+/* S12b (review M03): a slightly larger invisible tap area above and below each
+   language button (not sideways, so EN / 繁 / 简 never overlap each other) */
+.mainmenu-screen .lang-switch .lang-btn::after{content:"";position:absolute;left:0;right:0;top:-5px;bottom:-6px}
+@media(max-width:399px){
+  .mainmenu-screen .menucourse{display:flex;justify-content:space-between}
+}
+/* S12a: Kitchen clock, last 10 seconds */
+#kTimer.khurry{background:#C0392B;color:#FFF;animation:pulse 1s infinite}
+@media(prefers-reduced-motion:reduce){#kTimer.khurry{animation:none}}
+body.reduce #kTimer.khurry{animation:none}
+/* S11c: "tight" tiles, used only when the snug ones still do not fit (set by spaceMenu) */
+.mainmenu-screen.snug.tight .menubtns.compact3,.mainmenu-screen.snug.tight .menubtns.compact3 .modepick,.mainmenu-screen.snug.tight .reviewspellrow,.mainmenu-screen.snug.tight .menuclustergrid{gap:3px}
+.mainmenu-screen.snug.tight .menucluster{gap:2px;padding-top:2px}
+.mainmenu-screen.snug.tight .menuclusterlabel{font-size:.58rem}
+.mainmenu-screen.snug.tight .menuclustergrid .felt,.mainmenu-screen.snug.tight .modepick.with-kitchen .felt,.mainmenu-screen.snug.tight .reviewspellrow .felt,.mainmenu-screen.snug.tight .reviewspellrow #modereview{min-height:40px!important;padding-top:2px!important;padding-bottom:2px!important;line-height:1.05}
+.mainmenu-screen.snug.tight .menubtns .bemoji,.mainmenu-screen.snug.tight #modereview .bemoji{font-size:1.1rem!important}
+.mainmenu-screen.snug.tight .reviewspellrow small{margin-top:1px}
+.mainmenu-screen.snug.tight.tighter .scenewrap{height:min(calc((100vw - 36px)*0.556),30dvh)}
+@media(min-height:761px){
+  .mainmenu-screen .modepick.with-kitchen .felt{min-height:54px!important;padding:4px 4px!important}
+  .mainmenu-screen .modepick.with-kitchen .bemoji{font-size:1.38rem!important}
+  .mainmenu-screen .menubtns.compact3>.felt,.mainmenu-screen #modereview,.mainmenu-screen .reviewspellrow .felt{min-height:52px!important}
+  .mainmenu-screen .menubtns.compact3>.felt .bemoji,.mainmenu-screen .reviewspellrow .bemoji{font-size:1.32rem!important}
+  .mainmenu-screen .menuclustergrid .felt{min-height:52px;padding:4px 3px}
+  .mainmenu-screen .menuclustergrid .bemoji{font-size:1.36rem!important}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<script defer src="i18n/zh-hk.js?v=batchS12d"></script>
+<script defer src="i18n/zh-cn.js?v=batchS12d"></script>
+<script defer src="i18n.js?v=batchS12d"></script>
+<script defer src="data-loader.js"></script>
+<script defer src="course-catalogs.js"></script>
+<script defer src="persistence.js?v=petpop11"></script>
+<script defer src="ladder-dict.js"></script>
+<script defer src="phonics.js?v=batchS8b"></script>
+<script defer src="spelling-v16-phonics-adapter.js?v=batchS8b"></script>
+<script defer src="04-world.js?v=batchS10d"></script>
+<script defer src="05-engine.js?v=batchS12d"></script>
+<script defer src="pet-pop-word-adapter.js?v=petpop11"></script>
+<script defer src="pet-pop-scheduler.js?v=petpop11"></script>
+<script defer src="spelling-protected.js?v=batchS8b"></script><script defer src="spelling-chunks.js?v=batchS8b"></script><script defer src="spelling-segments.js?v=batchS8b"></script>
+<script type="module" src="spelling-v16-browser.mjs?v=batchS8b"></script>
+<script defer src="pet-pop.js?v=batchS12d"></script>
+<script defer src="analytics.js?v=analytics8-batchS12d"></script>
+<script defer src="06-ui.js?v=batchS12d"></script>
+</body>
+</html>

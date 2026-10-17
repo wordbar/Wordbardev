@@ -1,0 +1,9 @@
+/* Open-the-app hint (iPhone/iPad Safari, opened from a WordBar link) */
+.wb-open-app-hint{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;max-width:520px;margin:0 auto;
+  display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-radius:16px;background:#3d304c;color:#fff;
+  font:600 14px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .5s}
+.wb-open-app-hint b{font-weight:800}
+.wb-oah-icon{font-size:22px;line-height:1}
+.wb-oah-text{flex:1}
+.wb-oah-close{flex:none;min-width:48px;min-height:44px;border:0;border-radius:12px;background:#fff;color:#3d304c;font:800 15px/1 system-ui,-apple-system,sans-serif;cursor:pointer}
+.wb-open-app-hint.wb-oah-fade{opacity:0}

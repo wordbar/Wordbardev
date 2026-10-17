@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "courseId": "everyday",
+  "packVersion": "v1",
+  "createdFrom": {
+    "questionbankSha256": "b67bc19ad3003d99025094bda614004f8d59b5ec2d45f9fa5b4fa96ea080fa9e",
+    "statusSha256": "4bbda45535e044f9e15648803cc479d5e1022ae5fb7c147a9a5efde26b26f62a",
+    "reviewSha256": "6112384e122e28f51c67b1061478c77112dbc77d183a55b709641a63b6be5250"
+  },
+  "totals": {
+    "words": 1471,
+    "questions": 6019,
+    "types": 20
+  },
+  "countsByTier": {
+    "easy": {
+      "words": 507,
+      "questions": 2634
+    },
+    "core": {
+      "words": 516,
+      "questions": 1593
+    },
+    "stretch": {
+      "words": 448,
+      "questions": 1792
+    }
+  },
+  "countsByType": {
+    "article": 20,
+    "category": 802,
+    "cloze": 2553,
+    "collocation": 224,
+    "comparative": 65,
+    "definition": 1112,
+    "negative": 113,
+    "opposite": 121,
+    "past_tense": 130,
+    "phrasal": 84,
+    "plural": 51,
+    "preposition": 10,
+    "quantifier": 60,
+    "question_form": 96,
+    "scramble": 104,
+    "spelling": 63,
+    "there_is": 75,
+    "third_person": 208,
+    "usage": 63,
+    "word_order": 65
+  },
+  "masteryCredit": {
+    "word": 5444,
+    "skill": 575
+  },
+  "masteryCreditByType": {
+    "article": {
+      "word": 0,
+      "skill": 20
+    },
+    "category": {
+      "word": 796,
+      "skill": 6
+    },
+    "cloze": {
+      "word": 2553,
+      "skill": 0
+    },
+    "collocation": {
+      "word": 122,
+      "skill": 102
+    },
+    "comparative": {
+      "word": 65,
+      "skill": 0
+    },
+    "definition": {
+      "word": 1112,
+      "skill": 0
+    },
+    "negative": {
+      "word": 0,
+      "skill": 113
+    },
+    "opposite": {
+      "word": 121,
+      "skill": 0
+    },
+    "past_tense": {
+      "word": 130,
+      "skill": 0
+    },
+    "phrasal": {
+      "word": 84,
+      "skill": 0
+    },
+    "plural": {
+      "word": 51,
+      "skill": 0
+    },
+    "preposition": {
+      "word": 10,
+      "skill": 0
+    },
+    "quantifier": {
+      "word": 12,
+      "skill": 48
+    },
+    "question_form": {
+      "word": 0,
+      "skill": 96
+    },
+    "scramble": {
+      "word": 104,
+      "skill": 0
+    },
+    "spelling": {
+      "word": 63,
+      "skill": 0
+    },
+    "there_is": {
+      "word": 0,
+      "skill": 75
+    },
+    "third_person": {
+      "word": 208,
+      "skill": 0
+    },
+    "usage": {
+      "word": 13,
+      "skill": 50
+    },
+    "word_order": {
+      "word": 0,
+      "skill": 65
+    }
+  },
+  "layouts": {
+    "compact": 5602,
+    "sentence": 417
+  },
+  "layoutsByType": {
+    "article": {
+      "compact": 20,
+      "sentence": 0
+    },
+    "category": {
+      "compact": 802,
+      "sentence": 0
+    },
+    "cloze": {
+      "compact": 2553,
+      "sentence": 0
+    },
+    "collocation": {
+      "compact": 224,
+      "sentence": 0
+    },
+    "comparative": {
+      "compact": 64,
+      "sentence": 1
+    },
+    "definition": {
+      "compact": 1112,
+      "sentence": 0
+    },
+    "negative": {
+      "compact": 0,
+      "sentence": 113
+    },
+    "opposite": {
+      "compact": 120,
+      "sentence": 1
+    },
+    "past_tense": {
+      "compact": 107,
+      "sentence": 23
+    },
+    "phrasal": {
+      "compact": 84,
+      "sentence": 0
+    },
+    "plural": {
+      "compact": 50,
+      "sentence": 1
+    },
+    "preposition": {
+      "compact": 10,
+      "sentence": 0
+    },
+    "quantifier": {
+      "compact": 60,
+      "sentence": 0
+    },
+    "question_form": {
+      "compact": 0,
+      "sentence": 96
+    },
+    "scramble": {
+      "compact": 104,
+      "sentence": 0
+    },
+    "spelling": {
+      "compact": 63,
+      "sentence": 0
+    },
+    "there_is": {
+      "compact": 75,
+      "sentence": 0
+    },
+    "third_person": {
+      "compact": 154,
+      "sentence": 54
+    },
+    "usage": {
+      "compact": 0,
+      "sentence": 63
+    },
+    "word_order": {
+      "compact": 0,
+      "sentence": 65
+    }
+  },
+  "packs": {
+    "easy": {
+      "words": 507,
+      "questions": 2634,
+      "types": {
+        "article": 4,
+        "category": 100,
+        "cloze": 988,
+        "collocation": 173,
+        "comparative": 50,
+        "definition": 336,
+        "negative": 111,
+        "opposite": 81,
+        "past_tense": 93,
+        "phrasal": 84,
+        "plural": 35,
+        "preposition": 10,
+        "quantifier": 58,
+        "question_form": 96,
+        "scramble": 55,
+        "spelling": 33,
+        "there_is": 67,
+        "third_person": 155,
+        "usage": 40,
+        "word_order": 65
+      },
+      "compressed": {
+        "file": "wordbank-easy.wbdata",
+        "bytes": 171456,
+        "sha256": "28926e08b7b45c1d18d3a101e114d2f82fa82d8757e8abba19f9da10bbb76132"
+      },
+      "raw": {
+        "file": "wordbank-easy.raw.wbdata",
+        "bytes": 689295,
+        "sha256": "497a90235f06df6f9b0fd580b21c2465592332784582d0d6be1ce10a5e2a5143"
+      },
+      "decodedSha256": "e5c4da78a336a261618d1552deee31ce2965ebad95afa89584c9a53aac18c7b7"
+    },
+    "core": {
+      "words": 516,
+      "questions": 1593,
+      "types": {
+        "article": 13,
+        "category": 299,
+        "cloze": 688,
+        "collocation": 49,
+        "comparative": 15,
+        "definition": 328,
+        "opposite": 31,
+        "past_tense": 33,
+        "plural": 9,
+        "quantifier": 2,
+        "scramble": 48,
+        "spelling": 29,
+        "third_person": 27,
+        "usage": 22
+      },
+      "compressed": {
+        "file": "wordbank-core.wbdata",
+        "bytes": 119153,
+        "sha256": "50598991cae636fa61791ffab37757ecde999ece87c7bc54581c6b86013e5eef"
+      },
+      "raw": {
+        "file": "wordbank-core.raw.wbdata",
+        "bytes": 457048,
+        "sha256": "0953deb8d4b555f0ed229c0d0469ed12981da4b27d8dea05a387fe7da96f8877"
+      },
+      "decodedSha256": "3d73a81bbd4922e493053e8fbe2ad7132d5c24d57cf47259901865aa195adf3c"
+    },
+    "stretch": {
+      "words": 448,
+      "questions": 1792,
+      "types": {
+        "article": 3,
+        "category": 403,
+        "cloze": 877,
+        "collocation": 2,
+        "definition": 448,
+        "negative": 2,
+        "opposite": 9,
+        "past_tense": 4,
+        "plural": 7,
+        "scramble": 1,
+        "spelling": 1,
+        "there_is": 8,
+        "third_person": 26,
+        "usage": 1
+      },
+      "compressed": {
+        "file": "wordbank-stretch.wbdata",
+        "bytes": 147768,
+        "sha256": "1ad374f38e79ad0ea9e734f43a981fa3b3501ef70735a8df14c1e8e569a8da2b"
+      },
+      "raw": {
+        "file": "wordbank-stretch.raw.wbdata",
+        "bytes": 540290,
+        "sha256": "a615000c579685f27a6099c075b3a4fa98975758abbff379b88fe58ac4393762"
+      },
+      "decodedSha256": "b24667152c2b1ea96a97c99628422f5e9126235ac966872d2a61ddc10c9a5926"
+    }
+  }
+}

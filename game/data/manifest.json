@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "courseId": "elevenPlus",
+  "packVersion": "86g",
+  "totals": {
+    "words": 799,
+    "questions": 5059
+  },
+  "countsByTier": {
+    "easy": { "words": 236, "questions": 1420 },
+    "core": { "words": 313, "questions": 2016 },
+    "stretch": { "words": 250, "questions": 1623 }
+  },
+  "packs": {
+    "easy": {
+      "words": 236,
+      "questions": 1420,
+      "compressed": {
+        "file": "wordbank-easy.wbdata",
+        "bytes": 86979,
+        "sha256": "c9a03f1e495ddc9ff03d4f7aeeb359e963b4bcc13ef43547a9176772cfbef592"
+      },
+      "raw": {
+        "file": "wordbank-easy.raw.wbdata",
+        "bytes": 586080,
+        "sha256": "fcac574ac32b74c996ca15c2b75ca9d079a5dc45f07ef61c7f6b06fb784cbbab"
+      },
+      "decodedSha256": "e97015e16872afe52b0f66fd31d8354b854f6f8119b3b09259f96e9241c3d7fb"
+    },
+    "core": {
+      "words": 313,
+      "questions": 2016,
+      "compressed": {
+        "file": "wordbank-core.wbdata",
+        "bytes": 130248,
+        "sha256": "c21ac9ee39bac842bd1d25b29157623abdcd7fa931f67b536bc2dd4d0a4a3b69"
+      },
+      "raw": {
+        "file": "wordbank-core.raw.wbdata",
+        "bytes": 891153,
+        "sha256": "7a43487e4b0f93eb50b09e6980b2807f6c6fb2b713cca634c396bc2d6ecb7bb3"
+      },
+      "decodedSha256": "d9b7412becaff78cd18308eec1992b53f8f84e7cdb1d869fffba9d480ffa4921"
+    },
+    "stretch": {
+      "words": 250,
+      "questions": 1623,
+      "compressed": {
+        "file": "wordbank-stretch.wbdata",
+        "bytes": 104017,
+        "sha256": "4e15f1a146a0ee48d680d3aad4dcf838cfbeb1c635bede8173af9e2de2014f30"
+      },
+      "raw": {
+        "file": "wordbank-stretch.raw.wbdata",
+        "bytes": 705914,
+        "sha256": "253884ebf0ca61c47db9fb25e885a2f1597559aa25113aee18754f7f3587f03e"
+      },
+      "decodedSha256": "05d294a451887ffcfec49596fa759b6ed1b97a37b6a078c51ea8703b762d3386"
+    }
+  }
+}
