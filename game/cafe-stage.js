@@ -37,15 +37,15 @@ const CAFE_GEO=Object.freeze({
   wallBottom:160,
   window:{x:128,y:26,w:84,h:80},
   door:{x:316,y:46,w:56,h:116},
-  bCounter:{x:0,w:142,top:166,face:176,bottom:240},     /* barista counter (left), reaching towards the customer, low enough to show the cupboard */
+  bCounter:{x:0,w:122,top:166,face:176,bottom:240},     /* barista counter (left), just past the barista, low enough to show the cupboard */
   bar:{x:206,w:154,top:174,face:184,bottom:244},        /* customer bar (right), marble top */
   bed:{x:40,y:290},                                     /* barista pet bed, front left */
-  barista:{x:86,feet:212,k:.92},                       /* towards the end of her counter, close to the customer */
-  serve:{x:176,feet:214,k:.92},                         /* just past the counter end, same depth: order + collect */
+  barista:{x:74,feet:212,k:.92},                       /* towards the end of her counter */
+  serve:{x:156,feet:214,k:.92},                         /* just past the counter end, same depth: order + collect; open floor both sides for walking */
   queue:[{x:258,feet:198,k:.86},{x:310,feet:194,k:.85}],/* well behind the bar: at most two wait, one orders */
   stash:{x:344,feet:166,k:.8},                          /* outside the door: overflow queue */
   doorIn:{x:344,feet:166,k:.8},
-  exit:{x:176,feet:480,k:1.15},                         /* same x as the order spot: straight down, out of the picture */
+  exit:{x:156,feet:480,k:1.15},                         /* same x as the order spot: straight down, out of the picture */
   barTopY:174, counterTopY:166
 });
 let cafeSceneUid=0;

@@ -4,16 +4,16 @@
   python3 tools/package.py demo   -> dist/WordBar-S13-demo-deploy.zip  (adds demo-config.js:
                                      1,000,000 coins on every profile; never use for production)
   python3 tools/package.py preview <dir>  -> a claude.ai artifact preview folder
-                                     (game.html + demo coins; Kitchen step art left out to fit
-                                     the file limit; word banks renamed to .wasm because the
+                                     (game.html + demo coins; Kitchen step art bundled in one
+                                     script to fit the file limit; word banks renamed to .wasm because the
                                      artifact host does not serve .wbdata)
 """
-import hashlib, os, shutil, sys, zipfile
+import hashlib, json, os, shutil, sys, zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, "game")
 SKIP = {"_scene-test.html", "art/decor/decor-meta.json"}
-DEMO_TAG = '<script defer src="demo-config.js?v=batchS13g"></script>'
+DEMO_TAG = '<script defer src="demo-config.js?v=batchS13h"></script>'
 
 
 def game_files():
@@ -37,7 +37,7 @@ def copy_tree(dst, demo=False, preview=False):
         shutil.copy2(os.path.join(ROOT, "tools", "demo", "demo-config.js"), os.path.join(dst, "demo-config.js"))
         idx = os.path.join(dst, "index.html")
         s = open(idx).read()
-        anchor = '<script defer src="06-ui.js?v=batchS13g"></script>'
+        anchor = '<script defer src="06-ui.js?v=batchS13h"></script>'
         assert anchor in s
         s = s.replace(anchor, anchor + "\n" + DEMO_TAG)
         open(idx, "w").write(s)
@@ -58,6 +58,19 @@ def copy_tree(dst, demo=False, preview=False):
         for m in manifests:
             s = s.replace(before[m], sha(os.path.join(dst, m)))
         open(loader, "w").write(s)
+        # the Kitchen step pictures (378 small files) go in one script, so the
+        # preview stays under the artifact host's file-count limit
+        ks = os.path.join(GAME, "assets", "kitchen-steps")
+        pics = {f[:-4]: open(os.path.join(ks, f)).read() for f in sorted(os.listdir(ks)) if f.endswith(".svg")}
+        with open(os.path.join(dst, "kitchen-steps-preview.js"), "w") as fh:
+            fh.write("window.KITCHEN_STEP_PICS=" + json.dumps(pics, separators=(",", ":")) + ";\n"
+                     "if(typeof kitchenStepIconHTML==='function'){const base=kitchenStepIconHTML;"
+                     "kitchenStepIconHTML=function(icon,label){const t=window.KITCHEN_STEP_PICS[icon];"
+                     "if(!t)return base(icon,label);return `<img src=\"data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}\" alt=\"\" aria-hidden=\"true\" title=\"${esc(label||'')}\">`;};}\n")
+        idx = os.path.join(dst, "index.html")
+        s = open(idx).read()
+        s = s.replace(DEMO_TAG, DEMO_TAG + '\n<script defer src="kitchen-steps-preview.js"></script>')
+        open(idx, "w").write(s)
         os.rename(os.path.join(dst, "index.html"), os.path.join(dst, "game.html"))
 
 

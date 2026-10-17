@@ -4,6 +4,13 @@
    keys containing <b> are whole sentences ([data-i18n-html]). */
 window.WB_I18N_DICTS=window.WB_I18N_DICTS||{};
 window.WB_I18N_DICTS["zh-CN"]={
+"Happy": "开心",
+"Excited": "兴奋",
+"Calm": "平静",
+"Blink": "眨眼",
+"Grumpy": "不高兴",
+"Sad": "难过",
+"Weekly": "每周概览",
 "Undo": "撤销",
 "Your existing progress is safe, but WordBar could not finish its save upgrade.": "你的进度仍然安全，但 WordBar 无法完成保存数据的升级。",
 "No old progress was changed. Free a little browser storage if needed, then retry. You can also export the existing 11+ save before doing anything else.": "旧进度没有任何改动。如有需要，请腾出少量浏览器保存空间，然后再试。你也可以先导出现有的 11+ 保存数据。",

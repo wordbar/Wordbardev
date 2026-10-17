@@ -1369,7 +1369,7 @@ function screenMenu(){
   const playerPet=activePlayerPet(p),reviewStreak=currentReviewStreakDays(p);
   const daily=learningAvailable&&isFirstMenuViewToday()?wordOfTheDay():null;
   const resumeShift=learningAvailable?validShiftResume():null;   /* S9b */
-  show(`<section class="screen mainmenu-screen">
+  show(`<section class="screen mainmenu-screen s13menu">
     <div class="topbar"><span class="tipbadge">${COIN} ${p.tips}</span><b class="bartitle">${esc(p.name)}'s WordBar</b>
       <span class="menutopactions"><button class="iconb" id="shareGame" aria-label="Share WordBar" title="Share WordBar">↗</button><button class="iconb" id="switch" aria-label="Switch shopkeeper" title="Switch shopkeeper">👥</button></span></div>
     <div class="menucourse">${courseBadgeHTML(p.courseId)}<span class="menulang">${window.WBI18N?WBI18N.pillHTML():""}</span></div>
@@ -1377,34 +1377,27 @@ function screenMenu(){
     ${playerPet&&reviewStreak?`<div class="petmoodbadge"><span class="reviewstreakbadge">🔥 ${reviewStreak}-day review streak</span></div>`:""}
     ${kt.current?`<div class="krakenbadge">${kt.current.emoji} <b>${kt.current.title}</b>${kt.next?` <small>· ${kt.mastered}/${kt.next.count} to ${kt.next.secret?"???":kt.next.title}</small>`:""}</div>`:""}
     ${playerPet&&reviewCount>=15?`<div class="note reviewpetnudge">🐾 ${esc(playerPet.name.replace(/^(a|an) /i,"Your "))} would love a Review session — ${reviewCount} words are waiting!</div>`:""}
-    <div class="menubtns compact3">
-      <div class="modepick ${kitchenAvailable?"with-kitchen":""}">
-        <button class="felt big" id="modenormal"><span class="bemoji">☕</span>Café</button>
-        <button class="felt big" id="moderush"><span class="bemoji">🔥</span>Rush Hour</button>
-        ${kitchenAvailable?`<button class="felt big" id="kitchen"><span class="bemoji">👩‍🍳</span>Kitchen</button>`:""}
-        <button class="felt big" id="modetime"><span class="bemoji">⏱️</span>Time Challenge</button>
-      </div>
-      ${PET_POP_FEATURE_ENABLED?`<div class="reviewspellrow spellcols-3"><button class="felt big" id="modereview"><span class="bemoji">🎯</span><span class="reviewspelllabel">Review<small>${reviewCount?`${reviewCount} waiting`:"Vocabulary"}</small></span></button><button class="felt big" id="modepetpop"><span class="bemoji">🐾</span><span class="reviewspelllabel">Pet Pop<small>Spelling</small></span></button>${dictationLinkHTML()}</div>`:`<button class="felt" id="modereview"><span class="bemoji">🎯</span>Review${reviewCount?` (${reviewCount})`:""}</button>${dictationLinkHTML()}`}
-      <div class="menucluster progresscluster" aria-label="Collections &amp; progress">
-        <small class="menuclusterlabel">Collections &amp; progress</small>
-        <div class="menuclustergrid">
-          <button class="felt" id="shop"><span class="bemoji">🛍️</span>Shop</button>
-          <button class="felt" id="cafeTheme"><span class="bemoji">🎨</span>Café Theme</button>
-          <button class="felt" id="gallery"><span class="bemoji">🖼️</span>Gallery</button>
-          ${learningAvailable?`<button class="felt" id="trophies"><span class="bemoji">🏆</span>Trophies</button>
-          <button class="felt" id="mywords"><span class="bemoji">📖</span>My Words</button>
-          <button class="felt" id="leaderboard"><span class="bemoji">📊</span>My Best</button>`:""}
-        </div>
-      </div>
-      <div class="menucluster managecluster" aria-label="Manage">
-        <small class="menuclusterlabel">Manage</small>
-        <div class="menuclustergrid">
-          <button class="felt" id="settings"><span class="bemoji">⚙️</span>Settings</button>
-          <button class="felt" id="faq"><span class="bemoji">❓</span>FAQ</button>
-          ${learningAvailable?`<button class="felt adultmenu" id="grown" title="Grown-ups only"><span class="adultlock" aria-hidden="true">🔒</span><span class="bemoji">📚</span>Library</button>
-          <button class="felt adultmenu" id="parentSummary" title="Grown-ups only"><span class="adultlock" aria-hidden="true">🔒</span><span class="bemoji">📈</span>Weekly Summary</button>`:""}
-        </div>
-      </div>
+    <div class="s13play" aria-label="Play">
+      <button class="felt big tile wide" id="modenormal"><span class="bemoji">☕</span><span class="tlabel">Café</span></button>
+      <button class="felt big tile" id="moderush"><span class="bemoji">🔥</span><span class="tlabel">Rush Hour</span></button>
+      ${kitchenAvailable?`<button class="felt big tile" id="kitchen"><span class="bemoji">👩‍🍳</span><span class="tlabel">Kitchen</span></button>`:""}
+      <button class="felt big tile" id="modetime"><span class="bemoji">⏱️</span><span class="tlabel">Time Challenge</span></button>
+      <button class="felt big tile" id="modereview"><span class="bemoji">🎯</span><span class="tlabel">Review<small>${reviewCount?`${reviewCount} waiting`:"Vocabulary"}</small></span></button>
+      ${PET_POP_FEATURE_ENABLED?`<button class="felt big tile" id="modepetpop"><span class="bemoji">🐾</span><span class="tlabel">Pet Pop<small>Spelling</small></span></button>`:""}
+      ${dictationLinkHTML().replace('class="felt big dictationlink','class="felt big tile dictationlink')}
+    </div>
+    <div class="s13more" aria-label="Collections, progress and settings">
+      <button class="felt tile" id="shop"><span class="bemoji">🛍️</span><span class="tlabel">Shop</span></button>
+      <button class="felt tile" id="cafeTheme"><span class="bemoji">🎨</span><span class="tlabel">Café Theme</span></button>
+      <button class="felt tile" id="gallery"><span class="bemoji">🖼️</span><span class="tlabel">Gallery</span></button>
+      ${learningAvailable?`<button class="felt tile" id="trophies"><span class="bemoji">🏆</span><span class="tlabel">Trophies</span></button>
+      <button class="felt tile" id="mywords"><span class="bemoji">📖</span><span class="tlabel">My Words</span></button>
+      <button class="felt tile" id="leaderboard"><span class="bemoji">📊</span><span class="tlabel">My Best</span></button>`:""}
+      <button class="felt tile" id="settings"><span class="bemoji">⚙️</span><span class="tlabel">Settings</span></button>
+      <button class="felt tile" id="faq"><span class="bemoji">❓</span><span class="tlabel">FAQ</span></button>
+      ${learningAvailable?`<button class="felt tile adultmenu" id="grown" title="Grown-ups only"><span class="adultlock" aria-hidden="true">🔒</span><span class="bemoji">📚</span><span class="tlabel">Library</span></button>
+      <button class="felt tile adultmenu" id="parentSummary" title="Grown-ups only"><span class="adultlock" aria-hidden="true">🔒</span><span class="bemoji">📈</span><span class="tlabel">Weekly</span></button>`:""}
+    </div>
     </div></section>`);
   /* S9b: starting anything else ends a saved shift (tips kept); each mode shows
      its How-to-play only the first time it is opened. */
@@ -1929,11 +1922,17 @@ function kitchenStepIconHTML(icon,label=""){
   if(!/^[a-z0-9-]+$/.test(icon||""))return `<span aria-hidden="true">${esc(icon||"🍳")}</span>`;
   return `<img src="assets/kitchen-steps/${icon}.svg" alt="" aria-hidden="true" title="${esc(label)}">`;
 }
-function kitchenProgressHTML(run,template){return template.steps.map((icon,i)=>{
+function kitchenProgressHTML(run,template){
+  /* S13: three large step pictures at a time: this round and the next two
+     (the last three once the recipe is nearly done). On the answer review
+     the window starts at the step just finished, so it is seen landing. */
+  const n=template.steps.length,cur=run.celebrateStep?run.celebrateStep-1:Math.min(run.correct,n-1);
+  const start=Math.max(0,Math.min(cur,n-3));
+  return template.steps.slice(start,start+3).map((icon,k)=>{const i=start+k;
   /* The step just completed is tagged so it can pop once, giving each correct
      answer a visible landing point on the recipe strip. */
-  const justDone=run.celebrateStep&&i===run.celebrateStep-1?" justdone":"";
-  return `<div class="kitchenstep ${i<run.correct?"done":"inactive"}${justDone}" aria-label="${esc(template.labels[i])}${i<run.correct?", completed":", not completed"}">${kitchenStepIconHTML(icon,template.labels[i])}<small>${esc(template.labels[i])}</small></div>`;
+  const justDone=run.celebrateStep&&i===run.celebrateStep-1?" justdone":"",now=i===run.correct&&!run.celebrateStep?" current":"";
+  return `<div class="kitchenstep ${i<run.correct?"done":"inactive"}${justDone}${now}" aria-label="${esc(template.labels[i])}${i<run.correct?", completed":", not completed"}"><b class="kstepno">${i+1}/${n}</b>${kitchenStepIconHTML(icon,template.labels[i])}<small>${esc(template.labels[i])}</small></div>`;
 }).join("");}
 function kitchenPathPoints(run){
   return (run?.currentPath||[]).map(i=>`${(i%4)+.5},${Math.floor(i/4)+.5}`).join(" ");
@@ -3703,6 +3702,17 @@ function screenTrophies(initialCategory){
 }
 
 /* ---------- Gallery — the café's whole cast, revealed as you earn ---------- */
+/* S13: every face a café pet's drawing has, side by side */
+const PET_FACE_LABELS=[["good","Happy"],["excited","Excited"],["normal","Calm"],["blink","Blink"],["grumpy","Grumpy"],["bad","Sad"]];
+function openPetFaces(pet){
+  document.querySelectorAll(".petfaces").forEach(n=>n.remove());
+  const el=document.createElement("div");el.className="petfaces";el.setAttribute("role","dialog");el.setAttribute("aria-label",`${pet.name} faces`);
+  el.innerHTML=`<div class="petfacescard felt"><div class="petfaceshead"><b>${esc(pet.name.replace(/^a /i,""))}</b><button class="iconb" aria-label="Close">✕</button></div>
+    <div class="petfacesgrid">${PET_FACE_LABELS.map(([m,l])=>`<figure>${cafePetStaticHTML(pet,m,72)}<figcaption>${l}</figcaption></figure>`).join("")}</div></div>`;
+  const close=()=>el.remove();el.addEventListener("click",e=>{if(e.target===el||e.target.closest(".iconb"))close();});
+  document.body.appendChild(el);
+  if(typeof CafeArt!=="undefined"&&!CafeArt.get("pets",pet.id))CafeArt.load("pets",pet.id).then(()=>{if(el.isConnected){el.remove();openPetFaces(pet);}});
+}
 function screenGallery(){
   const p=P(), un=unlockedIds(), seq=unlockSequence(),ps=petSystemOf(p);
   const nxt=nextUnlockInfo();
@@ -3804,6 +3814,7 @@ function screenGallery(){
       const pet=PETS.find(x=>x.id===t.dataset.pet);if(!pet)return;
       const k=petNext.get(pet.id)||0;petNext.set(pet.id,k+1);
       const mood=PET_MOODS[k%PET_MOODS.length],art=t.querySelector(".galpet");
+      openPetFaces(pet);
       if(art){art.innerHTML=cafePetStaticHTML(pet,mood,64);const anim=Math.random()<.5?"excited":"excited2";art.classList.remove("excited","excited2");void art.offsetWidth;art.classList.add(anim);art.addEventListener("animationend",()=>art.classList.remove(anim),{once:true});}
       AudioKit.pet(pet.species,true);recordPetGreeting(pet);
       toast(`${pet.name.replace(/^a /,"The ")} ${petReactionText(pet,"tap")}`);
@@ -4737,7 +4748,7 @@ function gamesPlayed(p){
    gaps. The menu never grows past the screen; phones that are already
    tight (SE) keep the old layout. */
 function spaceMenu(){
-  const el=app.querySelector(".mainmenu-screen");if(!el)return;
+  const el=app.querySelector(".mainmenu-screen");if(!el||el.classList.contains("s13menu"))return;   /* S13 menu sizes itself in CSS */
   const reset=()=>{el.style.removeProperty("--mg");el.classList.remove("spaced","snug","tight","tighter");};
   const lastBottom=()=>{const kids=[...el.children].filter(k=>k.getBoundingClientRect().height>0);return kids.length?kids[kids.length-1].getBoundingClientRect().bottom+window.scrollY:0;};
   const limit=()=>{const r=el.getBoundingClientRect(),pb=parseFloat(getComputedStyle(el).paddingBottom)||0;

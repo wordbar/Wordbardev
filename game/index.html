@@ -1869,13 +1869,82 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 .mainmenu-screen .menuclustergrid .bemoji{font-size:clamp(.95rem,2.6dvh,1.3rem)!important}
 .mainmenu-screen .menubtns,.mainmenu-screen .modepick,.mainmenu-screen .menuclustergrid{gap:clamp(3px,.7dvh,6px)!important}
 .mainmenu-screen .menuclusterlabel{font-size:.7rem!important;margin:0!important}
+
+/* S13 Kitchen: three large recipe steps (this round + the next two) */
+.kitchenchallenge .kitchenprogress{grid-template-columns:repeat(3,1fr)!important;gap:8px!important;max-width:360px!important;margin:0 auto}
+.kitchenchallenge .kitchenstep,.kitchenchallenge .kitchenstep.done,.kitchenchallenge .kitchenstep.inactive{height:auto!important;min-height:0!important;aspect-ratio:1/1!important;position:relative;padding:6px 4px 4px;gap:2px;border-radius:12px}
+.kitchenchallenge .kitchenstep img,.kitchenchallenge .kitchenstep.done img,.kitchenchallenge .kitchenstep.inactive img{width:62%!important;height:auto!important;aspect-ratio:1/1;max-height:62%}
+.kitchenchallenge .kitchenstep small,.kitchenchallenge .kitchenstep.done small,.kitchenchallenge .kitchenstep.inactive small{font-size:clamp(.6rem,2.8vw,.74rem)!important;line-height:1.1!important}
+.kitchenchallenge .kitchenstep.inactive img{opacity:.5}
+.kitchenchallenge .kitchenstep.current{background:#FFF3D6!important;filter:none!important;color:var(--ink)!important;border-color:var(--ink)!important;box-shadow:inset 0 0 0 3px #F2B33D}
+.kitchenchallenge .kitchenstep.current img,.kitchenchallenge .kitchenstep.current small{opacity:1!important}
+.kstepno{position:absolute;top:3px;left:6px;font-size:.6rem;font-weight:900;opacity:.75}
+@media (max-height:720px){.kitchenchallenge .kitchenprogress{max-width:270px!important;gap:6px!important}}
+
+/* S13 gallery: all of a pet's faces */
+.petfaces{position:fixed;inset:0;z-index:60;background:rgba(46,36,64,.35);display:flex;align-items:center;justify-content:center;padding:16px}
+.petfacescard{width:min(360px,100%);padding:12px 12px 14px;background:#FFF9EF}
+.petfaceshead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.petfaceshead b{font-size:1.05rem;text-transform:capitalize}
+.petfaceshead .iconb{width:36px;height:36px;min-height:0;padding:0}
+.petfacesgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.petfacesgrid figure{margin:0;display:flex;flex-direction:column;align-items:center;background:#FFF;border:2px solid var(--line,#D9C6AC);border-radius:12px;padding:6px 2px 4px}
+.petfacesgrid figcaption{font-size:.72rem;font-weight:800}
+
+/* S13 compact question card: the café is larger now, so the question,
+   the customer's line and the answers are smaller and tighter, and the
+   answer card is shorter (it scrolls if an explanation is long) */
+.shiftscreen .panel{padding:8px 11px}
+.shiftscreen .panel .qhead{margin-bottom:3px;gap:6px}
+.shiftscreen .panel .qhead .readq{min-height:30px;min-width:34px;font-size:.9rem}
+.shiftscreen .tierpill{font-size:.64rem;padding:0 7px}
+.shiftscreen .custsay.greet{font-size:.8rem;line-height:1.3;padding:4px 9px;margin:3px 0 5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.shiftscreen .qtext{font-size:.94rem;line-height:1.3;margin-bottom:6px}
+.shiftscreen .opts{gap:6px!important}
+.shiftscreen .opt{min-height:44px;padding:.45em .7em;font-size:.92rem;line-height:1.2}
+.shiftscreen .opts.small .opt{font-size:.8rem;min-height:40px;padding:.4em .6em;line-height:1.22}
+.shiftscreen .ctrl{margin-top:6px}
+.shiftscreen .patlabel{font-size:.78rem}
+dialog.reveal{max-width:min(92vw,400px)}
+dialog.reveal .dlghead{padding:8px 14px;font-size:1rem}
+dialog.reveal .dlgbody{padding:8px 14px;font-size:.84rem;line-height:1.35;max-height:46vh}
+dialog.reveal .ansline{padding:5px 9px;font-size:.84rem}
+dialog.reveal .wordinfo{padding:5px 10px;margin:6px 0;font-size:.84rem}
+dialog.reveal .wordinfo .speakbtn{width:34px;height:34px;min-height:0}
+dialog.reveal .custsay,dialog.reveal .replyline,dialog.reveal .petline{font-size:.8rem;margin-top:4px}
+dialog.reveal .dlgfoot{padding:7px 14px}
+dialog.reveal .pausebtn,dialog.reveal .closebtn{padding:4px 10px;font-size:.78rem}
+
+/* ===== S13 main menu: one screen, one grid system =====
+   Play: four equal columns (Café takes two), two rows of large tiles.
+   More: five equal columns of small icon tiles. The café picture takes
+   whatever height is left, so everything fits without scrolling. */
+.mainmenu-screen.s13menu{display:flex!important;flex-direction:column!important;gap:clamp(6px,calc((100dvh - 720px)/9),14px)!important;overflow:hidden!important;padding:6px 12px 10px!important}
+.s13menu>.topbar,.s13menu>.menucourse,.s13menu>.s13play,.s13menu>.s13more,.s13menu>.krakenbadge,.s13menu>.petmoodbadge,.s13menu>.note{flex:0 0 auto}
+.s13menu>.menucourse{margin:0!important}
+.mainmenu-screen.s13menu .scenewrap{flex:1 1 auto!important;height:auto!important;min-height:120px!important;max-height:max(var(--wordbar-cafe-height),calc((100vw - 28px)/1.25))!important;margin:0!important}
+.s13menu .tile{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;min-width:0!important;margin:0!important;text-align:center!important;line-height:1.1!important;white-space:normal!important}
+.s13menu .tile .bemoji{display:block;margin:0!important;line-height:1}
+.s13menu .tile .tlabel,.s13menu .tile .reviewspelllabel{font-size:inherit!important;display:flex!important;flex-direction:column;align-items:center;font-weight:800;min-width:0}
+.s13menu .tile small{display:block;font-size:.62rem!important;font-weight:700;opacity:.75;line-height:1.1;margin:1px 0 0!important}
+.s13play{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(6px,1.1dvh,10px)}
+.mainmenu-screen.s13menu .s13play>.tile{grid-column:auto!important;width:auto!important;flex-direction:column!important;min-height:0!important;height:clamp(56px,calc((100dvh - 430px)*.34),106px)!important;padding:4px 3px!important;font-size:clamp(.74rem,3.4vw,.95rem)!important;border-radius:14px!important}
+.s13play .tile .bemoji{font-size:clamp(1.15rem,5vw,1.45rem)!important}
+.mainmenu-screen.s13menu .s13play>.tile.wide{grid-column:span 2!important;flex-direction:row!important;gap:8px!important;font-size:clamp(1rem,4.6vw,1.2rem)!important;background:var(--berry,#D8547A)!important;color:#fff!important}
+.s13play .tile.wide .bemoji{font-size:clamp(1.5rem,6.6vw,1.9rem)!important}
+.s13more{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,1.1dvh,10px)}
+.mainmenu-screen.s13menu .s13more>.tile{min-height:0!important;height:clamp(48px,calc((100dvh - 430px)*.27),84px)!important;padding:3px 2px!important;font-size:clamp(.6rem,2.8vw,.76rem)!important;border-radius:12px!important;position:relative}
+.s13more .tile .bemoji{font-size:clamp(1rem,4.4vw,1.2rem)!important}
+.s13more .adultlock{position:absolute;top:2px;right:3px;font-size:.6rem}
+.s13menu .krakenbadge,.s13menu .petmoodbadge,.s13menu .reviewpetnudge{margin:0!important;font-size:.72rem!important;padding:3px 8px!important}
+.mainmenu-screen.s13menu .scenewrap .scenebox{height:100%!important;width:auto!important;aspect-ratio:375/300}
+@media (max-height:700px){.s13menu .krakenbadge,.s13menu .reviewpetnudge{display:none}.s13play,.s13more{gap:5px}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-<script defer src="i18n/zh-hk.js?v=batchS13g"></script>
-<script defer src="i18n/zh-cn.js?v=batchS13g"></script>
+<script defer src="i18n/zh-hk.js?v=batchS13h"></script>
+<script defer src="i18n/zh-cn.js?v=batchS13h"></script>
 <script defer src="i18n.js?v=batchS12d"></script>
 <script defer src="data-loader.js"></script>
 <script defer src="course-catalogs.js"></script>
@@ -1883,15 +1952,15 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 <script defer src="ladder-dict.js"></script>
 <script defer src="phonics.js?v=batchS8b"></script>
 <script defer src="spelling-v16-phonics-adapter.js?v=batchS8b"></script>
-<script defer src="04-world.js?v=batchS13g"></script>
-<script defer src="05-engine.js?v=batchS13g"></script>
+<script defer src="04-world.js?v=batchS13h"></script>
+<script defer src="05-engine.js?v=batchS13h"></script>
 <script defer src="pet-pop-word-adapter.js?v=petpop11"></script>
 <script defer src="pet-pop-scheduler.js?v=petpop11"></script>
 <script defer src="spelling-protected.js?v=batchS8b"></script><script defer src="spelling-chunks.js?v=batchS8b"></script><script defer src="spelling-segments.js?v=batchS8b"></script>
 <script type="module" src="spelling-v16-browser.mjs?v=batchS8b"></script>
 <script defer src="pet-pop.js?v=batchS12d"></script>
 <script defer src="analytics.js?v=analytics8-batchS12d"></script>
-<script defer src="cafe-stage.js?v=batchS13g"></script>
-<script defer src="06-ui.js?v=batchS13g"></script>
+<script defer src="cafe-stage.js?v=batchS13h"></script>
+<script defer src="06-ui.js?v=batchS13h"></script>
 </body>
 </html>
