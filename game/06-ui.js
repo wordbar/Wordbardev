@@ -3499,7 +3499,7 @@ function endShift(early){
    ${missedWordsRecapHTML(S)}
    <div class="growthbanner" data-i18n-html>🌱 <b>You learned ${newWordsSeen} new word${newWordsSeen!==1?"s":""}</b>${newlyMastered?` and <b>mastered ${newlyMastered}</b>` :""} today.</div>
    ${reviewUpdate.advanced?`<div class="reviewstreakfinish">🔥 <b>${reviewUpdate.days}-day review streak!</b></div>`:""}
-   ${sessionPet&&!early&&S.served>0?`<div class="petfinish felt"><div>${petSVG(sessionPet,"good",64,petWearables(p))}</div><div><b>${esc(sessionPet.name.replace(/^a /i,"Your "))} celebrates your completed session!</b></div></div>`:""}
+   ${sessionPet&&!early&&S.served>0?`<div class="petfinish felt"><div>${cafePetStaticHTML(sessionPet,"good",64,petWearables(p))}</div><div><b>${esc(sessionPet.name.replace(/^a /i,"Your "))} celebrates your completed session!</b></div></div>`:""}
    ${pb.length?`<div class="pbbanner">🏅 New personal best: ${pb.join(", ")}!</div>`:""}
    ${unlockable.length&&p.settings.theme==="sunny"&&!p._themeNudged?`<div class="note">🎨 You've unlocked a new theme — find it in Café Theme!</div>`:""}
    ${nextTheme?`<div class="note" data-i18n-html>Next theme: <b>${nextTheme[1].name}</b> unlocks at ${nextTheme[1].unlock} lifetime coins (you have ${p.lifetime}).</div>`:""}
@@ -3707,8 +3707,10 @@ function screenGallery(){
   const p=P(), un=unlockedIds(), seq=unlockSequence(),ps=petSystemOf(p);
   const nxt=nextUnlockInfo();
   const posOf={}; seq.forEach((u,i)=>posOf[u.type+":"+u.id]=(i+1)*UNLOCK_STEP);
-  const GEXPRS=["happy","delighted","wow","thinking","sad","neutral"];
-  const PET_MOODS=["good","excited","normal","bad"];
+  /* each tap shows a different face the art really has */
+  const GEXPRS=["happy","neutral","sad","blink"];
+  const PET_MOODS=["good","excited","grumpy","bad","blink","normal"];
+  const petNext=new Map();
   const exprNext=new Map();
   const PAGE_SIZE={customers:18,pets:12};
   const state={tab:"customers",page:{customers:0,pets:0}};
@@ -3755,7 +3757,7 @@ function screenGallery(){
   function petTile(x,i){
     if(un.pet.has(x.id)){
       const active=ps.activePetId===x.id,licensed=ps.licenceOwned;
-      return `<div class="gtile felt petlive ${active?"activepet":""}"><button class="gallerypetart" data-pet="${x.id}" data-blurb="${esc(x.name)}" aria-label="${esc(x.name)} — tap for a reaction"><div class="gart"><div class="galpet" style="animation-delay:-${(i*0.7)%2.8}s;animation-duration:${2.6+(i%4)*0.35}s">${petSVG(x,"normal",64)}</div></div><small>${esc(x.name.replace(/^a /,""))}</small></button><button class="felt mini petpick" data-pet-select="${x.id}" ${licensed?"":"disabled"}>${licensed?(active?"✓ My pet — remove":"Choose as my pet"):"🔒 Pet Licence"}</button></div>`;
+      return `<div class="gtile felt petlive ${active?"activepet":""}"><button class="gallerypetart" data-pet="${x.id}" data-blurb="${esc(x.name)}" aria-label="${esc(x.name)} — tap for a reaction"><div class="gart"><div class="galpet" style="animation-delay:-${(i*0.7)%2.8}s;animation-duration:${2.6+(i%4)*0.35}s">${cafePetStaticHTML(x,"normal",64)}</div></div><small>${esc(x.name.replace(/^a /,""))}</small></button><button class="felt mini petpick" data-pet-select="${x.id}" ${licensed?"":"disabled"}>${licensed?(active?"✓ My pet — remove":"Choose as my pet"):"🔒 Pet Licence"}</button></div>`;
     }
     const at=posOf["pet:"+x.id]||0;
     return `<div class="gtile felt locked"><div class="gart gq">?</div><small>${at-(p.lifetime||0)>0?`${at-(p.lifetime||0)} more coins`:"soon!"}</small></div>`;
@@ -3779,6 +3781,9 @@ function screenGallery(){
         :`💛 Pet Licence owned — choose any revealed pet below to live beside your shopkeeper.`;
     }
     grid.innerHTML=isCustomers?visible.map(customerTile).join(""):visible.map((x,i)=>petTile(x,start+i)).join("");
+    /* the café pet drawings load on demand: redraw the page once they arrive */
+    const missing=isCustomers?[]:visible.filter(x=>un.pet.has(x.id)&&typeof CafeArt!=="undefined"&&!CafeArt.get("pets",x.id));
+    if(missing.length)Promise.all(missing.map(x=>CafeArt.load("pets",x.id))).then(()=>{if(state.tab==="pets"&&grid.isConnected)renderGalleryPage();});
     pager.innerHTML=`<button class="felt mini" data-gallery-page="${pg-1}" ${pg===0?"disabled":""}>← Previous</button><span class="pageinfo">${start+1}–${Math.min(items.length,start+size)} of ${items.length}</span><button class="felt mini" data-gallery-page="${pg+1}" ${pg>=pages-1?"disabled":""}>Next →</button>`;
     tabs.querySelectorAll("[data-gallery-tab]").forEach(t=>{
       const on=t.dataset.galleryTab===state.tab;
@@ -3797,8 +3802,9 @@ function screenGallery(){
     }
     if(t.dataset.pet){
       const pet=PETS.find(x=>x.id===t.dataset.pet);if(!pet)return;
-      const mood=PET_MOODS[rnd(PET_MOODS.length)],art=t.querySelector(".galpet");
-      if(art){art.innerHTML=petSVG(pet,mood,64);const anim=Math.random()<.5?"excited":"excited2";art.classList.remove("excited","excited2");void art.offsetWidth;art.classList.add(anim);art.addEventListener("animationend",()=>art.classList.remove(anim),{once:true});}
+      const k=petNext.get(pet.id)||0;petNext.set(pet.id,k+1);
+      const mood=PET_MOODS[k%PET_MOODS.length],art=t.querySelector(".galpet");
+      if(art){art.innerHTML=cafePetStaticHTML(pet,mood,64);const anim=Math.random()<.5?"excited":"excited2";art.classList.remove("excited","excited2");void art.offsetWidth;art.classList.add(anim);art.addEventListener("animationend",()=>art.classList.remove(anim),{once:true});}
       AudioKit.pet(pet.species,true);recordPetGreeting(pet);
       toast(`${pet.name.replace(/^a /,"The ")} ${petReactionText(pet,"tap")}`);
     }

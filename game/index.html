@@ -1814,6 +1814,13 @@ body.reduce .hl-glow,body.reduce .aurora-band,body.reduce .cafe-layer .steam,bod
 /* a small, shy "hi": the straight arm lifts a little from the side, palm
    open, and the hand wiggles gently from the wrist; no joint ever opens */
 .person.wave .waverH{animation:wbWaveHand 1.8s ease-in-out forwards}
+/* the bending arm (see cafeBendArm): shown only while the arm bends */
+.person .bend-arm{display:none}
+.person .ba-fore{transform-box:view-box;transform-origin:0 0}
+.person.wave .bend-arm.wv,.person .bend-arm.carry{display:inline}
+.person.wave .bend-src,.person .bend-src.carry-src{visibility:hidden}
+.person.wave .bend-arm.wv .ba-fore{animation:wbBendWave 1.8s ease-in-out forwards}
+@keyframes wbBendWave{0%,100%{transform:rotate(0)}20%,84%{transform:rotate(calc(var(--wi)*128deg))}32%,56%{transform:rotate(calc(var(--wi)*112deg))}44%,68%{transform:rotate(calc(var(--wi)*142deg))}}
 @keyframes wbWaveHand{0%,22%,82%,100%{transform:rotate(0)}34%,58%{transform:rotate(calc(var(--wi)*9deg))}46%,70%{transform:rotate(calc(var(--wi)*-7deg))}}
 .person.wave [data-joint="head"]{animation:wbTilt 1.8s ease-in-out forwards}
 @keyframes wbTilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
@@ -1835,6 +1842,7 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 .petactor .playerpetemote{top:-6%}
 .orderitem{position:absolute;left:0;top:0;display:flex;align-items:flex-end;gap:1px;opacity:0;pointer-events:none;transform-origin:50% 100%}
 .orderitem>svg,.orderitem .foodartsprite,.orderitem .foodartsprite img{height:100%;width:auto;flex:0 0 auto}
+.orderitem .cupart{height:100%;display:block;flex:0 0 auto}.orderitem .cupart svg{height:100%;width:auto;display:block}
 /* previews (menu, shop, theme): barista and pet at their real spots */
 .scenebox>.scene-barista{position:absolute;top:auto;right:auto;transform:translateX(-50%);z-index:1}
 .scene-barista svg{width:100%;height:auto;display:block;overflow:visible}
@@ -1866,8 +1874,8 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 <body>
 <div id="app"></div>
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-<script defer src="i18n/zh-hk.js?v=batchS13f"></script>
-<script defer src="i18n/zh-cn.js?v=batchS13f"></script>
+<script defer src="i18n/zh-hk.js?v=batchS13g"></script>
+<script defer src="i18n/zh-cn.js?v=batchS13g"></script>
 <script defer src="i18n.js?v=batchS12d"></script>
 <script defer src="data-loader.js"></script>
 <script defer src="course-catalogs.js"></script>
@@ -1875,15 +1883,15 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 <script defer src="ladder-dict.js"></script>
 <script defer src="phonics.js?v=batchS8b"></script>
 <script defer src="spelling-v16-phonics-adapter.js?v=batchS8b"></script>
-<script defer src="04-world.js?v=batchS13f"></script>
-<script defer src="05-engine.js?v=batchS12d"></script>
+<script defer src="04-world.js?v=batchS13g"></script>
+<script defer src="05-engine.js?v=batchS13g"></script>
 <script defer src="pet-pop-word-adapter.js?v=petpop11"></script>
 <script defer src="pet-pop-scheduler.js?v=petpop11"></script>
 <script defer src="spelling-protected.js?v=batchS8b"></script><script defer src="spelling-chunks.js?v=batchS8b"></script><script defer src="spelling-segments.js?v=batchS8b"></script>
 <script type="module" src="spelling-v16-browser.mjs?v=batchS8b"></script>
 <script defer src="pet-pop.js?v=batchS12d"></script>
 <script defer src="analytics.js?v=analytics8-batchS12d"></script>
-<script defer src="cafe-stage.js?v=batchS13f"></script>
-<script defer src="06-ui.js?v=batchS13f"></script>
+<script defer src="cafe-stage.js?v=batchS13g"></script>
+<script defer src="06-ui.js?v=batchS13g"></script>
 </body>
 </html>

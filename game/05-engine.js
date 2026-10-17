@@ -830,8 +830,20 @@ function pickTicketDrink(cust){
     name = kd.names ? kd.names[Math.floor(Math.random()*kd.names.length)] : themeDrink();
   }
   const kd=DRINK_KINDS[kind]||DRINK_KINDS.juice;
-  return {name, kind, color: kd.colors[Math.floor(Math.random()*kd.colors.length)], emoji: kd.emoji};
+  return {name, kind, color: drinkColourFromName(name)||kd.colors[Math.floor(Math.random()*kd.colors.length)], emoji: kd.emoji};
 }
+/* S13: the drink looks like its name (Matcha Cloud is green, Berry Whirl
+   pink); names with no colour word keep a colour from their drink family. */
+const DRINK_NAME_COLOURS=[
+  [/choc|mocha|toffee|caramel|malt|gingerbread|espresso|cappuccino|latte|flat white|macchiato|hazelnut|chai|toasted|earl grey|cola/i,"#8A5A44"],
+  [/matcha|mint|green tea|jasmine|apple|lime|kiwi|cucumber|pandan/i,"#7FA65A"],
+  [/lemon|yuzu|honey|banana|pineapple|camomile|chamomile/i,"#F2B33D"],
+  [/mango|orange|peach|sunrise|pumpkin|apricot|tangerine/i,"#E8891D"],
+  [/berry|cherry|rhubarb|hibiscus|sakura|petal|blossom|rose|watermelon|pink/i,"#E07A9B"],
+  [/grape|plum|lavender|taro|cauldron|violet/i,"#8E6BAE"],
+  [/vanilla|coco|cream|milk|snow|shake|float|cloud/i,"#F1E3C8"],
+  [/blue|ocean|breeze|sky|cooler|slush/i,"#6BC5B8"]];
+function drinkColourFromName(name){const n=String(name||"");for(const [re,c] of DRINK_NAME_COLOURS)if(re.test(n))return c;return null;}
 
 /* ---------- Economy ---------- */
 const BASE_TIP={easy:8,core:12,stretch:18};

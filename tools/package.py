@@ -13,7 +13,7 @@ import hashlib, os, shutil, sys, zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, "game")
 SKIP = {"_scene-test.html", "art/decor/decor-meta.json"}
-DEMO_TAG = '<script defer src="demo-config.js?v=batchS13f"></script>'
+DEMO_TAG = '<script defer src="demo-config.js?v=batchS13g"></script>'
 
 
 def game_files():
@@ -37,7 +37,7 @@ def copy_tree(dst, demo=False, preview=False):
         shutil.copy2(os.path.join(ROOT, "tools", "demo", "demo-config.js"), os.path.join(dst, "demo-config.js"))
         idx = os.path.join(dst, "index.html")
         s = open(idx).read()
-        anchor = '<script defer src="06-ui.js?v=batchS13f"></script>'
+        anchor = '<script defer src="06-ui.js?v=batchS13g"></script>'
         assert anchor in s
         s = s.replace(anchor, anchor + "\n" + DEMO_TAG)
         open(idx, "w").write(s)

@@ -37,15 +37,15 @@ const CAFE_GEO=Object.freeze({
   wallBottom:160,
   window:{x:128,y:26,w:84,h:80},
   door:{x:316,y:46,w:56,h:116},
-  bCounter:{x:0,w:112,top:166,face:176,bottom:240},     /* barista counter (left), low enough to show the cupboard */
+  bCounter:{x:0,w:142,top:166,face:176,bottom:240},     /* barista counter (left), reaching towards the customer, low enough to show the cupboard */
   bar:{x:206,w:154,top:174,face:184,bottom:244},        /* customer bar (right), marble top */
   bed:{x:40,y:290},                                     /* barista pet bed, front left */
-  barista:{x:56,feet:212,k:.92},
-  serve:{x:160,feet:214,k:.92},                         /* near the barista (not crowding her), same depth: order + collect */
+  barista:{x:86,feet:212,k:.92},                       /* towards the end of her counter, close to the customer */
+  serve:{x:176,feet:214,k:.92},                         /* just past the counter end, same depth: order + collect */
   queue:[{x:258,feet:198,k:.86},{x:310,feet:194,k:.85}],/* well behind the bar: at most two wait, one orders */
   stash:{x:344,feet:166,k:.8},                          /* outside the door: overflow queue */
   doorIn:{x:344,feet:166,k:.8},
-  exit:{x:160,feet:480,k:1.15},                         /* same x as the order spot: straight down */                         /* straight down the middle, out of the picture */
+  exit:{x:176,feet:480,k:1.15},                         /* same x as the order spot: straight down, out of the picture */
   barTopY:174, counterTopY:166
 });
 let cafeSceneUid=0;
@@ -303,7 +303,7 @@ function cafeFrontSVG(uid,ctx){
     <path d="M${R.x-1} ${R.top+2} H${R.x+R.w+1}" stroke="#FFF" stroke-width="1.4" opacity=".7"/></g>`;
   if(theme==="sunny"||theme==="foodtruck")s+=`<g stroke="${ink}" stroke-width=".8"><path d="M${R.x+R.w-14} ${R.top} q6 10 0 18 q-5 8 1 16" fill="none" stroke="#5E8A47" stroke-width="1.3"/>${[[R.x+R.w-12,R.top+6],[R.x+R.w-17,R.top+14],[R.x+R.w-11,R.top+24],[R.x+R.w-15,R.top+32]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="${i%2?"#6FA455":"#7FA65A"}" transform="rotate(${i%2?30:-30} ${x} ${y})"/>`).join("")}</g>`;
   /* counter-top items on the barista counter */
-  if(counterI&&counterI.id==="fountain_gold")s+=decorImg("fountain_gold",66,B.top-27,22,28)+fountainFX(66,B.top-27,22,28);
+  if(counterI&&counterI.id==="fountain_gold")s+=decorImg("fountain_gold",34,B.top-27,22,28)+fountainFX(34,B.top-27,22,28);
   if(displayI&&["cakedome","gumball","radio_retro"].includes(displayI.id))s+=decorImg(displayI.id,B.w-30,B.top-29,26,30);
   if(lampI&&lampI.id!=="lantern_paper")s+=decorImg(lampI.id,2,B.top-27,22,28);
   if(!lampI||lampI.id==="lantern_paper")s+=`<g><path d="M${R.x+R.w-22} ${R.top} h8 l-1.4 -9 q-2.6 -1.6 -5.2 0 z" fill="#F4EAD8" stroke="${ink}" stroke-width="1.1"/><circle cx="${R.x+R.w-18}" cy="${R.top-11}" r="3.4" fill="#F2F2F2" stroke="${ink}" stroke-width="1"/><circle cx="${R.x+R.w-20}" cy="${R.top-12}" r="1.2" fill="#F2B33D"/></g>`;
@@ -461,6 +461,44 @@ function cafeNewPerson(charId,{lane="b",x=0,feet=0,k=1,fallbackHTML=""}={}){
   return a;
 }
 /* put the drawing in (when the art has loaded) and find its joints */
+/* A bending arm for the wave and for lifting the order. The supplied
+   characters' arms have no elbow (their only bend is at the sleeve hem), so
+   for these two moves the forearm is redrawn as a rounded tube in the
+   character's own colours, with a real elbow and the character's own hand.
+   All outlines sit under all fills, so the elbow never shows a seam. It is
+   shown only while the arm bends; at rest it lines up with the real arm. */
+function cafeBendArm(a,s){
+  const svg=a.svg,J=a.J,arm=J("arm-"+s),fore=J("fore-"+s),hand=J("hand-"+s);
+  if(!arm||!fore||!hand||!arm.getCTM||!arm.getCTM())return null;
+  const NS=CAFE_SVGNS,inv=arm.getCTM().inverse(),loc=el=>new DOMPoint(0,0).matrixTransform(inv.multiply(el.getCTM()));
+  const H=loc(fore),W=loc(hand),S={x:0,y:0};
+  const len=Math.hypot(W.x-S.x,W.y-S.y);if(!(len>4))return null;
+  const d={x:(W.x-S.x)/len,y:(W.y-S.y)/len},proj=p=>(p.x-S.x)*d.x+(p.y-S.y)*d.y;
+  const t=Math.max(proj(H),len*.5),E={x:S.x+d.x*t,y:S.y+d.y*t};
+  /* colour, outline and width of the forearm drawing */
+  const biggest=(root,skip)=>{let m=null,ar=0;root.querySelectorAll("path,rect,ellipse,polygon").forEach(n=>{if(skip.contains(n))return;const cs=getComputedStyle(n);if(!cs.fill||cs.fill==="none")return;
+    let b;try{b=n.getBBox();}catch(e){return;}if(b.width*b.height>ar){ar=b.width*b.height;m=n;}});return m;};
+  /* the forearm's own drawing, or (one-piece sleeves) the upper arm's */
+  const main=biggest(fore,hand)||biggest(arm,fore);
+  if(!main)return null;
+  const mm=inv.multiply(main.getCTM()),b=main.getBBox(),nx=-d.y,ny=d.x;
+  const ps=[[b.x,b.y],[b.x+b.width,b.y],[b.x,b.y+b.height],[b.x+b.width,b.y+b.height]].map(([x,y])=>{const q=new DOMPoint(x,y).matrixTransform(mm);return q.x*nx+q.y*ny;});
+  const wid=Math.min(Math.max(...ps)-Math.min(...ps),len*.3),fill=getComputedStyle(main).fill;
+  /* the outline is the darkest line on the arm (crease lines are paler) */
+  const lum=c=>{const m=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(c||"");return m?(+m[1])*.3+(+m[2])*.59+(+m[3])*.11:999;};
+  let ink="#452a20",best=120;[...arm.querySelectorAll("path,rect,ellipse")].forEach(n=>{const st=getComputedStyle(n).stroke,l=lum(st);if(l<best){best=l;ink=st;}});
+  const k=2.3,wu=Math.max(4,wid-k*.6),wf=wu*.86;
+  const tube=(x1,y1,x2,y2,w,c)=>`<path d="M${x1.toFixed(2)} ${y1.toFixed(2)} L${x2.toFixed(2)} ${y2.toFixed(2)}" fill="none" stroke="${c}" stroke-width="${w.toFixed(2)}" stroke-linecap="round"/>`;
+  const F={x:W.x-E.x,y:W.y-E.y},up=t>proj(H)+.5;
+  const g=document.createElementNS(NS,"g");g.setAttribute("class","bend-arm");
+  g.innerHTML=(up?tube(H.x,H.y,E.x,E.y,wu+k*2,ink):"")+`<g transform="translate(${E.x.toFixed(2)} ${E.y.toFixed(2)})"><g class="ba-fore">${tube(0,0,F.x,F.y,wf+k*2,ink)}</g></g>`
+    +(up?tube(H.x,H.y,E.x,E.y,wu,fill):"")+`<g transform="translate(${E.x.toFixed(2)} ${E.y.toFixed(2)})"><g class="ba-fore">${tube(0,0,F.x,F.y,wf,fill)}<g class="ba-hand"></g></g></g>`;
+  /* the character's own hand, carried to the end of the new forearm */
+  const hm=inv.multiply(hand.getCTM()),c=hand.cloneNode(true);c.removeAttribute("data-joint");c.removeAttribute("class");c.removeAttribute("style");c.removeAttribute("transform");
+  const hw=g.querySelector(".ba-hand");hw.setAttribute("transform",`translate(${(-E.x).toFixed(2)} ${(-E.y).toFixed(2)}) matrix(${[hm.a,hm.b,hm.c,hm.d,hm.e,hm.f].map(v=>+v.toFixed(4)).join(" ")})`);hw.appendChild(c);
+  arm.appendChild(g);
+  return {g,fore,hand:c,fores:[...g.querySelectorAll(".ba-fore")]};
+}
 function cafeDressPerson(a,svgText){
   if(!a||a.ready)return;
   if(!svgText){a.inner.innerHTML=a.fallbackHTML||"";a.el.classList.add("fallback");a.ready=true;return;}
@@ -474,7 +512,11 @@ function cafeDressPerson(a,svgText){
     /* the forearm joint sits at the sleeve hem in this art, so the arm stays
        straight and the wave comes from the wrist */
     const hand=J("hand-"+s);
-    arm.classList.add("waver");arm.style.setProperty("--ra",out*34);if(hand){hand.classList.add("waverH");hand.style.setProperty("--wi",out);}
+    let bend=null;try{bend=cafeBendArm(a,s);}catch(e){}a.waveOut=out;
+    if(bend){a.bend=bend;bend.g.classList.add("wv");bend.g.style.setProperty("--wi",out);fore&&fore.classList.add("bend-src");cafeHandView(bend.hand,"palm");}
+    /* the arm lifts a little at the shoulder; the forearm rises at the elbow
+       and gives a few small waves (without a bending arm: a small low wave) */
+    arm.classList.add("waver");arm.style.setProperty("--ra",out*(bend?30:34));if(!bend&&hand){hand.classList.add("waverH");hand.style.setProperty("--wi",out);}
     a.el.style.setProperty("--tl",s==="r"?1:-1);}
   cafeSetFace(svg,a.face==="blink"?"normal":a.face);cafeBlinker(a);
 }
@@ -501,7 +543,7 @@ function cafeAct(a,cls,ms){
   /* a wave cut short puts its hand back down (a hand holding the order is left alone) */
   if(a.handT){a.handT.forEach(clearTimeout);a.handT=null;if(a.J&&!a.carrying)cafeHandView(a.J("hand-"+a.waveSide),"relaxed");}
   void a.el.offsetWidth;a.el.classList.add(cls);
-  if(cls==="wave"&&a.waveSide&&a.svg){const h=a.J("hand-"+a.waveSide);
+  if(cls==="wave"&&a.waveSide&&a.svg&&!a.bend){const h=a.J("hand-"+a.waveSide);
     /* the hand turns back > side > open palm while it rises, and back again */
     a.handT=[[220,"edge"],[320,"palm"],[1460,"edge"],[1560,"relaxed"]].map(([t,v])=>setTimeout(()=>cafeHandView(h,v),t));}
   clearTimeout(a.actT);a.actT=setTimeout(()=>{a.el.classList.remove(cls);if(!a.walk)a.el.classList.add("idle");},ms);
@@ -757,13 +799,28 @@ function cafeFollow(pt,dt){
 }
 
 /* ---------- takeaway: a paper cup and a paper food bag ---------- */
-function takeawayCupSVG(color){
-  return `<svg viewBox="0 0 24 34" aria-hidden="true"><path d="M4.5 9 L19.5 9 L17.6 31 Q12 33 6.4 31 Z" fill="#FFF8EE" stroke="#463A54" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M5.6 15 L18.4 15 L17.7 23 L6.3 23 Z" fill="${color}" stroke="#463A54" stroke-width="1"/>
-    <path d="M3 9 Q3 5.6 6 5.6 L18 5.6 Q21 5.6 21 9 Z" fill="#F4EAD8" stroke="#463A54" stroke-width="1.4"/><rect x="10.6" y="2.6" width="2.8" height="3.4" rx="1" fill="#F4EAD8" stroke="#463A54" stroke-width="1"/></svg>`;
+/* the order as it is served and carried: the same takeaway cup on the
+   counter and in the customer's hand, matching the drink family and colour */
+function takeawayCupSVG(ticket){
+  const t=typeof ticket==="string"?{drinkColor:ticket}:(ticket||{});
+  const c=t.drinkColor||"#D8547A",kind=t.drinkKind||"juice",ink="#463A54",lite=shade(c,.35);
+  if(kind==="coffee"||kind==="tea"){
+    /* hot drink: paper cup, card sleeve in the drink colour, sipping lid */
+    return `<svg viewBox="0 0 24 34" aria-hidden="true"><path d="M4.6 10 L19.4 10 L17.6 31.4 Q12 33.2 6.4 31.4 Z" fill="#FFF8EE" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M5.4 16.5 L18.6 16.5 L17.9 25 L6.1 25 Z" fill="${c}" stroke="${ink}" stroke-width="1"/>${kind==="tea"?`<path d="M12 18.6 q2.4 2 0 4.4 q-2.4 -2.4 0 -4.4" fill="#FFF8EE" opacity=".85"/>`:`<path d="M8.4 20.8 H15.6" stroke="#FFF8EE" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`}
+      <path d="M3.2 10 Q3.2 6.6 6.4 6.4 L17.6 6.4 Q20.8 6.6 20.8 10 Z" fill="#F4EAD8" stroke="${ink}" stroke-width="1.3"/><rect x="13.2" y="4.6" width="3.4" height="2.2" rx=".9" fill="#F4EAD8" stroke="${ink}" stroke-width=".9"/></svg>`;}
+  /* cold drink: clear cup showing the drink, dome lid and a straw */
+  const extra=kind==="fizz"?`<circle cx="9" cy="23" r=".9" fill="#FFF" opacity=".8"/><circle cx="14.5" cy="19.5" r=".7" fill="#FFF" opacity=".8"/><circle cx="12" cy="27" r=".8" fill="#FFF" opacity=".8"/>`
+    :kind==="smoothie"?`<path d="M6 15.6 Q9 14 12 15.6 T18 15.6" fill="none" stroke="${lite}" stroke-width="1.6"/>`:"";
+  return `<svg viewBox="0 0 24 34" aria-hidden="true"><path d="M14 9 L16.6 1.2" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/><path d="M14 9 L16.6 1.2" stroke="#F2F2F2" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M4.6 11 L19.4 11 L17.6 31.4 Q12 33.2 6.4 31.4 Z" fill="#F4FBFF" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M5.2 15 L18.8 15 L17.5 30.6 Q12 32.2 6.5 30.6 Z" fill="${c}"/>${extra}<path d="M7.4 16.5 L8.4 29" stroke="#FFF" stroke-width="1" opacity=".5" stroke-linecap="round"/>
+    <path d="M4.6 11 L19.4 11 L17.6 31.4 Q12 33.2 6.4 31.4 Z" fill="none" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M3.4 11 Q4 5.4 12 5.2 Q20 5.4 20.6 11 Z" fill="#EAF6FB" fill-opacity=".85" stroke="${ink}" stroke-width="1.2"/><path d="M3 11 H21" stroke="${ink}" stroke-width="1.4" stroke-linecap="round"/></svg>`;
 }
-function paperBagSVG(withCup,color){
-  return `<svg viewBox="0 0 30 40" aria-hidden="true">${withCup?`<g transform="translate(13 0) scale(.62)"><path d="M3 9 Q3 5.6 6 5.6 L18 5.6 Q21 5.6 21 9 Z" fill="#F4EAD8" stroke="#463A54" stroke-width="2"/><path d="M4.5 9 L19.5 9 L18.6 20 L5.4 20 Z" fill="#FFF8EE" stroke="#463A54" stroke-width="2"/><rect x="5.4" y="12" width="13.2" height="6" fill="${color}"/></g>`:""}
+function paperBagSVG(withCup,ticket){
+  const cup=withCup?takeawayCupSVG(ticket).replace('<svg viewBox="0 0 24 34"','<svg x="12" y="-4" width="15" height="21.25" viewBox="0 0 24 34"'):"";
+  return `<svg viewBox="0 0 30 40" overflow="visible" aria-hidden="true">${cup}
     <path d="M6 7 Q8 1 11 3 M19 7 Q21 1 24 3" fill="none" stroke="#8A5A2E" stroke-width="1.4" stroke-linecap="round"/>
     <path d="M3 13 L27 13 L25.5 38 L4.5 38 Z" fill="#D9AE78" stroke="#463A54" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M3 13 L5.5 9 L24.5 9 L27 13 Z" fill="#C79A63" stroke="#463A54" stroke-width="1.3" stroke-linejoin="round"/>
@@ -790,18 +847,28 @@ function cafeTakeOrder(a,ticket){
   const color=(ticket&&ticket.drinkColor)||"#D8547A",food=!!(ticket&&ticket.food);
   const s=a.waveSide;
   /* both hands already full: the paper bag, cup inside, hangs over the forearm */
-  if(!s){const f=a.J("fore-r")||a.J("fore-l");if(f)cafeHoldAt(a,f,paperBagSVG(true,color),{w:.19,h:1.33,dy:-.05});return;}
+  if(!s){const f=a.J("fore-r")||a.J("fore-l");if(f)cafeHoldAt(a,f,paperBagSVG(true,ticket),{w:.19,h:1.33,dy:-.05});return;}
   const hand=a.J("hand-"+s),arm=a.J("arm-"+s),fore=a.J("fore-"+s);
   if(a.bagSide||!food){
-    /* the cup is held in the hanging hand: the arm stays one straight piece
-       (its only bend in this art is at the sleeve hem, which would break it) */
-    [arm,fore].forEach(e=>{if(e)e.classList.add("holding");});cafeHandView(hand,"grip-edge");
-    setTimeout(()=>{if(a.el.isConnected)cafeHoldAt(a,hand,takeawayCupSVG(color),{w:.15,h:1.3,dy:-.55});},cafeReduced()?0:200);
+    const cupHTML=takeawayCupSVG(ticket),b=a.bend;
+    if(b){
+      /* the bending arm reaches up at the elbow and lifts the cup to the chest */
+      const o=a.waveOut||1;
+      [arm,fore].forEach(e=>{if(e)e.classList.add("holding");});
+      if(fore)fore.classList.add("carry-src");b.g.classList.add("carry");cafeHandView(b.hand,"grip-edge");
+      arm.style.transition="transform .45s ease";arm.style.transform=`rotate(${o*8}deg)`;
+      b.fores.forEach(f=>{f.style.transition="transform .45s ease";f.style.transform="rotate(0deg)";});
+      requestAnimationFrame(()=>b.fores.forEach(f=>f.style.transform=`rotate(${-o*112}deg)`));
+      setTimeout(()=>{if(a.el.isConnected)cafeHoldAt(a,b.hand,cupHTML,{w:.15,h:1.3,dy:-.95});},cafeReduced()?0:460);
+    }else{
+      /* no bending arm: the cup is held in the hanging hand */
+      [arm,fore].forEach(e=>{if(e)e.classList.add("holding");});cafeHandView(hand,"grip-edge");
+      setTimeout(()=>{if(a.el.isConnected)cafeHoldAt(a,hand,cupHTML,{w:.15,h:1.3,dy:-.55});},cafeReduced()?0:200);}
     if(food&&a.bagSide){const bh=a.J("hand-"+a.bagSide),barm=a.J("arm-"+a.bagSide);if(barm)barm.classList.add("holding");cafeHandView(bh,"grip-back");
-      cafeHoldAt(a,bh,paperBagSVG(false,color),{w:.2,h:1.33,dy:-.25});}
+      cafeHoldAt(a,bh,paperBagSVG(false,ticket),{w:.2,h:1.33,dy:-.25});}
   }else{
     if(arm)arm.classList.add("holding");cafeHandView(hand,"grip-back");
-    cafeHoldAt(a,hand,paperBagSVG(true,color),{w:.21,h:1.33,dy:-.25});
+    cafeHoldAt(a,hand,paperBagSVG(true,ticket),{w:.21,h:1.33,dy:-.25});
   }
 }
 
@@ -1052,15 +1119,16 @@ function cafeCustomerPetReact(entry,correct){
 /* ---- the order: made at the machine, slid down the counter, collected ---- */
 function cupSlide(entry,perfect,cb){
   const laneT=STAGE.laneT;if(!laneT||!STAGE.mounted){cb&&cb();return;}
-  const cup=document.createElement("div");cup.className="orderitem";cup.innerHTML=drinkSVG(entry.ticket,perfect)+(entry.ticket.food?foodSVG(entry.ticket.food,perfect):"");
+  const cup=document.createElement("div");cup.className="orderitem";cup.innerHTML=`<span class="cupart">${takeawayCupSVG(entry.ticket)}</span>`+(entry.ticket.food?foodSVG(entry.ticket.food,perfect):"");
   laneT.appendChild(cup);
   const h=24,top=CAFE_GEO.counterTopY+1-h;
   cup.style.height=sy(h)+"px";
   cup.querySelectorAll(".foodartsprite,.foodartsprite img").forEach(n=>{n.style.height=sy(h)+"px";n.style.width=sy(h*52/49)+"px";n.style.flex="0 0 auto";});
-  cup.style.transform=`translate(${sx(62)}px,${sy(top)}px) scale(.7)`;
+  const x0=CAFE_GEO.barista.x+8,x1=CAFE_GEO.bCounter.w-26;
+  cup.style.transform=`translate(${sx(x0)}px,${sy(top)}px) scale(.7)`;
   const d=dur(650);
-  requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(62)}px,${sy(top)}px)`;
-    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-22)}px,${sy(top)}px)`;
+  requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(x0)}px,${sy(top)}px)`;
+    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(x1)}px,${sy(top)}px)`;
       setTimeout(()=>{
         /* collected: the order leaves the counter and goes into the customer's hands */
         cup.style.transition="opacity .25s";cup.style.opacity="0";setTimeout(()=>cup.remove(),300);
@@ -1132,7 +1200,7 @@ function playDebut(u){
 function cafePetStaticHTML(pet,mood="normal",w=64,worn){
   const t=CafeArt.get("pets",pet.id);
   if(!t){CafeArt.load("pets",pet.id);return petSVG(pet,mood,w,worn||{});}
-  const want=mood==="good"||mood==="excited"||mood==="bad"||mood==="normal"||mood==="blink"?mood:"normal";
+  const want=["good","excited","bad","grumpy","normal","blink"].includes(mood)?mood:mood==="happy"?"good":mood==="sad"?"bad":"normal";
   const svg=t.replace(/<svg /,`<svg width="${w}" height="${(w*1.1).toFixed(1)}" class="cafepet-still" `).replace(/data-expression="([a-z]+)"/g,(m,e)=>`${m} opacity="${e===want?1:0}"`);
   const wornAttr=worn&&Object.keys(worn).length?` data-worn='${JSON.stringify(worn).replace(/'/g,"&#39;")}'`:"";
   return `<span class="cafepet-wrap"${wornAttr}>${svg}</span>`;

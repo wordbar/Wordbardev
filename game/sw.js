@@ -7,7 +7,7 @@
    preserve those caches across shell activation and must never place an
    unverified word bank into the shell cache.
    ============================================================ */
-const SHELL_CACHE_VERSION = "wordbar-shell-v86l-phase13-petpop12-faq4-analytics8-batchS13f";
+const SHELL_CACHE_VERSION = "wordbar-shell-v86l-phase13-petpop12-faq4-analytics8-batchS13g";
 const COURSE_DATA_CACHE_PREFIX = "wordbar-course-data-";
 const COURSE_DATA_META_CACHE = "wordbar-course-data-meta-v1";
 
@@ -20,7 +20,7 @@ const CORE_ASSETS = [
   "./ladder-dict.js",
   "./phonics.js?v=batchS8b",
   "./spelling-v16-phonics-adapter.js?v=batchS8b",
-  "./04-world.js?v=batchS13f",
+  "./04-world.js?v=batchS13g",
   "./05-engine.js?v=batchS12d",
   "./pet-pop-word-adapter.js?v=petpop11",
   "./pet-pop-scheduler.js?v=petpop11",
@@ -38,11 +38,11 @@ const CORE_ASSETS = [
   "./pet-pop.js?v=batchS12d",
   "./pet-pop.css?v=batchS12d",
   "./analytics.js?v=analytics8-batchS12d",
-  "./cafe-stage.js?v=batchS13f",
-  "./06-ui.js?v=batchS13f",
+  "./cafe-stage.js?v=batchS13g",
+  "./06-ui.js?v=batchS13g",
   "./open-app-hint.js?v=batchS11a",
-  "./i18n/zh-hk.js?v=batchS13f",
-  "./i18n/zh-cn.js?v=batchS13f",
+  "./i18n/zh-hk.js?v=batchS13g",
+  "./i18n/zh-cn.js?v=batchS13g",
   "./i18n.js?v=batchS12d",
   "./open-app-hint.css?v=batchS10e",
   "./manifest.json",
