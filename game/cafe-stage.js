@@ -19,7 +19,7 @@
    how each item is drawn has moved here. Supplied decoration art is
    used as small WebP sprites (art/decor), surfaces as tiling textures.
    ============================================================ */
-const CAFE_W=330, CAFE_H=300;
+const CAFE_W=375, CAFE_H=300;
 /* the game's gold coin icon (styled in index.html) */
 const COIN='<i class="wbcoin" aria-hidden="true"></i>';
 /* Trimmed sprite sizes from tools/build_decor.py (decor-meta.json). */
@@ -35,18 +35,18 @@ const decorSrc=id=>`${ART_DIR}decor/${id}.webp`;
    and a short way out down the middle. */
 const CAFE_GEO=Object.freeze({
   wallBottom:160,
-  window:{x:116,y:24,w:80,h:80},
-  door:{x:274,y:20,w:54,h:142},
-  bCounter:{x:0,w:110,top:152,face:162,bottom:232},     /* barista counter (left) */
-  bar:{x:164,w:154,top:182,face:192,bottom:252},        /* raised customer bar (right, in front) */
-  bed:{x:38,y:292},                                     /* barista pet bed, front left */
-  barista:{x:56,feet:198,k:.92},
-  serve:{x:136,feet:272,k:1},                           /* open area: order + collect */
-  queue:[{x:214,feet:216,k:.88},{x:264,feet:212,k:.87}],/* behind the bar: at most two wait, one orders */
-  stash:{x:302,feet:166,k:.8},                          /* outside the door: overflow queue */
-  doorIn:{x:302,feet:166,k:.8},
-  exit:{x:140,feet:480,k:1.15},                         /* straight down, out of the picture */
-  barTopY:182, counterTopY:152
+  window:{x:128,y:26,w:84,h:80},
+  door:{x:316,y:46,w:56,h:116},
+  bCounter:{x:0,w:112,top:166,face:176,bottom:240},     /* barista counter (left), low enough to show the cupboard */
+  bar:{x:206,w:154,top:174,face:184,bottom:244},        /* customer bar (right), marble top */
+  bed:{x:40,y:290},                                     /* barista pet bed, front left */
+  barista:{x:56,feet:212,k:.92},
+  serve:{x:136,feet:214,k:.92},                         /* beside the barista, same depth: order + collect */
+  queue:[{x:258,feet:208,k:.88},{x:310,feet:204,k:.87}],/* behind the bar: at most two wait, one orders */
+  stash:{x:344,feet:166,k:.8},                          /* outside the door: overflow queue */
+  doorIn:{x:344,feet:166,k:.8},
+  exit:{x:160,feet:480,k:1.15},                         /* straight down the middle, out of the picture */
+  barTopY:174, counterTopY:166
 });
 let cafeSceneUid=0;
 
@@ -140,10 +140,10 @@ function themeDressingBack(theme,ctx){
   const G=CAFE_GEO,ink="#463A54",W=CAFE_W;let s="";
   if(theme==="spring")s+=garlandSVG("spring",-4,W+4,11)+`<g class="wisteria">${[16,104,206].map(x=>`<g fill="#B79AD8" stroke="${ink}" stroke-width=".4">${[0,1,2,3,4].map(i=>`<circle cx="${x+(i%2)*2}" cy="${12+i*4}" r="${2.4-i*.3}"/>`).join("")}</g>`).join("")}</g>`;
   if(theme==="halloween")s+=garlandSVG("halloween",-4,W+4,11);
-  if(theme==="kyoto")s+=garlandSVG("kyoto",-4,110,11)+garlandSVG("kyoto",200,274,11,6);
+  if(theme==="kyoto")s+=garlandSVG("kyoto",-4,110,11)+garlandSVG("kyoto",220,306,11,6);
   if(theme==="christmas")s+=garlandSVG("christmas",-4,W+4,11)+`<g class="door-wreath"><circle cx="${G.door.x+G.door.w/2}" cy="${G.door.y+26}" r="8" fill="none" stroke="#2F5A43" stroke-width="4"/><circle cx="${G.door.x+G.door.w/2}" cy="${G.door.y+26}" r="8" fill="none" stroke="#3E7055" stroke-width="1.6" stroke-dasharray="2 3"/><path d="M${G.door.x+G.door.w/2-3} ${G.door.y+34} l3 -3 l3 3" fill="#C0392B"/></g>`;
   /* pumpkins by the back counter and on the top shelf */
-  if(theme==="halloween")s+=[[92,160,9],[150,161,7],[226,161,6],[60,40,5.4]].map(([x,y,r])=>`<g><ellipse cx="${x}" cy="${y-r}" rx="${r*1.25}" ry="${r}" fill="#E8891D" stroke="${ink}" stroke-width="1"/><path d="M${x} ${y-2*r} v${r} M${x-r*.5} ${y-1.8*r} q-1 ${r*.8} 0 ${r*1.6} M${x+r*.5} ${y-1.8*r} q1 ${r*.8} 0 ${r*1.6}" stroke="#B4562A" stroke-width=".8" fill="none"/><path d="M${x} ${y-2*r} l1 -2.4" stroke="#5E8A47" stroke-width="1.4"/></g>`).join("");
+  if(theme==="halloween")s+=[[150,161,9],[204,161,7],[260,161,6],[60,40,5.4]].map(([x,y,r])=>`<g><ellipse cx="${x}" cy="${y-r}" rx="${r*1.25}" ry="${r}" fill="#E8891D" stroke="${ink}" stroke-width="1"/><path d="M${x} ${y-2*r} v${r} M${x-r*.5} ${y-1.8*r} q-1 ${r*.8} 0 ${r*1.6} M${x+r*.5} ${y-1.8*r} q1 ${r*.8} 0 ${r*1.6}" stroke="#B4562A" stroke-width=".8" fill="none"/><path d="M${x} ${y-2*r} l1 -2.4" stroke="#5E8A47" stroke-width="1.4"/></g>`).join("");
   return s;
 }
 function themeDressingFront(theme){
@@ -175,15 +175,15 @@ function cafeBackSVG(uid,ctx){
     s+=`<clipPath id="pk${uid}"><rect x="-320" y="0" width="${CW+640}" height="${G.wallBottom-26}"/></clipPath>
     <g clip-path="url(#pk${uid})">${outsideViewSVG(-60,0,CW+120,G.wallBottom-26,T,L,uid+"p",`pk${uid}`,"pavilion")}
       <g class="cafe-window-day"><rect x="-320" y="${G.wallBottom-60}" width="${CW+640}" height="12" fill="#7FB7D8"/><path d="M130 ${G.wallBottom-60} q14 -12 28 0" fill="none" stroke="#C9B49A" stroke-width="2.4"/>
-      ${[[14,70],[300,64],[200,76]].map(([x,y])=>`<g><rect x="${x-1.4}" y="${y}" width="2.8" height="${G.wallBottom-26-y}" fill="#5A4636"/><circle cx="${x}" cy="${y-10}" r="16" fill="#6FA455"/><circle cx="${x-8}" cy="${y-2}" r="10" fill="#8CBF6A"/></g>`).join("")}</g></g>
+      ${[[14,70],[340,64],[226,76]].map(([x,y])=>`<g><rect x="${x-1.4}" y="${y}" width="2.8" height="${G.wallBottom-26-y}" fill="#5A4636"/><circle cx="${x}" cy="${y-10}" r="16" fill="#6FA455"/><circle cx="${x-8}" cy="${y-2}" r="10" fill="#8CBF6A"/></g>`).join("")}</g></g>
     <rect x="-320" y="${G.wallBottom-30}" width="${CW+640}" height="30" fill="#E9DCC0" stroke="${ink}" stroke-width="1.2"/>
     <path d="M-320 ${G.wallBottom-22} H650" stroke="#CBB892" stroke-width="2"/>`;
   }
   s+=`<rect x="-320" y="${G.wallBottom-5}" width="${CW+640}" height="7" fill="${woodD}" stroke="${ink}" stroke-width="1.4"/>
   <rect x="-320" width="${CW+640}" height="9" fill="${wood}" stroke="${ink}" stroke-width="1.6"/>
   <path d="M-320 9 H650" stroke="${woodD}" stroke-width="2"/>
-  <rect x="108" y="9" width="5" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>
-  <rect x="268" y="9" width="6" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>`;
+  <rect x="114" y="9" width="5" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>
+  <rect x="308" y="9" width="6" height="${G.wallBottom-14}" fill="${wood}" stroke="${ink}" stroke-width="1.2"/>`;
   if(pavilion)s+=`<path d="M-320 9 ${Array.from({length:86},(_,i)=>`q6 9 12 0`).join(" ")}" transform="translate(${-320+320} 0)" fill="#F4EAD8" stroke="${ink}" stroke-width="1"/>`;
   /* window (indoor themes) */
   s+=`<clipPath id="wv${uid}"><rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" rx="3"/></clipPath>
@@ -238,23 +238,23 @@ function cafeBackSVG(uid,ctx){
   </g>`;
   if(displayI&&displayI.id==="mug_rack")s+=decorImg("mug_rack",56,46,46,18);
   if(displayI&&displayI.id==="shelf_kegs")s+=decorImg("shelf_kegs",72,90,38,25);
-  if(displayI&&displayI.id==="jukebox")s+=decorImg("jukebox",206,100,28,58);
+  if(displayI&&displayI.id==="jukebox")s+=decorImg("jukebox",222,100,28,58);
   /* wall art and the menu board between the window and the door */
-  if(wallart)s+=wallart.id==="mural_market"?decorImg("mural_market",200,30,62,32,{anchor:"middle"}):decorImg(wallart.id,204,24,38,44,{anchor:"middle"});
-  if(!(wallart&&wallart.id==="mural_market"))s+=menuI?decorImg("menu_chalk",242,22,26,52,{anchor:"middle"}):`<g><rect x="244" y="26" width="22" height="34" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/><rect x="246.5" y="28.5" width="17" height="29" fill="#2E3A33"/><path d="M249.5 36 h11 M249.5 42 h8 M249.5 48 h10" stroke="#F4EAD8" stroke-width="1.1" opacity=".7"/></g>`;
-  else if(menuI)s+=decorImg("menu_chalk",232,66,30,40,{anchor:"middle"});
+  if(wallart)s+=wallart.id==="mural_market"?decorImg("mural_market",220,30,70,34,{anchor:"middle"}):decorImg(wallart.id,224,26,40,46,{anchor:"middle"});
+  if(!(wallart&&wallart.id==="mural_market"))s+=menuI?decorImg("menu_chalk",268,24,34,54,{anchor:"middle"}):`<g><rect x="272" y="28" width="26" height="38" rx="2" fill="${wood}" stroke="${ink}" stroke-width="1.4"/><rect x="274.5" y="30.5" width="21" height="33" fill="#2E3A33"/><path d="M278 38 h14 M278 45 h10 M278 52 h12" stroke="#F4EAD8" stroke-width="1.1" opacity=".7"/></g>`;
+  else if(menuI)s+=decorImg("menu_chalk",270,70,30,40,{anchor:"middle"});
   /* wall plants (sunny), theme dressing, pendant lamps */
   if(theme==="sunny"||theme==="foodtruck")s+=`<g class="vines" stroke="${ink}" stroke-width=".9"><path d="M4 9 q4 18 0 30 q-4 12 2 26" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[5,16],[2,28],[6,40],[3,52]].map(([x,y])=>`<ellipse cx="${x+3}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(-30 ${x+3} ${y})"/>`).join("")}
-    <path d="M270 9 q-4 16 1 28 q4 12 -2 22" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[265,18],[271,30],[264,44],[270,56]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(25 ${x} ${y})"/>`).join("")}</g>`;
+    <path d="M312 9 q-4 16 1 28 q4 12 -2 22" fill="none" stroke="#5E8A47" stroke-width="1.4"/>${[[307,18],[313,30],[306,44],[312,56]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="2.4" fill="#7FA65A" transform="rotate(25 ${x} ${y})"/>`).join("")}</g>`;
   s+=themeDressingBack(theme,ctx);
-  if(!lightsI)s+=[138,176].map(x=>pendantSVG(theme,x,ink)).join("");
-  if(rugI)s+=decorImg(rugI.id,86,262,104,30,{anchor:"middle"});
-  if(lightsI&&lightsI.id==="aurora")s+=auroraSVG(uid,112,8,160,62);
-  if(bunting)s+=decorImg("bunting_rainbow",196,10,72,18,{anchor:"top"});
-  if(lightsI&&lightsI.id==="fairylights")s+=hangingLightsSVG("fairy",uid,{x0:114,x1:198,y:12,sag:5,count:8});
-  if(lightsI&&lightsI.id==="stars_paper")s+=decorImg("stars_paper",112,10,86,16,{anchor:"top"});
-  if(lightsI&&lightsI.id==="neon_open")s+=`<g class="lanternglow"><rect x="130" y="12" width="50" height="16" rx="7" fill="none" stroke="#F26BA8" stroke-width="2.4"/><text x="155" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#F26BA8" font-family="'Baloo 2',cursive">OPEN</text></g>`;
-  if(lampI&&lampI.id==="lantern_paper")s+=hangingLightsSVG("lantern",uid,{x0:6,x1:104,y:12,sag:6,count:5});
+  if(!lightsI)s+=[152,190].map(x=>pendantSVG(theme,x,ink)).join("");
+  if(rugI)s+=decorImg(rugI.id,104,262,110,30,{anchor:"middle"});
+  if(lightsI&&lightsI.id==="aurora")s+=auroraSVG(uid,124,8,184,62);
+  if(bunting)s+=decorImg("bunting_rainbow",218,10,88,20,{anchor:"top"});
+  if(lightsI&&lightsI.id==="fairylights")s+=hangingLightsSVG("fairy",uid,{x0:126,x1:214,y:12,sag:5,count:8});
+  if(lightsI&&lightsI.id==="stars_paper")s+=decorImg("stars_paper",124,10,90,16,{anchor:"top"});
+  if(lightsI&&lightsI.id==="neon_open")s+=`<g class="lanternglow"><rect x="146" y="12" width="50" height="16" rx="7" fill="none" stroke="#F26BA8" stroke-width="2.4"/><text x="171" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#F26BA8" font-family="'Baloo 2',cursive">OPEN</text></g>`;
+  if(lampI&&lampI.id==="lantern_paper")s+=hangingLightsSVG("lantern",uid,{x0:6,x1:110,y:12,sag:6,count:5});
   return s;
 }
 
@@ -272,11 +272,21 @@ function cafeFrontSVG(uid,ctx){
     <rect x="${x}" y="${bottom-6}" width="${w}" height="6" fill="${panelD}" stroke="${ink}" stroke-width="1.4"/>
     <path d="M${x-3} ${topY} H${x+w+3} L${x+w+3} ${face} H${x-3} Z" fill="${top}" stroke="${ink}" stroke-width="2"/>
     <path d="M${x-1} ${topY+2} H${x+w+1}" stroke="#FFF" stroke-width="1.4" opacity=".55"/></g>`;
-  let s=counter(B.x,B.w-4,B.top,B.face,B.bottom,"barista-counter")+counter(R.x+4,R.w-8,R.top,R.face,R.bottom,"customer-bar");
+  let s=counter(B.x,B.w-4,B.top,B.face,B.bottom,"barista-counter");
+  /* the customer bar: marble top, darker panelled front, brass foot rail */
+  const barFront=shade(T.counter,-.22),barLine=shade(T.counter,-.42);
+  s+=`<g class="customer-bar">
+    <rect x="${R.x+4}" y="${R.face}" width="${R.w-8}" height="${R.bottom-R.face}" fill="${barFront}" stroke="${ink}" stroke-width="2"/>
+    ${(()=>{let p="";for(let x=R.x+14;x<R.x+R.w-10;x+=18)p+=`<rect x="${x}" y="${R.face+7}" width="12" height="${R.bottom-R.face-22}" rx="2" fill="none" stroke="${barLine}" stroke-width="1.2" opacity=".7"/>`;return p;})()}
+    <rect x="${R.x+4}" y="${R.bottom-6}" width="${R.w-8}" height="6" fill="${barLine}" stroke="${ink}" stroke-width="1.4"/>
+    <path d="M${R.x+8} ${R.bottom-12} H${R.x+R.w-8}" stroke="#C99A3A" stroke-width="2.6" stroke-linecap="round"/><path d="M${R.x+8} ${R.bottom-12.8} H${R.x+R.w-8}" stroke="#F2D27A" stroke-width=".8" stroke-linecap="round"/>
+    <path d="M${R.x-3} ${R.top} H${R.x+R.w+3} L${R.x+R.w+3} ${R.face} H${R.x-3} Z" fill="${ctx.marbleFill}" stroke="${ink}" stroke-width="2"/>
+    <path d="M${R.x-3} ${R.face} H${R.x+R.w+3}" stroke="${barLine}" stroke-width="1.6"/>
+    <path d="M${R.x-1} ${R.top+2} H${R.x+R.w+1}" stroke="#FFF" stroke-width="1.4" opacity=".7"/></g>`;
   if(theme==="sunny"||theme==="foodtruck")s+=`<g stroke="${ink}" stroke-width=".8"><path d="M${R.x+R.w-14} ${R.top} q6 10 0 18 q-5 8 1 16" fill="none" stroke="#5E8A47" stroke-width="1.3"/>${[[R.x+R.w-12,R.top+6],[R.x+R.w-17,R.top+14],[R.x+R.w-11,R.top+24],[R.x+R.w-15,R.top+32]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="${i%2?"#6FA455":"#7FA65A"}" transform="rotate(${i%2?30:-30} ${x} ${y})"/>`).join("")}</g>`;
   /* counter-top items on the barista counter */
   if(counterI&&counterI.id==="fountain_gold")s+=decorImg("fountain_gold",66,B.top-27,22,28);
-  if(displayI&&["cakedome","gumball","radio_retro"].includes(displayI.id))s+=decorImg(displayI.id,82,B.top-29,26,30);
+  if(displayI&&["cakedome","gumball","radio_retro"].includes(displayI.id))s+=decorImg(displayI.id,B.w-30,B.top-29,26,30);
   if(lampI&&lampI.id!=="lantern_paper")s+=decorImg(lampI.id,2,B.top-27,22,28);
   if(!lampI||lampI.id==="lantern_paper")s+=`<g><path d="M${R.x+R.w-22} ${R.top} h8 l-1.4 -9 q-2.6 -1.6 -5.2 0 z" fill="#F4EAD8" stroke="${ink}" stroke-width="1.1"/><circle cx="${R.x+R.w-18}" cy="${R.top-11}" r="3.4" fill="#F2F2F2" stroke="${ink}" stroke-width="1"/><circle cx="${R.x+R.w-20}" cy="${R.top-12}" r="1.2" fill="#F2B33D"/></g>`;
   s+=themeDressingFront(theme);
@@ -284,7 +294,7 @@ function cafeFrontSVG(uid,ctx){
   const stoolXs=[R.x+28,R.x+R.w-58];
   s+=stoolXs.map(x=>stoolI?decorImg(stoolI.id,x,R.bottom-36,30,56):
     `<g class="stool"><rect x="${x+5}" y="${R.bottom-30}" width="3.8" height="46" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><rect x="${x+21}" y="${R.bottom-30}" width="3.8" height="46" fill="#8A5A2E" stroke="${ink}" stroke-width="1.1"/><path d="M${x+6} ${R.bottom+2} h18" stroke="#8A5A2E" stroke-width="2.4"/><ellipse cx="${x+15}" cy="${R.bottom-32}" rx="15" ry="5.2" fill="${theme==="sunny"||theme==="foodtruck"?"#3E7055":shade(T.counter,-.1)}" stroke="${ink}" stroke-width="1.6"/><path d="M${x} ${R.bottom-32} v2.6 q15 6.4 30 0 v-2.6" fill="${theme==="sunny"||theme==="foodtruck"?"#2F5A43":shade(T.counter,-.3)}" stroke="${ink}" stroke-width="1.2"/></g>`).join("");
-  if(plantI)s+=decorImg("plant_monstera",292,236,38,60);
+  if(plantI)s+=decorImg("plant_monstera",336,236,38,60);
   return s;
 }
 
@@ -312,6 +322,7 @@ function cafeSceneLayers(context="stage",themeOverride){
   if(wallI&&DECOR_TILES.has(wallI.id)){defs+=tilePattern(`pw${uid}`,wallI.id,46);ctx.wallFill=`url(#pw${uid})`;}
   if(floorI&&DECOR_TILES.has(floorI.id)){defs+=tilePattern(`pf${uid}`,floorI.id,52);ctx.floorFill=`url(#pf${uid})`;}
   if(counterI&&counterI.id==="counter_marble"){defs+=tilePattern(`pc${uid}`,"counter_marble",40);ctx.counterFill=`url(#pc${uid})`;}
+  defs+=tilePattern(`pm${uid}`,"counter_marble",34);ctx.marbleFill=`url(#pm${uid})`;
   const vb=`viewBox="0 0 ${CAFE_W} ${CAFE_H}" preserveAspectRatio="xMidYMax meet"`;
   const svg=(cls,body,extra="")=>`<svg ${vb} class="cafe-layer ${cls}" aria-hidden="true" focusable="false" ${extra}>${body}</svg>`;
   const nightGlow=`<radialGradient id="ng${uid}"><stop offset="0%" stop-color="${L.lamp}" stop-opacity=".34"/><stop offset="100%" stop-color="${L.lamp}" stop-opacity="0"/></radialGradient>`;
@@ -685,7 +696,7 @@ function cafeFollow(pt,dt){
   const pos=cafePathAt(a,Math.max(0,pt.s));const dx=pos.x-pt.x;if(Math.abs(dx)>.05)pt.dirX=Math.sign(dx);
   const kk=pos.feet<CAFE_GEO.serve.feet-30?.88:Math.min(1.15,1+Math.max(0,pos.feet-CAFE_GEO.serve.feet)/(CAFE_GEO.exit.feet-CAFE_GEO.serve.feet)*.15);
   pt.x=pos.x;pt.g=pos.feet;pt.box=CAFE_PBOX*kk;pt.lane=pos.lane==="f"?"f":"b";cafePetPlace(pt);
-  if(!pt.shown&&pt.s>2){pt.shown=true;pt.el.classList.add("shown");}
+  if(!pt.shown&&pt.s>2&&!pt.hiddenWait){pt.shown=true;pt.el.classList.add("shown");}
   if(moving){pt.still=0;if(pt.move!=="walk")petPlay(pt,"walk");}
   else{pt.still=(pt.still||0)+dt;if(pt.move==="walk"&&pt.still>.15)petPlay(pt,"idle");}
   if(pt.leaving&&pt.g>CAFE_H+40)cafeRemovePet(pt);
@@ -851,6 +862,7 @@ function layoutQueue(){
       return;
     }
     hydrateActorVisual(e);a.el.removeAttribute("aria-hidden");
+    if(e.petActor){const pt=e.petActor;pt.hiddenWait=i>0;if(i>0&&pt.state==="follow"){pt.shown=false;pt.el.classList.remove("shown");}}
     if(a.slot===i)return;
     const spot={...G.queue[i],lane:"b"};
     if(a.slot===undefined||a.slot==="stash"){
@@ -858,7 +870,7 @@ function layoutQueue(){
       a.slot=i;cafeEnter(e);return;
     }
     if(a.entering){a.slot=i;return;}
-    cafeWalk(a,[spot]);
+    cafeWalk(a,[spot],()=>cafeQueuePet(e));
     a.slot=i;
   });
 }
@@ -877,7 +889,7 @@ function cafeEnter(e){
     if(e.petActor){const pt=e.petActor;Object.assign(pt,{x:D.x,g:D.feet,s:0,shown:false,state:"follow",lane:"b"});pt.el.classList.remove("shown");cafePetPlace(pt);}
     const step={x:D.x-14,feet:D.feet+12,k:.82,lane:"b"};
     if(isCurrent&&e.goServe){cafeWalk(a,[step],()=>e.goServe());return;}
-    a.slot=qi;cafeWalk(a,[step,{...CAFE_GEO.queue[qi],lane:"b"}]);
+    a.slot=qi;cafeWalk(a,[step,{...CAFE_GEO.queue[qi],lane:"b"}],()=>cafeQueuePet(e));
   },wait);
 }
 function attachPet(entry,pet){
@@ -928,29 +940,40 @@ function takeNext(){
   const a=entry.actor,G=CAFE_GEO;a.slot="serve";
   if(a.path===undefined)cafeTrackStart(a);
   /* round the end of the bar into the open area in front of the barista */
-  entry.goServe=()=>cafeWalk(a,[{x:G.bar.x-10,feet:226,k:.95,lane:"f"},{...G.serve,lane:"f"}],()=>{
+  entry.goServe=()=>{cafePetDown(entry);cafeWalk(a,[{x:G.bar.x-8,feet:212,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
     if(!SHIFT||SHIFT.current!==entry)return;
     cafeFace(a,"happy",1500);cafeGreet(a);
-    cafePetToBar(entry);
     panelArrival(entry);
-  },{fast:true});
+  },{fast:true});};
   if(a.entering)return;   /* still outside: cafeEnter brings them straight to the counter */
   entry.goServe();
 }
-/* the customer's pet catches up, then hops onto the end of the bar */
-function cafePetToBar(entry){
-  const pt=entry.petActor,a=entry.actor;if(!pt||!a)return;
-  const go=()=>{if(!SHIFT||SHIFT.current!==entry||!pt.el.isConnected)return;
-    if(pt.state!=="follow"||pt.s<a.s-PET_GAP-1){setTimeout(go,120);return;}
-    pt.state="hop";cafePetJump(pt,CAFE_GEO.bar.x+15,CAFE_GEO.barTopY+1,"t",()=>{pt.state="counter";pt.box=CAFE_PBOX*.92;pt.dirX=-1;cafePetPlace(pt);petPlay(pt,"tail",true);
-      setTimeout(()=>{if(pt.state==="counter"&&pt.move==="tail")petPlay(pt,"twitch");},2600);});};
-  setTimeout(go,250);
+/* Pets (at most two in view): the next customer's pet sits up on the bar
+   in front of them; the customer being served has theirs on the floor
+   beside them; pets of anyone further back wait out of sight. */
+function cafeQueuePet(e){
+  const pt=e&&e.petActor,a=e&&e.actor;if(!pt||!a||!SHIFT)return;
+  const qi=SHIFT.queue.indexOf(e);if(qi!==0||pt.state!=="follow")return;
+  const go=()=>{if(!SHIFT||SHIFT.queue.indexOf(e)!==0||pt.state!=="follow"||!pt.el.isConnected)return;
+    if(pt.s<a.s-PET_GAP-1){setTimeout(go,120);return;}
+    pt.hiddenWait=false;pt.shown=true;pt.el.classList.add("shown");
+    pt.state="hop";cafePetJump(pt,a.x-34,CAFE_GEO.barTopY+1,"t",()=>{pt.state="counter";pt.box=CAFE_PBOX*.9;pt.dirX=-1;cafePetPlace(pt);petPlay(pt,"tail",true);
+      setTimeout(()=>{if(pt.state==="counter"&&pt.move==="tail")petPlay(pt,"idle");},2600);});};
+  setTimeout(go,200);
 }
-/* answers: the customer's pet on the bar dances or droops */
+/* called up to order: the pet hops down off the bar and trots after them */
+function cafePetDown(entry){
+  const pt=entry.petActor,a=entry.actor;if(!pt||!a)return;
+  pt.hiddenWait=false;
+  const follow=()=>{pt.state="follow";a.path=[{x:pt.x,feet:pt.g,lane:"f",s:0},{x:a.x,feet:a.feet,lane:a.lane,s:Math.hypot(a.x-pt.x,(a.feet-pt.g)*1.4)}];a.s=a.path[1].s;pt.s=0;pt.shown=true;pt.el.classList.add("shown");petPlay(pt,"idle",true);};
+  if(pt.state==="counter"||pt.state==="hop"){pt.state="jump";cafePetJump(pt,pt.x+4,a.feet-2,"f",follow);}
+  else if(pt.state==="follow"&&!pt.shown){pt.s=Math.max(0,a.s-PET_GAP-8);}
+}
+/* answers: the served customer's pet dances or droops beside them */
 function cafeCustomerPetReact(entry,correct){
-  const pt=entry&&entry.petActor;if(!pt||pt.state!=="counter")return;
+  const pt=entry&&entry.petActor;if(!pt||pt.jump||(pt.state!=="counter"&&pt.state!=="follow"))return;
   petPlay(pt,correct?"dance":"sad",true);clearTimeout(pt._react);
-  pt._react=setTimeout(()=>{if(pt.state==="counter")petPlay(pt,"twitch",true);},correct?3840:1800);
+  pt._react=setTimeout(()=>{if(pt.state==="counter"||pt.state==="follow")petPlay(pt,"twitch",true);},correct?3840:1800);
 }
 
 /* ---- the order: made at the machine, slid down the counter, collected ---- */
@@ -964,7 +987,7 @@ function cupSlide(entry,perfect,cb){
   cup.style.transform=`translate(${sx(62)}px,${sy(top)}px) scale(.7)`;
   const d=dur(650);
   requestAnimationFrame(()=>{cup.style.transition="opacity .2s, transform .25s cubic-bezier(.3,1.5,.6,1)";cup.style.opacity="1";cup.style.transform=`translate(${sx(62)}px,${sy(top)}px)`;
-    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-26)}px,${sy(top)}px)`;
+    setTimeout(()=>{cup.style.transition=`transform ${d}ms ease`;cup.style.transform=`translate(${sx(CAFE_GEO.bCounter.w-22)}px,${sy(top)}px)`;
       setTimeout(()=>{
         /* collected: the order leaves the counter and goes into the customer's hands */
         cup.style.transition="opacity .25s";cup.style.opacity="0";setTimeout(()=>cup.remove(),300);
@@ -988,7 +1011,7 @@ function cafeLeave(entry){
   if(pt){pt.leaving=true;
     const follow=()=>{pt.state="follow";a.path=[{x:pt.x,feet:pt.g,lane:"f",s:0},{x:a.x,feet:a.feet,lane:"f",s:Math.hypot(a.x-pt.x,(a.feet-pt.g)*1.4)}];a.s=a.path[1].s;pt.s=0;petPlay(pt,"idle",true);};
     if(pt.state==="counter"||pt.state==="hop"){pt.state="jump";cafePetJump(pt,a.x+22,a.feet-2,"f",follow);}else follow();}
-  cafeWalk(a,[{x:G.serve.x+3,feet:G.serve.feet+30,k:1.04,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>{cafeRemovePerson(a);
+  cafeWalk(a,[{x:G.serve.x+18,feet:G.serve.feet+40,k:1.0,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>{cafeRemovePerson(a);
     if(pt&&pt.state!=="follow")cafeRemovePet(pt);},{fast:true});
 }
 
@@ -1003,7 +1026,7 @@ function playDebut(u){
     if(!c){ departDebutDone(); return; }
     const a=makeActor(c,null),entry={cust:c,actor:a,node:a.el};hydrateActorVisual(entry);
     a.el.classList.remove("waiting-offstage");cafeOpenDoor();cafeTrackStart(a);const G=CAFE_GEO;
-    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.88,lane:"b"},{x:G.bar.x-10,feet:226,k:.95,lane:"f"},{...G.serve,lane:"f"}],()=>{
+    cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.88,lane:"b"},{x:G.bar.x-8,feet:212,k:.9,lane:"f"},{...G.serve,lane:"f"}],()=>{
       spawnBurst($("#stage"));cafeFace(a,"happy",2600);cafeGreet(a);
       popEmote(entry,"🎉");
       const pnl=$("#panel");
@@ -1013,7 +1036,7 @@ function playDebut(u){
         <div class="custsay" lang="en-GB">“${esc(c.lines.arrive[rnd(c.lines.arrive.length)])}”</div>
         <small class="joined">${esc(c.name)} has joined the café!</small></div>`;
       setTimeout(()=>{
-        cafeWalk(a,[{x:G.serve.x+3,feet:G.serve.feet+30,k:1.04,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>cafeRemovePerson(a),{fast:true});
+        cafeWalk(a,[{x:G.serve.x+18,feet:G.serve.feet+40,k:1.0,lane:"f"},{x:G.exit.x,feet:G.exit.feet,k:G.exit.k,lane:"f"}],()=>cafeRemovePerson(a),{fast:true});
         setTimeout(departDebutDone, dur(750));
       }, 2800);
     },{fast:true});

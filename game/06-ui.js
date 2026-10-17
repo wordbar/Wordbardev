@@ -1377,9 +1377,9 @@ function screenMenu(){
     ${playerPet&&reviewCount>=15?`<div class="note reviewpetnudge">🐾 ${esc(playerPet.name.replace(/^(a|an) /i,"Your "))} would love a Review session — ${reviewCount} words are waiting!</div>`:""}
     <div class="menubtns compact3">
       <div class="modepick ${kitchenAvailable?"with-kitchen":""}">
-        ${kitchenAvailable?`<button class="felt big" id="kitchen"><span class="bemoji">👩‍🍳</span>Kitchen</button>`:""}
-        <button class="felt big" id="moderush"><span class="bemoji">🔥</span>Rush Hour</button>
         <button class="felt big" id="modenormal"><span class="bemoji">☕</span>Café</button>
+        <button class="felt big" id="moderush"><span class="bemoji">🔥</span>Rush Hour</button>
+        ${kitchenAvailable?`<button class="felt big" id="kitchen"><span class="bemoji">👩‍🍳</span>Kitchen</button>`:""}
         <button class="felt big" id="modetime"><span class="bemoji">⏱️</span>Time Challenge</button>
       </div>
       ${PET_POP_FEATURE_ENABLED?`<div class="reviewspellrow spellcols-3"><button class="felt big" id="modereview"><span class="bemoji">🎯</span><span class="reviewspelllabel">Review<small>${reviewCount?`${reviewCount} waiting`:"Vocabulary"}</small></span></button><button class="felt big" id="modepetpop"><span class="bemoji">🐾</span><span class="reviewspelllabel">Pet Pop<small>Spelling</small></span></button>${dictationLinkHTML()}</div>`:`<button class="felt" id="modereview"><span class="bemoji">🎯</span>Review${reviewCount?` (${reviewCount})`:""}</button>${dictationLinkHTML()}`}

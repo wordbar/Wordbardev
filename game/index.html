@@ -1738,17 +1738,17 @@ body.reduce #kTimer.khurry{animation:none}
    ============================================================ */
 /* S13b: the shared café height (Build 79 rule: width-only) is ~20% taller,
    matching the café's own 330×300 shape so it fills the box exactly */
-:root{--wordbar-cafe-height:min(calc((100vw - 30px)*300/330),330px)}
+:root{--wordbar-cafe-height:min(calc((100vw - 30px)*.8),300px)}
 @media (orientation:landscape) and (max-height:520px){:root{--wordbar-cafe-height:min(calc((100vw - 36px)*.556),148px)}}
 .stage{width:100%;container-type:size;margin:4px 0}
 .scenewrap{container-type:size}
-.scenewrap.small{aspect-ratio:330/300;max-height:40dvh;height:auto}
+.scenewrap.small{aspect-ratio:375/300;max-height:36dvh;height:auto}
 /* the café keeps its exact shape and is never cropped; in a wider box the
    walls and floor simply carry on at the sides */
 /* S13b: the café always covers its box (no empty bands); when the box
    is wider than the café, only a little ceiling is trimmed */
-.scenebox{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;aspect-ratio:330/300}
-@supports (width:1cqh){.scenebox{width:max(100cqw,110cqh)}}
+.scenebox{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;aspect-ratio:375/300}
+@supports (width:1cqh){.scenebox{width:max(100cqw,125cqh)}}
 .scenebox>*{position:absolute;inset:0}
 .cafe-layer{overflow:visible}
 .cafe-back{z-index:0}.stage #laneB{z-index:1}.cafe-front{z-index:2}.stage #laneF{z-index:3}.stage #laneT{z-index:4}.cafe-light{z-index:5}.stage .fxlayer{z-index:6}
@@ -1837,10 +1837,12 @@ body.reduce .person *,body.reduce .person .inner,body.psave .person.idle .inner{
 @keyframes wbPetLook{0%,100%{transform:none}30%{transform:rotate(-4deg)}65%{transform:rotate(4deg)}}
 /* S13b main menu: a bigger café picture (about 20% taller) and slimmer menu
    buttons so everything still fits on one phone screen */
-.mainmenu-screen .modepick .felt,.mainmenu-screen .reviewspellrow .felt,.mainmenu-screen #modereview{min-height:44px!important;padding-top:3px!important;padding-bottom:3px!important;font-size:.84rem!important}
-.mainmenu-screen .modepick .bemoji,.mainmenu-screen .reviewspellrow .bemoji{font-size:1.25rem!important}
-.mainmenu-screen .menuclustergrid .felt{min-height:42px!important;padding:2px!important;font-size:.74rem!important}
-.mainmenu-screen .menuclustergrid .bemoji{font-size:1.2rem!important}
+/* buttons scale with the screen height so the whole menu fits */
+.mainmenu-screen .modepick .felt,.mainmenu-screen .reviewspellrow .felt,.mainmenu-screen #modereview{min-height:clamp(34px,5.1dvh,50px)!important;height:auto!important;padding-top:2px!important;padding-bottom:2px!important;font-size:clamp(.74rem,1.9dvh,.9rem)!important}
+.mainmenu-screen .modepick .bemoji,.mainmenu-screen .reviewspellrow .bemoji,.mainmenu-screen #modereview .bemoji{font-size:clamp(1rem,2.8dvh,1.35rem)!important}
+.mainmenu-screen .menuclustergrid .felt{min-height:clamp(32px,4.7dvh,46px)!important;height:auto!important;padding:2px!important;font-size:clamp(.66rem,1.7dvh,.8rem)!important}
+.mainmenu-screen .menuclustergrid .bemoji{font-size:clamp(.95rem,2.6dvh,1.3rem)!important}
+.mainmenu-screen .menubtns,.mainmenu-screen .modepick,.mainmenu-screen .menuclustergrid{gap:clamp(3px,.7dvh,6px)!important}
 .mainmenu-screen .menuclusterlabel{font-size:.7rem!important;margin:0!important}
 </style>
 </head>
