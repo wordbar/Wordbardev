@@ -1811,10 +1811,10 @@ body.reduce .hl-glow,body.reduce .aurora-band,body.reduce .cafe-layer .steam,bod
 @keyframes wbHeadWalk{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-1.4deg)}75%{transform:rotate(1.4deg)}}
 .person.wave .waver{animation:wbRaise 1.8s ease-in-out forwards}
 @keyframes wbRaise{0%,100%{transform:rotate(0)}18%,84%{transform:rotate(calc(var(--ra)*1deg))}}
-/* a small "hi": the straight arm lifts to shoulder height and the hand
-   gives two little waves from the wrist, so no joint ever opens */
+/* a small, shy "hi": the straight arm lifts a little from the side, palm
+   open, and the hand wiggles gently from the wrist; no joint ever opens */
 .person.wave .waverH{animation:wbWaveHand 1.8s ease-in-out forwards}
-@keyframes wbWaveHand{0%,100%{transform:rotate(0)}18%,80%{transform:rotate(calc(var(--wi)*24deg))}30%,54%{transform:rotate(calc(var(--wi)*38deg))}42%,66%{transform:rotate(calc(var(--wi)*12deg))}}
+@keyframes wbWaveHand{0%,22%,82%,100%{transform:rotate(0)}34%,58%{transform:rotate(calc(var(--wi)*9deg))}46%,70%{transform:rotate(calc(var(--wi)*-7deg))}}
 .person.wave [data-joint="head"]{animation:wbTilt 1.8s ease-in-out forwards}
 @keyframes wbTilt{0%,100%{transform:none}18%,82%{transform:rotate(calc(var(--tl)*3deg))}}
 .person.hop .inner{animation:wbHop 1.15s ease-in-out}

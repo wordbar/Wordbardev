@@ -474,7 +474,7 @@ function cafeDressPerson(a,svgText){
     /* the forearm joint sits at the sleeve hem in this art, so the arm stays
        straight and the wave comes from the wrist */
     const hand=J("hand-"+s);
-    arm.classList.add("waver");arm.style.setProperty("--ra",out*108);if(hand){hand.classList.add("waverH");hand.style.setProperty("--wi",out);}
+    arm.classList.add("waver");arm.style.setProperty("--ra",out*34);if(hand){hand.classList.add("waverH");hand.style.setProperty("--wi",out);}
     a.el.style.setProperty("--tl",s==="r"?1:-1);}
   cafeSetFace(svg,a.face==="blink"?"normal":a.face);cafeBlinker(a);
 }
@@ -793,10 +793,10 @@ function cafeTakeOrder(a,ticket){
   if(!s){const f=a.J("fore-r")||a.J("fore-l");if(f)cafeHoldAt(a,f,paperBagSVG(true,color),{w:.19,h:1.33,dy:-.05});return;}
   const hand=a.J("hand-"+s),arm=a.J("arm-"+s),fore=a.J("fore-"+s);
   if(a.bagSide||!food){
-    const inw=(s==="r"?1:-1)*(a["mir"+s]?-1:1);
-    [arm,fore].forEach(e=>{if(e){e.classList.add("holding");e.style.transition="transform .4s ease";}});
-    if(arm)arm.style.transform=`rotate(${-inw*10}deg)`;if(fore)fore.style.transform=`rotate(${inw*118}deg)`;cafeHandView(hand,"grip-edge");
-    setTimeout(()=>{if(a.el.isConnected)cafeHoldAt(a,hand,takeawayCupSVG(color));},cafeReduced()?0:380);
+    /* the cup is held in the hanging hand: the arm stays one straight piece
+       (its only bend in this art is at the sleeve hem, which would break it) */
+    [arm,fore].forEach(e=>{if(e)e.classList.add("holding");});cafeHandView(hand,"grip-edge");
+    setTimeout(()=>{if(a.el.isConnected)cafeHoldAt(a,hand,takeawayCupSVG(color),{w:.15,h:1.3,dy:-.55});},cafeReduced()?0:200);
     if(food&&a.bagSide){const bh=a.J("hand-"+a.bagSide),barm=a.J("arm-"+a.bagSide);if(barm)barm.classList.add("holding");cafeHandView(bh,"grip-back");
       cafeHoldAt(a,bh,paperBagSVG(false,color),{w:.2,h:1.33,dy:-.25});}
   }else{
