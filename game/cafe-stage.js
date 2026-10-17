@@ -470,10 +470,13 @@ function cafeBlinker(a){
 function cafeFace(a,state,ms){if(!a)return;a.face=state;cafeSetFace(a.svg,state);clearTimeout(a.ft);if(ms)a.ft=setTimeout(()=>{a.face="normal";cafeSetFace(a.svg,"normal");},ms);}
 function cafeAct(a,cls,ms){
   if(!a||cafeReduced())return;
-  a.el.classList.remove("idle","walk","wave","hop","nod","bow");void a.el.offsetWidth;a.el.classList.add(cls);
+  a.el.classList.remove("idle","walk","wave","hop","nod","bow");
+  /* a wave cut short puts its hand back down (a hand holding the order is left alone) */
+  if(a.handT){a.handT.forEach(clearTimeout);a.handT=null;if(a.J&&!a.carrying)cafeHandView(a.J("hand-"+a.waveSide),"relaxed");}
+  void a.el.offsetWidth;a.el.classList.add(cls);
   if(cls==="wave"&&a.waveSide&&a.svg){const h=a.J("hand-"+a.waveSide);
     /* the hand turns back > side > open palm while it rises, and back again */
-    setTimeout(()=>cafeHandView(h,"edge"),220);setTimeout(()=>cafeHandView(h,"palm"),320);setTimeout(()=>cafeHandView(h,"edge"),1460);setTimeout(()=>cafeHandView(h,"relaxed"),1560);}
+    a.handT=[[220,"edge"],[320,"palm"],[1460,"edge"],[1560,"relaxed"]].map(([t,v])=>setTimeout(()=>cafeHandView(h,v),t));}
   clearTimeout(a.actT);a.actT=setTimeout(()=>{a.el.classList.remove(cls);if(!a.walk)a.el.classList.add("idle");},ms);
 }
 function cafeGreet(a,ms=1800){if(!a)return;if(a.waveSide&&!a.carrying)cafeAct(a,"wave",ms);else cafeAct(a,"nod",1150);}
@@ -683,6 +686,9 @@ function cafeTick(now){
   if(paused&&!STAGE.pausedAt){STAGE.pausedAt=now;STAGE.pets.forEach(pt=>pt.anims.forEach(a=>a.pause()));}
   if(!paused&&STAGE.pausedAt){STAGE.pausedAt=0;STAGE.pets.forEach(pt=>pt.anims.forEach(a=>a.play()));STAGE.lastT=now;}
   const dt=Math.min(.05,Math.max(0,(now-(STAGE.lastT||now))/1000));STAGE.lastT=now;
+  /* a debut plays while its panel holds the shift, so that walk keeps going unless the game is really paused */
+  const held=paused&&typeof SESSION_PAUSE_REASONS!=="undefined"&&SESSION_PAUSE_REASONS.size>0;
+  if(paused&&!held)STAGE.actors.forEach(a=>{if(a.walk&&a.debut)cafeStepWalker(a,dt);});
   if(!paused){
     STAGE.actors.forEach(a=>{if(a.walk)cafeStepWalker(a,dt);});
     STAGE.pets.forEach(pt=>{
@@ -1033,7 +1039,7 @@ function playDebut(u){
   if(u.type==="customer"){
     const c=CUSTOMERS.find(x=>x.id===u.id);
     if(!c){ departDebutDone(); return; }
-    const a=makeActor(c,null),entry={cust:c,actor:a,node:a.el};hydrateActorVisual(entry);
+    const a=makeActor(c,null),entry={cust:c,actor:a,node:a.el};a.debut=true;hydrateActorVisual(entry);
     a.el.classList.remove("waiting-offstage");cafeOpenDoor();cafeTrackStart(a);const G=CAFE_GEO;
     cafeWalk(a,[{x:G.doorIn.x-16,feet:G.doorIn.feet+5,k:.8,lane:"b"},{x:G.queue[0].x,feet:G.queue[0].feet,k:.86,lane:"b"},{x:G.bar.x-4,feet:204,k:.89,lane:"f"},{...G.serve,lane:"f"}],()=>{
       spawnBurst($("#stage"));cafeFace(a,"happy",2600);cafeGreet(a);
@@ -1258,6 +1264,8 @@ function cafeExpressionWrap(svg,lib){
       let node=null;
       if(opt&&opt.set&&opt.set[part]&&!(part==="eyes"&&st!=="blink"))node=document.importNode(cafeFrag(opt.set[part]),true);
       else node=base.cloneNode(true);
+      /* the pack tags its parts with their own expression; only the wrapper decides what shows */
+      [node,...node.querySelectorAll("[data-expression]")].forEach(n=>{if(n.hasAttribute&&n.hasAttribute("data-expression")){n.removeAttribute("data-expression");n.removeAttribute("opacity");}});
       if(part==="eyes"&&st==="blink"&&opt&&!(opt.set&&opt.set.eyes)){node.querySelectorAll('[data-part="eye-white"],[data-part="upper-lid"]').forEach(n=>n.remove());}
       const g=document.createElementNS(CAFE_SVGNS,"g");g.setAttribute("data-expression",st);g.appendChild(node);wrap.appendChild(g);});
     base.remove();});
